@@ -1,7 +1,9 @@
-package com.example.blood_donation.api;
+package com.example.blood_donation.controller;
 
+import com.example.blood_donation.dto.LoginRequest;
 import com.example.blood_donation.entity.User;
 import com.example.blood_donation.service.AuthenticationService;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -16,9 +18,15 @@ public class AuthenticationAPI {
     //api -> service -> repository
 
     @PostMapping("/api/register")
-    public ResponseEntity register(@RequestBody User user) {
+    public ResponseEntity register(@Valid @RequestBody User user) {
         User newUser = authenticationService.register(user);
         return ResponseEntity.ok(newUser);
+    }
+
+    @PostMapping("/api/login")
+    public ResponseEntity login(@RequestBody LoginRequest loginRequest) {
+        User user = authenticationService.login(loginRequest);
+        return ResponseEntity.ok(user);
     }
 
 }

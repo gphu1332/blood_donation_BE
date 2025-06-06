@@ -73,6 +73,13 @@
 			<version>9.3.0</version>
 		</dependency>
 		<!--can ca 2 de co the ket noi voi database-->
+
+		<!-- https://mvnrepository.com/artifact/org.springframework.boot/spring-boot-starter-security -->
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-security</artifactId>
+			<version>3.5.0</version>
+		</dependency>
 	</dependencies>
 
 	<build>
