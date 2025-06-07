@@ -1,8 +1,10 @@
 package com.example.blood_donation.service;
 
 import com.example.blood_donation.dto.LoginRequest;
+import com.example.blood_donation.dto.UserDTO;
 import com.example.blood_donation.entity.User;
 import com.example.blood_donation.repositoty.AuthenticationRepository;
+import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -24,13 +26,18 @@ public class AuthenticationService implements UserDetailsService {
     @Autowired
     AuthenticationManager authenticationManager;
 
+    @Autowired
+    ModelMapper modelMapper;
+    @Autowired
+    private TokenService tokenService;
+
     public User register(User user) {
         user.setPassword(passwordEncoder.encode(user.getPassword()));
         User newUser = authenticationRepository.save(user);
         return newUser;
     }
 
-    public User login(LoginRequest loginRequest) {
+    public UserDTO login(LoginRequest loginRequest) {
        try {
            authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(
                    loginRequest.getUsername(),
@@ -39,7 +46,11 @@ public class AuthenticationService implements UserDetailsService {
        }catch (Exception e){
            System.out.println("Sai thông tin đăng nhập!!!");
        }
-       return authenticationRepository.findByUsername(loginRequest.getUsername());
+       User user = authenticationRepository.findByUsername(loginRequest.getUsername());
+       UserDTO userDTO = modelMapper.map(user, UserDTO.class);
+       String token = tokenService.generateToken(user);
+       userDTO.setToken(token);
+       return userDTO;
     }
 
 
