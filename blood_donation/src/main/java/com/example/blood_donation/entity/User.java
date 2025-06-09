@@ -21,12 +21,14 @@ public class User implements UserDetails {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     public long userID;
 
+    @Column(unique = true)
     public String username;
 
 //    @Pattern(regexp = "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)[A-Za-z\\d]{8,}$", message = "Password invalid!")
     public String password;
 
     @Email
+    @Column(unique = true)
     public String email;
 
     @Pattern(regexp = "^(84|0[3|5|7|8|9])[0-9]{8}$", message = "Phone invalid!")
@@ -35,6 +37,7 @@ public class User implements UserDetails {
     public String address;
 
     @Pattern(regexp = "^\\d{12}$", message = "CCCD invalid!")
+    @Column(unique = true)
     public String cccd;
 
     @Enumerated(EnumType.STRING)
@@ -43,6 +46,8 @@ public class User implements UserDetails {
     public Role role;
     @Enumerated(EnumType.STRING)
     public Gender gender;
+
+    public String token;
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
