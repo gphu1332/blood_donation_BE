@@ -1,4 +1,4 @@
-package com.example.blood_donation.api;
+package com.example.blood_donation.controller;
 
 import com.example.blood_donation.entity.User;
 import com.example.blood_donation.service.AuthenticationService;
