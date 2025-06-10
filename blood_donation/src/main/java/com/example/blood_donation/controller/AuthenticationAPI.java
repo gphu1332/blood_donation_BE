@@ -1,6 +1,7 @@
 package com.example.blood_donation.controller;
 
 import com.example.blood_donation.dto.LoginRequest;
+import com.example.blood_donation.dto.RegisterRequest;
 import com.example.blood_donation.dto.UserDTO;
 import com.example.blood_donation.entity.User;
 import com.example.blood_donation.service.AuthenticationService;
@@ -21,8 +22,8 @@ public class AuthenticationAPI {
     //api -> service -> repository
 
     @PostMapping("/api/register")
-    public ResponseEntity register(@Valid @RequestBody User user) {
-        User newUser = authenticationService.register(user);
+    public ResponseEntity register(@Valid @RequestBody RegisterRequest user) {
+        UserDTO newUser = authenticationService.register(user);
         return ResponseEntity.ok(newUser);
     }
 
