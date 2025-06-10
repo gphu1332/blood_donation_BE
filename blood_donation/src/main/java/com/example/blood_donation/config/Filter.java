@@ -79,14 +79,12 @@ public class Filter extends OncePerRequestFilter {
                 resolver.resolveException(request, response, null, new AuthException("Invalid Token!"));
                 return;
             }
-            // => token dung
             UsernamePasswordAuthenticationToken
                     authenToken =
                     new UsernamePasswordAuthenticationToken(user, token, user.getAuthorities());
             authenToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
             SecurityContextHolder.getContext().setAuthentication(authenToken);
 
-            // token ok, cho vao`
             filterChain.doFilter(request, response);
         }
     }
