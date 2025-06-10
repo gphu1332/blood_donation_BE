@@ -1,6 +1,7 @@
 package com.example.blood_donation.service;
 
 import com.example.blood_donation.dto.LoginRequest;
+import com.example.blood_donation.dto.RegisterRequest;
 import com.example.blood_donation.dto.UserDTO;
 import com.example.blood_donation.entity.User;
 import com.example.blood_donation.repositoty.AuthenticationRepository;
@@ -31,10 +32,30 @@ public class AuthenticationService implements UserDetailsService {
     @Autowired
     private TokenService tokenService;
 
-    public User register(User user) {
-        user.setPassword(passwordEncoder.encode(user.getPassword()));
-        User newUser = authenticationRepository.save(user);
-        return newUser;
+    public UserDTO register(RegisterRequest request) {
+        if (authenticationRepository.existsByUsername(request.getUsername())) {
+            throw new RuntimeException("Username đã tồn tại!");
+        }
+
+        User user = new User();
+        user.setUsername(request.getUsername());
+        user.setPassword(passwordEncoder.encode(request.getPassword()));
+        user.setEmail(request.getEmail());
+        user.setPhone(request.getPhone());
+        user.setAddress(request.getAddress());
+        user.setCccd(request.getCccd());
+        user.setGender(request.getGender());
+        user.setTypeBlood(request.getTypeBlood());
+        user.setRole(Role.USER); // mặc định là USER
+
+        User savedUser = authenticationRepository.save(user);
+
+        String token = tokenService.generateToken(savedUser);
+
+        UserDTO dto = modelMapper.map(savedUser, UserDTO.class);
+        dto.setToken(token);
+
+        return dto;
     }
 
     public UserDTO login(LoginRequest loginRequest) {
