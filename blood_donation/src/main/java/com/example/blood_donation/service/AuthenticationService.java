@@ -35,10 +35,6 @@ public class AuthenticationService implements UserDetailsService {
     private TokenService tokenService;
 
     public UserDTO register(RegisterRequest request) {
-//        if (authenticationRepository.existsByUsername(request.getUsername())) {
-//            throw new RuntimeException("Username đã tồn tại!");
-//        }
-
         User user = new User();
         user.setFullName(request.getFullName());
         user.setEmail(request.getEmail());
