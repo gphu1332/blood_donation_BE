@@ -27,6 +27,8 @@ public class User implements UserDetails {
 //    @Pattern(regexp = "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)[A-Za-z\\d]{8,}$", message = "Password invalid!")
     public String password;
 
+    public String fullName;
+
     @Email
     @Column(unique = true)
     public String email;
