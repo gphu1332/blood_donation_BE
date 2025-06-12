@@ -27,11 +27,13 @@ public class User implements UserDetails {
 //    @Pattern(regexp = "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)[A-Za-z\\d]{8,}$", message = "Password invalid!")
     public String password;
 
+    public String fullName;
+
     @Email
     @Column(unique = true)
     public String email;
 
-    @Pattern(regexp = "^(84|0[3|5|7|8|9])[0-9]{8}$", message = "Phone invalid!")
+//    @Pattern(regexp = "^(84|0[3|5|7|8|9])[0-9]{8}$", message = "Phone invalid!")
     public String phone;
 
     public String address;

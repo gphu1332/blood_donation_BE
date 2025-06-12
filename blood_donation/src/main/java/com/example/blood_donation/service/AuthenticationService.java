@@ -5,6 +5,7 @@ import com.example.blood_donation.dto.RegisterRequest;
 import com.example.blood_donation.dto.UserDTO;
 import com.example.blood_donation.entity.User;
 import com.example.blood_donation.enums.Role;
+import com.example.blood_donation.exception.exceptons.AuthenticationException;
 import com.example.blood_donation.repositoty.AuthenticationRepository;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,19 +35,16 @@ public class AuthenticationService implements UserDetailsService {
     private TokenService tokenService;
 
     public UserDTO register(RegisterRequest request) {
-        if (authenticationRepository.existsByUsername(request.getUsername())) {
-            throw new RuntimeException("Username đã tồn tại!");
-        }
-
         User user = new User();
+        user.setFullName(request.getFullName());
+        user.setEmail(request.getEmail());
         user.setUsername(request.getUsername());
         user.setPassword(passwordEncoder.encode(request.getPassword()));
-        user.setEmail(request.getEmail());
-        user.setPhone(request.getPhone());
-        user.setAddress(request.getAddress());
-        user.setCccd(request.getCccd());
-        user.setGender(request.getGender());
-        user.setTypeBlood(request.getTypeBlood());
+//        user.setPhone(request.getPhone());
+//        user.setAddress(request.getAddress());
+//        user.setCccd(request.getCccd());
+//        user.setGender(request.getGender());
+//        user.setTypeBlood(request.getTypeBlood());
         user.setRole(Role.MEMBER);
 
         User savedUser = authenticationRepository.save(user);
@@ -66,7 +64,7 @@ public class AuthenticationService implements UserDetailsService {
                    loginRequest.getPassword()
            ));
        }catch (Exception e){
-           System.out.println("Sai thông tin đăng nhập!!!");
+           throw new AuthenticationException("Invalid username or password!!");
        }
        User user = authenticationRepository.findByUsername(loginRequest.getUsername());
        UserDTO userDTO = modelMapper.map(user, UserDTO.class);
