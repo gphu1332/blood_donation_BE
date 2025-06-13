@@ -30,7 +30,7 @@ public class BloodRequest {
     @ManyToOne
     @JoinColumn(name = "MedID")
     private MedicalStaff medicalStaff;
-    @OneToMany(mappedBy = "blood_request", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "bloodRequest", cascade = CascadeType.ALL)
     private List<BloodRequestPriority> priorityList;
 
 

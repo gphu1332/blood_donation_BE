@@ -3,9 +3,11 @@ package com.example.blood_donation.service;
 import com.example.blood_donation.entity.Blog;
 import com.example.blood_donation.repositoty.BlogRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 import java.util.List;
 
+@Service
 public class BlogService {
     @Autowired
     private BlogRepository blogRepository;
