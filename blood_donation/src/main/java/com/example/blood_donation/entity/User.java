@@ -3,6 +3,7 @@ package com.example.blood_donation.entity;
 import com.example.blood_donation.enums.Gender;
 import com.example.blood_donation.enums.Role;
 import com.example.blood_donation.enums.TypeBlood;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.Pattern;
@@ -51,6 +52,11 @@ public class User implements UserDetails {
     public Gender gender;
 
     public String token;
+
+    @ManyToOne
+    @JoinColumn(name = "appointment_id")
+    @JsonIgnore
+    private Appointment appointment;
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
