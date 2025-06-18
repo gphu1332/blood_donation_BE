@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-//@SecurityRequirement(name = "api") 
+@SecurityRequirement(name = "api")
 public class AuthenticationAPI {
     @Autowired
     AuthenticationService authenticationService;
