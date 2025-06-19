@@ -5,7 +5,7 @@ import lombok.Data;
 import java.time.LocalDate;
 
 @Data
-public class RegisterSlotDTO {
+public class AppointmentDTO {
     private Long userID;
     private Long slotID;
     private LocalDate date;
