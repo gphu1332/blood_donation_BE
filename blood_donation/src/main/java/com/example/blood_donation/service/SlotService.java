@@ -1,6 +1,6 @@
 package com.example.blood_donation.service;
 
-import com.example.blood_donation.dto.RegisterSlotDTO;
+import com.example.blood_donation.dto.AppointmentDTO;
 import com.example.blood_donation.entity.Slot;
 import com.example.blood_donation.entity.User;
 import com.example.blood_donation.entity.Appointment;
@@ -14,7 +14,6 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalTime;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 @Service
@@ -35,7 +34,7 @@ public class SlotService {
         return slotRepository.findAll();
     }
 
-    public User registerSlot(RegisterSlotDTO dto) {
+    public User registerSlot(AppointmentDTO dto) {
         User user = userRepository.findById(dto.getUserID())
                 .orElseThrow(() -> new BadRequestException("User not found"));
 
