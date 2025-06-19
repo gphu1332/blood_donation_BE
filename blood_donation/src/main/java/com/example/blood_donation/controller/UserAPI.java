@@ -54,12 +54,23 @@ public class UserAPI {
         if (optionalUser.isEmpty()) {
             return ResponseEntity.notFound().build();
         }
+
         User existingUser = optionalUser.get();
-        modelMapper.map(userDTO, existingUser);
+
+        existingUser.setUsername(userDTO.getUsername());
+        existingUser.setFullName(userDTO.getFullName());
+        existingUser.setEmail(userDTO.getEmail());
+        existingUser.setPhone(userDTO.getPhone());
+        existingUser.setAddress(userDTO.getAddress());
+        existingUser.setCccd(userDTO.getCccd());
+        existingUser.setGender(userDTO.getGender());
+        existingUser.setTypeBlood(userDTO.getTypeBlood());
+
         User updatedUser = userRepository.save(existingUser);
         UserDTO responseDTO = modelMapper.map(updatedUser, UserDTO.class);
         return ResponseEntity.ok(responseDTO);
     }
+
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteUser(@PathVariable Long id) {
