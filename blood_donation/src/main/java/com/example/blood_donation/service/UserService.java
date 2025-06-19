@@ -1,8 +1,12 @@
 package com.example.blood_donation.service;
 
+import com.example.blood_donation.dto.UserDTO;
 import com.example.blood_donation.entity.User;
+import com.example.blood_donation.exception.exceptons.BadRequestException;
 import com.example.blood_donation.repositoty.UserRepository;
+import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -12,35 +16,30 @@ import java.util.Optional;
 public class UserService {
     @Autowired
     private UserRepository userRepository;
+    @Autowired
+    private ModelMapper modelMapper;
 
-    public List<User> getAllUsers() {
-        return userRepository.findAll();
+
+    public UserDTO updateUser(Long id, UserDTO userDTO) {
+        Optional<User> optionalUser = userRepository.findById(id);
+        if (optionalUser.isEmpty()) {
+            throw new BadRequestException("User not found");
+        }
+
+        User existingUser = optionalUser.get();
+
+        existingUser.setUsername(userDTO.getUsername());
+        existingUser.setFullName(userDTO.getFullName());
+        existingUser.setEmail(userDTO.getEmail());
+        existingUser.setPhone(userDTO.getPhone());
+        existingUser.setAddress(userDTO.getAddress());
+        existingUser.setCccd(userDTO.getCccd());
+        existingUser.setGender(userDTO.getGender());
+        existingUser.setTypeBlood(userDTO.getTypeBlood());
+
+        User updatedUser = userRepository.save(existingUser);
+        return modelMapper.map(updatedUser, UserDTO.class);
     }
 
-    public Optional<User> getUserById(Long id) {
-        return userRepository.findById(id);
-    }
 
-    public User createUser(User user) {
-        return userRepository.save(user);
-    }
-
-    public User updateUser(Long id, User updatedUser) {
-        return userRepository.findById(id).map(user -> {
-            user.setUsername(updatedUser.getUsername());
-            user.setEmail(updatedUser.getEmail());
-            user.setPhone(updatedUser.getPhone());
-            user.setAddress(updatedUser.getAddress());
-            user.setCccd(updatedUser.getCccd());
-            user.setTypeBlood(updatedUser.getTypeBlood());
-            user.setRole(updatedUser.getRole());
-            user.setGender(updatedUser.getGender());
-            user.setToken(updatedUser.getToken());
-            return userRepository.save(user);
-        }).orElse(null);
-    }
-
-    public void deleteUser(Long id) {
-        userRepository.deleteById(id);
-    }
 }
