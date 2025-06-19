@@ -35,8 +35,7 @@ public class Filter extends OncePerRequestFilter {
 
     private final List<String> PUBLIC_API = List.of(
             "POST:/api/register",
-            "POST:/api/login",
-            "PUT:/api/users/{id}"
+            "POST:/api/login"
     );
 
     public boolean isPermitted(String uri, String method) {
