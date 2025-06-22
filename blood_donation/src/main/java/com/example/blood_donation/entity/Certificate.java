@@ -14,6 +14,10 @@ public class Certificate {
     // Mỗi lần hiến máu chỉ tạo ra một chứng chỉ
     @OneToOne
     @JoinColumn(name = "DonID")
-    private DonationDetail
+    private DonationDetail donation;
+    // Mỗi thành viên có thể có nhiều chứng chỉ
+    @ManyToOne
+    @JoinColumn(name = "MemID")
+    private
 
 }
