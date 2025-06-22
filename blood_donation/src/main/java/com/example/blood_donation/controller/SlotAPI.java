@@ -1,9 +1,8 @@
 package com.example.blood_donation.controller;
 
 
-import com.example.blood_donation.dto.RegisterSlotDTO;
+import com.example.blood_donation.dto.AppointmentDTO;
 import com.example.blood_donation.entity.Slot;
-import com.example.blood_donation.entity.Appointment;
 import com.example.blood_donation.entity.User;
 import com.example.blood_donation.service.SlotService;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
@@ -32,8 +31,8 @@ public class SlotAPI {
     }
 
     @PostMapping("/register")
-    public ResponseEntity<User> registerSlot(@RequestBody RegisterSlotDTO registerSlotDTO) {
-        return ResponseEntity.ok(slotService.registerSlot(registerSlotDTO));
+    public ResponseEntity<User> registerSlot(@RequestBody AppointmentDTO appointmentDTO) {
+        return ResponseEntity.ok(slotService.registerSlot(appointmentDTO));
     }
 
 }
