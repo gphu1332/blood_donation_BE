@@ -1,10 +1,12 @@
 package com.example.blood_donation.entity;
 
 import jakarta.persistence.*;
+import lombok.Data;
 
 import java.time.LocalDate;
 
 @Entity
+@Data
 @Table(name = "certificates")
 public class Certificate {
     @Id
@@ -22,5 +24,5 @@ public class Certificate {
     // Một Admin có thể quản lý nhiều certificate
     @ManyToOne
     @JoinColumn(name = "AdID")
-
+    private Admin admin;
 }
