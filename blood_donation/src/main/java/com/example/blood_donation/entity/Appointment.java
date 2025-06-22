@@ -20,10 +20,18 @@ public class Appointment {
     @Enumerated(EnumType.STRING)
     private Status status;
 
-    @OneToMany(mappedBy = "appointment")
-    private List<User> user;
+    // Mỗi Appointment gắn với 1 User
+    @OneToOne
+    @JoinColumn(name = "user_id", unique = true)
+    private User user;
 
+    // Mỗi Appointment thuộc về một Slot
     @ManyToOne
     @JoinColumn(name = "slot_id")
     private Slot slot;
+
+    // Mỗi Appointment thuộc về một Program
+    @ManyToOne
+    @JoinColumn(name = "program_id")
+    private DonationProgram program;
 }

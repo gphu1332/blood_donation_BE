@@ -40,11 +40,6 @@ public class AuthenticationService implements UserDetailsService {
         user.setEmail(request.getEmail());
         user.setUsername(request.getUsername());
         user.setPassword(passwordEncoder.encode(request.getPassword()));
-//        user.setPhone(request.getPhone());
-//        user.setAddress(request.getAddress());
-//        user.setCccd(request.getCccd());
-//        user.setGender(request.getGender());
-//        user.setTypeBlood(request.getTypeBlood());
         user.setRole(Role.MEMBER);
 
         User savedUser = authenticationRepository.save(user);
