@@ -18,6 +18,9 @@ public class Certificate {
     // Mỗi thành viên có thể có nhiều chứng chỉ
     @ManyToOne
     @JoinColumn(name = "MemID")
-    private
+    private Member member;
+    // Một Admin có thể quản lý nhiều certificate
+    @ManyToOne
+    @JoinColumn(name = "AdID")
 
 }
