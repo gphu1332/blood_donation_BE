@@ -64,20 +64,20 @@ public class SlotService {
 
 
     public void generateSlot() {
+//          generate tu dong slot tu 7h sang toi 17h chieu
+        LocalTime start = LocalTime.of(7, 0);
+        LocalTime end = LocalTime.of(17, 0);
         List<Slot> slots = new ArrayList<>();
 
-        Slot morning = new Slot();
-        morning.setStart(LocalTime.of(7, 0));
-        morning.setEnd(LocalTime.of(11, 0));
-        morning.setLabel("07:00 - 11:00");
-        slots.add(morning);
+        while (start.isBefore(end)) {
+            Slot slot = new Slot();
+            slot.setStart(start);
+            slot.setLabel(start.toString());
+            slot.setEnd(start.plusHours(30));
 
-        Slot afternoon = new Slot();
-        afternoon.setStart(LocalTime.of(13, 0));
-        afternoon.setEnd(LocalTime.of(17, 0));
-        afternoon.setLabel("13:00 - 17:00");
-        slots.add(afternoon);
-
+            slots.add(slot);
+            start = start.plusMinutes(30);
+        }
         slotRepository.saveAll(slots);
     }
 

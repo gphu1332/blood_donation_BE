@@ -3,7 +3,7 @@ package com.example.blood_donation.controller;
 import com.example.blood_donation.dto.BloodRequestDTO;
 import com.example.blood_donation.entity.BloodRequest;
 import com.example.blood_donation.entity.BloodRequestPriority;
-import com.example.blood_donation.enums.RequestStatus;
+import com.example.blood_donation.enums.Status;
 import com.example.blood_donation.service.BloodRequestService;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,7 +28,7 @@ public class BloodRequestAPI {
         return service.getAll();
     }
     @PutMapping("/{id}/status")
-    public ResponseEntity<BloodRequest> updateStatus(@PathVariable Integer id, @RequestParam RequestStatus status) {
+    public ResponseEntity<BloodRequest> updateStatus(@PathVariable Integer id, @RequestParam Status status) {
         return ResponseEntity.ok(service.updateStatus(id,status));
     }
     @DeleteMapping("/{id}")

@@ -1,5 +1,6 @@
 package com.example.blood_donation.entity;
 
+import com.example.blood_donation.enums.Status;
 import jakarta.persistence.*;
 import lombok.Data;
 
@@ -15,6 +16,9 @@ public class Appointment {
     private Long id;
 
     private LocalDate date;
+
+    @Enumerated(EnumType.STRING)
+    private Status status;
 
     @OneToMany(mappedBy = "appointment")
     private List<User> user;
