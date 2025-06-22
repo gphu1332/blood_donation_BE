@@ -2,6 +2,7 @@ package com.example.blood_donation.controller;
 
 import com.example.blood_donation.dto.AppointmentDTO;
 import com.example.blood_donation.enums.Status;
+import com.example.blood_donation.service.AdminUserService;
 import com.example.blood_donation.service.AppointmentService;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.annotation.security.RolesAllowed;
@@ -22,6 +23,9 @@ public class AppointmentAPI {
     @Autowired
     private AppointmentService appointmentService;
 
+    @Autowired
+    private AdminUserService adminUserService;
+
     @GetMapping
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<List<AppointmentDTO>> getAll() {
@@ -35,29 +39,36 @@ public class AppointmentAPI {
                 .orElse(ResponseEntity.notFound().build());
     }
 
-//  dat lich appointment (MEMBER)
+    //  dat lich appointment (MEMBER)
     @PostMapping
     @PreAuthorize("hasRole('MEMBER')")
     public ResponseEntity<AppointmentDTO> createAppointment(
             @RequestParam Long userId,
             @RequestParam Long slotId,
-            @RequestParam String date
+            @RequestParam String date,
+            @RequestParam Long programId
     ) {
         LocalDate parsedDate = LocalDate.parse(date);
-        AppointmentDTO created = appointmentService.createAppointment(userId, slotId, parsedDate);
+        AppointmentDTO created = appointmentService.createAppointment(userId, slotId, parsedDate, programId);
         return ResponseEntity.ok(created);
     }
 
-//  dat lich appointment (Admin)
-    @PostMapping("/admin")
-    @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<AppointmentDTO> createAppointmentByAdmin(
+
+    //  dat lich appointment (Hospital staff)
+    @PostMapping("/hospital-staff-create")
+    @PreAuthorize("hasRole('HOSPITAL_STAFF')") // Hoặc ADMIN tùy theo phân quyền
+    public ResponseEntity<AppointmentDTO> createAppointmentByPhone(
             @RequestParam String phone,
             @RequestParam Long slotId,
-            @RequestParam String date
+            @RequestParam String date,
+            @RequestParam Long programId
     ) {
+        Long userId = adminUserService.findUserIdByPhone(phone);
+
         LocalDate parsedDate = LocalDate.parse(date);
-        AppointmentDTO created = appointmentService.createAppointmentByPhone(phone, slotId, parsedDate);
+
+        AppointmentDTO created = appointmentService.createAppointmentByPhoneAndProgram(phone, slotId, parsedDate, programId);
+
         return ResponseEntity.ok(created);
     }
 
@@ -73,7 +84,7 @@ public class AppointmentAPI {
         return ResponseEntity.ok(updated);
     }
 
-//  xoa Appointment
+    //  xoa Appointment
     @DeleteMapping("/{id}")
     @PreAuthorize("hasAnyRole('ADMIN', 'MEMBER')")
     public ResponseEntity<Void> deleteAppointment(@PathVariable Long id, Principal principal) {

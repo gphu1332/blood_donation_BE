@@ -14,7 +14,6 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/admin/users")
@@ -35,9 +34,7 @@ public class AdminUserAPI {
 
     @GetMapping("/{id}")
     public ResponseEntity<User> getUserById(@PathVariable Long id) {
-        return adminUserService.getUserById(id)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
+        return adminUserService.getUserById(id).map(ResponseEntity::ok).orElse(ResponseEntity.notFound().build());
     }
 
     @PostMapping
@@ -60,15 +57,10 @@ public class AdminUserAPI {
         return ResponseEntity.ok().build();
     }
 
-    @GetMapping("/check-role")
-    public ResponseEntity<?> checkRole() {
-        var auth = SecurityContextHolder.getContext().getAuthentication();
-
-        if (auth == null) return ResponseEntity.status(401).body("No authentication");
-
-        return ResponseEntity.ok("Authorities: " + auth.getAuthorities().toString());
+    @GetMapping("/lookup")
+    public ResponseEntity<Long> getUserIdByPhone(@RequestParam String phone) {
+        Long userId = adminUserService.findUserIdByPhone(phone);
+        return ResponseEntity.ok(userId);
     }
-
-
 }
 
