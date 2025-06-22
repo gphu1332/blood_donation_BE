@@ -2,11 +2,13 @@ package com.example.blood_donation.service;
 
 import com.example.blood_donation.dto.AppointmentDTO;
 import com.example.blood_donation.entity.Appointment;
+import com.example.blood_donation.entity.DonationProgram;
 import com.example.blood_donation.entity.Slot;
 import com.example.blood_donation.entity.User;
 import com.example.blood_donation.enums.Status;
 import com.example.blood_donation.exception.exceptons.BadRequestException;
 import com.example.blood_donation.repositoty.AppointmentRepository;
+import com.example.blood_donation.repositoty.DonationProgramRepository;
 import com.example.blood_donation.repositoty.SlotRepository;
 import com.example.blood_donation.repositoty.UserRepository;
 import org.modelmapper.ModelMapper;
@@ -32,10 +34,13 @@ public class AppointmentService {
     @Autowired
     private ModelMapper modelMapper;
 
+    @Autowired
+    DonationProgramRepository donationProgramRepository;
+
     /**
      * Tạo một appointment mới cho User nếu chưa có active appointment.
      */
-    public AppointmentDTO createAppointment(Long userId, Long slotId, LocalDate date) {
+    public AppointmentDTO createAppointment(Long userId, Long slotId, LocalDate date, Long programId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new BadRequestException("User not found"));
 
@@ -46,24 +51,28 @@ public class AppointmentService {
         Slot slot = slotRepository.findById(slotId)
                 .orElseThrow(() -> new BadRequestException("Slot not found"));
 
+        DonationProgram program = donationProgramRepository.findById(programId)
+                .orElseThrow(() -> new BadRequestException("Program not found"));
+
         Appointment appointment = new Appointment();
         appointment.setDate(date);
         appointment.setSlot(slot);
+        appointment.setProgram(program);
         appointment.setStatus(Status.PENDING);
 
         Appointment saved = appointmentRepository.save(appointment);
-
         user.setAppointment(saved);
         userRepository.save(user);
 
         return modelMapper.map(saved, AppointmentDTO.class);
     }
+
     /**
      * Tạo một appointment mới cho User bằng role Admin nếu chưa có active appointment.
      */
-    public AppointmentDTO createAppointmentByPhone(String phone, Long slotId, LocalDate date) {
+    public AppointmentDTO createAppointmentByPhoneAndProgram(String phone, Long slotId, LocalDate date, Long programId) {
         User user = userRepository.findByPhone(phone)
-                .orElseThrow(() -> new BadRequestException("User with phone " + phone + " not found"));
+                .orElseThrow(() -> new BadRequestException("User not found with phone: " + phone));
 
         if (user.getAppointment() != null && user.getAppointment().getStatus() != Status.FULFILLED) {
             throw new BadRequestException("User already has an active appointment");
@@ -72,10 +81,14 @@ public class AppointmentService {
         Slot slot = slotRepository.findById(slotId)
                 .orElseThrow(() -> new BadRequestException("Slot not found"));
 
+        DonationProgram program = donationProgramRepository.findById(programId)
+                .orElseThrow(() -> new BadRequestException("Program not found"));
+
         Appointment appointment = new Appointment();
         appointment.setDate(date);
         appointment.setSlot(slot);
-        appointment.setStatus(Status.APPROVED); // Vì là Admin nên được duyệt luôn
+        appointment.setProgram(program);
+        appointment.setStatus(Status.APPROVED); // Admin tạo thì tự duyệt luôn
 
         Appointment saved = appointmentRepository.save(appointment);
 
@@ -84,6 +97,7 @@ public class AppointmentService {
 
         return modelMapper.map(saved, AppointmentDTO.class);
     }
+
 
 
     /**

@@ -22,12 +22,21 @@ public class AdminUserService {
     @Autowired
     private ModelMapper modelMapper;
 
+    @Autowired
+    private UserRepository userRepository;
+
     public List<User> getAllUsers() {
         return adminUserRepository.findAll();
     }
 
     public Optional<User> getUserById(Long id) {
         return adminUserRepository.findById(id);
+    }
+
+    public Long findUserIdByPhone(String phone) {
+        return userRepository.findByPhone(phone)
+                .orElseThrow(() -> new BadRequestException("User not found"))
+                .getUserID();
     }
 
     public User createUser(User user) {
