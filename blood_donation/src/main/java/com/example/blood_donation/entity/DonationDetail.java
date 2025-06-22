@@ -2,6 +2,7 @@ package com.example.blood_donation.entity;
 
 import jakarta.persistence.*;
 
+import java.lang.reflect.Member;
 import java.time.LocalDate;
 
 @Entity
@@ -15,6 +16,13 @@ public class DonationDetail {
     // Mỗi lần hiến máu chỉ hiến một loại  máu
     @OneToOne
     @JoinColumn(name = "BloodType")
-    @Enumerated(EnumType.STRING)
-
+    private BloodType bloodType;
+    //Mỗi lần đặt lịch chỉ dẫn đến 1 lần hiến máu
+    @OneToOne
+    @JoinColumn(name = "AppID")
+    private  Appointment appointment;
+    //Mỗi thành viên có thể hiến máu nhiều lần
+    @ManyToOne
+    @JoinColumn(name = "MemID")
+    private Member member;
 }
