@@ -14,12 +14,17 @@ import java.util.List;
 public class Slot {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    long slotID;
+    private Long slotID;
 
-    String label;
-    LocalTime start;
-    LocalTime end;
-    boolean isDeleted = false;
+    private String label;
+    private LocalTime start;
+    private LocalTime end;
+    private boolean isDeleted = false;
+
+    // Mỗi Slot thuộc về 1 Program
+    @ManyToOne
+    @JoinColumn(name = "program_id")
+    private DonationProgram program;
 
     @OneToMany(mappedBy = "slot")
     @JsonIgnore

@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -58,5 +59,16 @@ public class AdminUserAPI {
         adminUserService.deleteUser(id);
         return ResponseEntity.ok().build();
     }
+
+    @GetMapping("/check-role")
+    public ResponseEntity<?> checkRole() {
+        var auth = SecurityContextHolder.getContext().getAuthentication();
+
+        if (auth == null) return ResponseEntity.status(401).body("No authentication");
+
+        return ResponseEntity.ok("Authorities: " + auth.getAuthorities().toString());
+    }
+
+
 }
 
