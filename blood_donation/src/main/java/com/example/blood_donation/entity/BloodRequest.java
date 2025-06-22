@@ -1,7 +1,7 @@
 package com.example.blood_donation.entity;
 
 import com.example.blood_donation.enums.RequestType;
-import com.example.blood_donation.enums.RequestStatus;
+import com.example.blood_donation.enums.Status;
 import com.example.blood_donation.enums.TypeBlood;
 import jakarta.persistence.*;
 import lombok.Data;
@@ -23,7 +23,7 @@ public class BloodRequest {
     @Enumerated(EnumType.STRING)
     private RequestType  resType;
     @Enumerated(EnumType.STRING)
-    private RequestStatus resStatus;
+    private Status resStatus;
     @ManyToOne
     @JoinColumn(name = "StaID")
     private Staff staff;

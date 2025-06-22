@@ -2,7 +2,7 @@ package com.example.blood_donation.service;
 
 import com.example.blood_donation.entity.BloodRequest;
 import com.example.blood_donation.entity.BloodRequestPriority;
-import com.example.blood_donation.enums.RequestStatus;
+import com.example.blood_donation.enums.Status;
 import com.example.blood_donation.repositoty.BloodRequestPriorityRepository;
 import com.example.blood_donation.repositoty.BloodRequestRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,7 +19,7 @@ public class BloodRequestService {
     private BloodRequestPriorityRepository priorityRepository;
     public BloodRequest create(BloodRequest request, List<BloodRequestPriority> priorities) {
         request.setResDateCreated(LocalDate.now());
-        request.setResStatus(RequestStatus.PENDING);
+        request.setResStatus(Status.PENDING);
         BloodRequest saved = requestRepository.save(request);
         for(BloodRequestPriority priority : priorities) {
             priority.setBloodRequest(saved);
@@ -33,7 +33,7 @@ public class BloodRequestService {
     public void delete(Integer id) {
         requestRepository.deleteById(id);
     }
-    public BloodRequest updateStatus(Integer id, RequestStatus status) {
+    public BloodRequest updateStatus(Integer id, Status status) {
         BloodRequest request = requestRepository.findById(id)
                 .orElseThrow(() -> new  RuntimeException("Not found"));
         request.setResStatus(status);

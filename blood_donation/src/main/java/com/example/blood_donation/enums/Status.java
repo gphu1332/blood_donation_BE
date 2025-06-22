@@ -1,5 +1,5 @@
 package com.example.blood_donation.enums;
 
-public enum RequestStatus {
+public enum Status {
     PENDING, APPROVED, REJECTED, FULFILLED
 }
