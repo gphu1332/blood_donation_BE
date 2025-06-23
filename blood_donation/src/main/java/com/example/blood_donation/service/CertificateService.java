@@ -8,19 +8,19 @@ import org.springframework.boot.context.config.ConfigDataResourceNotFoundExcepti
 import java.util.List;
 
 public class CertificateService {
-    @Autowired
-    private CertificateRepository certificateRepository;
-    public List<Certificate> getAllCertificates() {
-        return certificateRepository.findAll();
-    }
-    public Certificate getCertificateById(Long id) {
-        return certificateRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Certificate not found with id: " + id));
-    }
-    public Certificate createCertificate(Certificate certificate) {
-        return certificateRepository.save(certificate);
-    }
-    public Certificate updateCertificate(Long id, Certificate updateCertificate) {
-        Certificate existing = getCertificateById();
-    }
+//    @Autowired
+//    private CertificateRepository certificateRepository;
+//    public List<Certificate> getAllCertificates() {
+//        return certificateRepository.findAll();
+//    }
+//    public Certificate getCertificateById(Long id) {
+//        return certificateRepository.findById(id)
+//                .orElseThrow(() -> new RuntimeException("Certificate not found with id: " + id));
+//    }
+//    public Certificate createCertificate(Certificate certificate) {
+//        return certificateRepository.save(certificate);
+//    }
+//    public Certificate updateCertificate(Long id, Certificate updateCertificate) {
+//        Certificate existing = getCertificateById();
+//    }
 }

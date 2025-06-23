@@ -11,18 +11,22 @@ import java.time.LocalDate;
 public class Certificate {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long CerID;
+    private Long cerID;
+
     private LocalDate issueDate;
+
     // Mỗi lần hiến máu chỉ tạo ra một chứng chỉ
     @OneToOne
-    @JoinColumn(name = "DonID")
+    @JoinColumn(name = "donation_id")
     private DonationDetail donation;
-    // Mỗi thành viên có thể có nhiều chứng chỉ
+
+    // Mỗi member có thể có nhiều chứng chỉ
     @ManyToOne
-    @JoinColumn(name = "MemID")
+    @JoinColumn(name = "member_id")
     private Member member;
-    // Một Admin có thể quản lý nhiều certificate
+
+    // Một Admin có thể tạo/duyệt nhiều Certificate
     @ManyToOne
-    @JoinColumn(name = "AdID")
+    @JoinColumn(name = "admin_id")
     private Admin admin;
 }
