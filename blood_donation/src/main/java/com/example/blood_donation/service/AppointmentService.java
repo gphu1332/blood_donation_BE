@@ -59,12 +59,14 @@ public class AppointmentService {
         appointment.setSlot(slot);
         appointment.setProgram(program);
         appointment.setStatus(Status.PENDING);
-
+        appointment.setUser(user); // <-- THÊM DÒNG NÀY để gán user vào appointment
         Appointment saved = appointmentRepository.save(appointment);
         user.setAppointment(saved);
         userRepository.save(user);
 
-        return modelMapper.map(saved, AppointmentDTO.class);
+        AppointmentDTO dto = modelMapper.map(saved, AppointmentDTO.class);
+        dto.setPhone(user.getPhone());
+        return dto;
     }
 
     /**
@@ -89,13 +91,15 @@ public class AppointmentService {
         appointment.setSlot(slot);
         appointment.setProgram(program);
         appointment.setStatus(Status.APPROVED); // Admin tạo thì tự duyệt luôn
-
+        appointment.setUser(user); // <-- THÊM DÒNG NÀY để gán user vào appointment
         Appointment saved = appointmentRepository.save(appointment);
 
         user.setAppointment(saved);
         userRepository.save(user);
 
-        return modelMapper.map(saved, AppointmentDTO.class);
+        AppointmentDTO dto = modelMapper.map(saved, AppointmentDTO.class);
+        dto.setPhone(user.getPhone());
+        return dto;
     }
 
 

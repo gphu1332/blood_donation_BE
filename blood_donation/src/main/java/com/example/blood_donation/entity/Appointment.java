@@ -5,7 +5,6 @@ import jakarta.persistence.*;
 import lombok.Data;
 
 import java.time.LocalDate;
-import java.util.List;
 
 @Entity
 @Data
@@ -19,6 +18,7 @@ public class Appointment {
 
     @Enumerated(EnumType.STRING)
     private Status status;
+
 
     // Mỗi Appointment gắn với 1 User
     @OneToOne

@@ -10,7 +10,7 @@ public class AppointmentDTO {
     private Long id;
     private LocalDate date;
     private Status status;
-    private Long userID;
+    private String phone;
     private Long slotID;
     private Long programId;
 }
