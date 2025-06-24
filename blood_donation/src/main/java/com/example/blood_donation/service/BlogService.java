@@ -11,6 +11,7 @@ import java.util.List;
 public class BlogService {
     @Autowired
     private BlogRepository blogRepository;
+
     public Blog create(Blog blog) {
         return blogRepository.save(blog);
     }
