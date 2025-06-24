@@ -21,5 +21,8 @@ public class BloodRequest {
     @ManyToOne
     @JoinColumn(name = "MedID")
     private MedicalStaff medicalStaff;
-
+    // Mỗi staff có thể xử lý nhiều đơn yêu cầu máu
+    @ManyToOne
+    @JoinColumn(name = "StaID")
+    private Staff staff;
 }
