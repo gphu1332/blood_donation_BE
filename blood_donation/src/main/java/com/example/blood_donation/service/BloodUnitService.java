@@ -3,11 +3,12 @@ package com.example.blood_donation.service;
 import com.example.blood_donation.entity.BloodUnit;
 import com.example.blood_donation.repositoty.BloodUnitRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
-
+@Service
 public class BloodUnitService {
     @Autowired
     private BloodUnitRepository repository;
@@ -40,5 +41,8 @@ public class BloodUnitService {
         existing.setStaff(updated.getStaff());
         existing.setRequest(updated.getRequest());
         return repository.save(existing);
+    }
+    public void delete(Long id) {
+        repository.deleteById(id);
     }
 }
