@@ -15,6 +15,8 @@ public class DonationProgram {
 
     private String proName;
     private LocalDate dateCreated;
+    private LocalDate endDate;
+    private LocalDate startDate;
 
     // Mỗi Program được tổ chức tại 1 Location
     @ManyToOne
