@@ -43,6 +43,8 @@ public class DonationProgramService {
         DonationProgram program = new DonationProgram();
         program.setProName(dto.getProName());
         program.setDateCreated(LocalDate.now());
+        program.setEndDate(dto.getEndDate());
+        program.setStartDate(dto.getStartDate());
 
         // Gán location
         if (dto.getLocationId() != null) {
@@ -95,6 +97,8 @@ public class DonationProgramService {
         DonationProgramDTO dto = new DonationProgramDTO();
         dto.setId(program.getId());
         dto.setProName(program.getProName());
+        dto.setEndDate(program.getEndDate());
+        dto.setStartDate(program.getStartDate());
 
         if (program.getLocation() != null) {
             dto.setLocationId(program.getLocation().getId());
