@@ -23,40 +23,40 @@ public class User implements UserDetails {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    public long userID;
+    private long userID;
 
     @Column(unique = true)
-    public String username;
+    private String username;
 
     //    @Pattern(regexp = "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)[A-Za-z\\d]{8,}$", message = "Password invalid!")
-    public String password;
+    private String password;
 
-    public String fullName;
+    private String fullName;
 
     @Email
     @Column(unique = true)
-    public String email;
+    private String email;
 
     //    @Pattern(regexp = "^(84|0[3|5|7|8|9])[0-9]{8}$", message = "Phone invalid!")
     @Column(unique = true)
-    public String phone;
+    private String phone;
 
-    public String address;
+    private String address;
 
     @Pattern(regexp = "^\\d{12}$", message = "CCCD invalid!")
     @Column(unique = true)
-    public String cccd;
+    private String cccd;
 
     @Enumerated(EnumType.STRING)
-    public TypeBlood typeBlood;
+    private TypeBlood typeBlood;
     @Enumerated(EnumType.STRING)
-    public Role role;
+    private Role role;
     @Enumerated(EnumType.STRING)
-    public Gender gender;
+    private Gender gender;
 
-    public LocalDate birthdate;
+    private LocalDate birthdate;
 
-    public String token;
+    private String token;
 
     @ManyToOne
     @JoinColumn(name = "appointment_id")
