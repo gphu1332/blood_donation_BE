@@ -1,8 +1,12 @@
 package com.example.blood_donation.entity;
 
+import jakarta.persistence.Embeddable;
+import lombok.Data;
+
 import java.io.Serializable;
 import java.util.Objects;
-
+@Embeddable
+@Data
 public class BloodRequestDetailId  implements Serializable {
     private Long reqID;
     private String bloodType;

@@ -5,6 +5,7 @@ import lombok.Data;
 import org.hibernate.engine.spi.Status;
 
 import java.time.LocalDate;
+import java.util.List;
 
 @Entity
 @Data
@@ -25,4 +26,8 @@ public class BloodRequest {
     @ManyToOne
     @JoinColumn(name = "StaID")
     private Staff staff;
+    // 1 đơn yêu cầu máu có thể yêu cầu nhiều túi máu với thể tích và số lượng khác nhau
+    @OneToMany(mappedBy = "bloodRequest", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<BloodRequestDetail> details;
+
 }
