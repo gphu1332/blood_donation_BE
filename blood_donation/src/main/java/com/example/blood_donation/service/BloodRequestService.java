@@ -1,6 +1,5 @@
 package com.example.blood_donation.service;
 
-<<<<<<< HEAD
 import com.example.blood_donation.dto.BloodRequestDTO;
 import com.example.blood_donation.dto.BloodRequestDetailDTO;
 import com.example.blood_donation.entity.BloodRequest;
@@ -9,24 +8,21 @@ import com.example.blood_donation.entity.MedicalStaff;
 import com.example.blood_donation.entity.Staff;
 import com.example.blood_donation.enums.Status;
 import com.example.blood_donation.repositoty.BloodRequestDetailRepository;
-=======
-import com.example.blood_donation.entity.BloodRequest;
->>>>>>> main
+
 import com.example.blood_donation.repositoty.BloodRequestRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-<<<<<<< HEAD
+
 import java.time.LocalDate;
-=======
->>>>>>> main
+
 import java.util.List;
 
 @Service
 public class BloodRequestService {
     @Autowired
-<<<<<<< HEAD
     private BloodRequestRepository reqRepo;
+
     @Autowired
     private BloodRequestDetailRepository detailRepo;
 
@@ -35,7 +31,7 @@ public class BloodRequestService {
         BloodRequest req = new BloodRequest();
         req.setReqCreateDate(LocalDate.now());
         req.setIsEmergency(dto.getIsEmergency());
-        req.setReqStatus(Status.PENDING);
+        req.setStatus(Status.PENDING);
 
         MedicalStaff medicalStaff = new MedicalStaff();
         medicalStaff.setUserID(dto.getMedId());
@@ -59,7 +55,7 @@ public class BloodRequestService {
         BloodRequest req = reqRepo.findById(id)
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy yêu cầu"));
 
-        if(!req.getReqStatus().equals("PENDING")) {
+        if (!req.getStatus().equals("PENDING")) {
             throw new IllegalStateException("Chỉ được cập nhập khi trạng thái là PENDING");
         }
 
@@ -75,9 +71,8 @@ public class BloodRequestService {
             detail.setPackCount(d.getPackCount());
             detailRepo.save(detail);
         }
-
         return req;
-=======
+    }
     private BloodRequestRepository bloodRequestRepository;
     public List<BloodRequest> getAll() {
         return bloodRequestRepository.findAll();
@@ -93,21 +88,20 @@ public class BloodRequestService {
         BloodRequest existing = getById(id);
         existing.setReqCreateDate(req.getReqCreateDate());
         existing.setIsEmergency(req.getIsEmergency());
-        existing.setReqStatus(req.getReqStatus());
+        existing.setStatus(req.getStatus());
         existing.setStaff(req.getStaff());
         existing.setMedicalStaff(req.getMedicalStaff());
         return bloodRequestRepository.save(existing);
     }
     public void delete(Long id) {
         bloodRequestRepository.deleteById(id);
->>>>>>> main
     }
 
     // Hủy yêu cầu - Medical Staff
     public void cancelRequest(Long id) {
         BloodRequest req = reqRepo.findById(id)
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy yêu cầu"));
-        req.setReqStatus(Status.CANCELLED);
+        req.setStatus(Status.CANCELLED);
         reqRepo.save(req);
     }
 
@@ -116,9 +110,9 @@ public class BloodRequestService {
         BloodRequest req = reqRepo.findById(id)
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy yêu cầu"));
         if(action.equalsIgnoreCase("accept")) {
-            req.setReqStatus(Status.APPROVED);
+            req.setStatus(Status.APPROVED);
         } else if (action.equalsIgnoreCase("reject")) {
-            req.setReqStatus(Status.REJECTED);
+            req.setStatus(Status.REJECTED);
         } else {
             throw new IllegalArgumentException("Hành động không hợp lệ");
         }
@@ -134,7 +128,7 @@ public class BloodRequestService {
     public BloodRequest updateProcessingStatus(Long id, Status newStatus) {
         BloodRequest req = reqRepo.findById(id)
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy yêu cầu"));
-        req.setReqStatus(newStatus);
+        req.setStatus(newStatus);
         return reqRepo.save(req);
     }
 
