@@ -1,5 +1,6 @@
 package com.example.blood_donation.service;
 
+<<<<<<< HEAD
 import com.example.blood_donation.dto.BloodRequestDTO;
 import com.example.blood_donation.dto.BloodRequestDetailDTO;
 import com.example.blood_donation.entity.BloodRequest;
@@ -8,16 +9,23 @@ import com.example.blood_donation.entity.MedicalStaff;
 import com.example.blood_donation.entity.Staff;
 import com.example.blood_donation.enums.Status;
 import com.example.blood_donation.repositoty.BloodRequestDetailRepository;
+=======
+import com.example.blood_donation.entity.BloodRequest;
+>>>>>>> main
 import com.example.blood_donation.repositoty.BloodRequestRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+<<<<<<< HEAD
 import java.time.LocalDate;
+=======
+>>>>>>> main
 import java.util.List;
 
 @Service
 public class BloodRequestService {
     @Autowired
+<<<<<<< HEAD
     private BloodRequestRepository reqRepo;
     @Autowired
     private BloodRequestDetailRepository detailRepo;
@@ -69,6 +77,30 @@ public class BloodRequestService {
         }
 
         return req;
+=======
+    private BloodRequestRepository bloodRequestRepository;
+    public List<BloodRequest> getAll() {
+        return bloodRequestRepository.findAll();
+    }
+    public BloodRequest getById(Long id) {
+        return bloodRequestRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy yêu cầu máu"));
+    }
+    public BloodRequest create(BloodRequest request) {
+        return bloodRequestRepository.save(request);
+    }
+    public BloodRequest update(Long id, BloodRequest req) {
+        BloodRequest existing = getById(id);
+        existing.setReqCreateDate(req.getReqCreateDate());
+        existing.setIsEmergency(req.getIsEmergency());
+        existing.setReqStatus(req.getReqStatus());
+        existing.setStaff(req.getStaff());
+        existing.setMedicalStaff(req.getMedicalStaff());
+        return bloodRequestRepository.save(existing);
+    }
+    public void delete(Long id) {
+        bloodRequestRepository.deleteById(id);
+>>>>>>> main
     }
 
     // Hủy yêu cầu - Medical Staff

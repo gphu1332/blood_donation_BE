@@ -1,8 +1,8 @@
 package com.example.blood_donation.entity;
 
-import com.example.blood_donation.enums.Status;
 import jakarta.persistence.*;
 import lombok.Data;
+import org.hibernate.engine.spi.Status;
 
 import java.time.LocalDate;
 import java.util.List;
