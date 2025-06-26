@@ -110,6 +110,4 @@ public class BloodRequestService {
     public void delete(Long id) {
         bloodRequestRepository.deleteById(id);
     }
-
-
 }
