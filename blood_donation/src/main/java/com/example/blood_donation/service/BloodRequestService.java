@@ -2,112 +2,119 @@ package com.example.blood_donation.service;
 
 import com.example.blood_donation.dto.BloodRequestDTO;
 import com.example.blood_donation.dto.BloodRequestDetailDTO;
-import com.example.blood_donation.entity.*;
+import com.example.blood_donation.entity.BloodRequest;
+import com.example.blood_donation.entity.BloodRequestDetail;
+import com.example.blood_donation.entity.MedicalStaff;
+import com.example.blood_donation.entity.Staff;
 import com.example.blood_donation.enums.Status;
 import com.example.blood_donation.repositoty.BloodRequestDetailRepository;
 import com.example.blood_donation.repositoty.BloodRequestRepository;
-import com.example.blood_donation.repositoty.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
+import java.time.LocalDate;
 import java.util.List;
 
 @Service
 public class BloodRequestService {
     @Autowired
-    private BloodRequestRepository bloodRequestRepository;
-
+    private BloodRequestRepository reqRepo;
     @Autowired
     private BloodRequestDetailRepository detailRepo;
 
-    @Autowired
-    private UserRepository userRepository;
+    // Tạo yêu cầu mới - Medical Staff
+    public BloodRequest createRequest(BloodRequestDTO dto) {
+        BloodRequest req = new BloodRequest();
+        req.setReqCreateDate(LocalDate.now());
+        req.setIsEmergency(dto.getIsEmergency());
+        req.setReqStatus(Status.PENDING);
 
-    //1. Xem các yêu cầu đang chờ xử lý
-    public List<BloodRequest> getAllPending() {
-        return bloodRequestRepository.findByReqStatusIn(List.of(Status.PENDING));
-    }
+        MedicalStaff medicalStaff = new MedicalStaff();
+        medicalStaff.setUserID(dto.getMedId());
+        req.setMedicalStaff(medicalStaff);
 
-    //2. Cập nhập trạng thái yêu cầu
-    public void updateStatus(Long reqID, Status status) {
-        BloodRequest request = bloodRequestRepository.findById(reqID)
-                .orElseThrow(() -> new RuntimeException("Request not found"));
-        request.setReqStatus(status);
-        bloodRequestRepository.save(request);
-    }
+        BloodRequest saved = reqRepo.save(req);
 
-    //3. Gán BloodStaff vào yêu cầu máu
-    public void assignStaff(Long reqID, Long staffID) {
-        BloodRequest request = bloodRequestRepository.findById(reqID)
-                .orElseThrow(() -> new RuntimeException("Rerquest not found"));
-        User user = userRepository.findById(staffID)
-                .orElseThrow(() -> new RuntimeException("Staff not found"));
-        if(!(user instanceof Staff)) {
-            throw new RuntimeException("User is not a Staff");
-        }
-        request.setStaff((Staff) user);
-        request.setReqStatus(Status.PENDING);
-        bloodRequestRepository.save(request);
-    }
-
-    public List<BloodRequest> getAll() {
-        return bloodRequestRepository.findAll();
-    }
-
-    public BloodRequest getById(Long id) {
-        return bloodRequestRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Không tìm thấy yêu cầu máu"));
-    }
-
-    public BloodRequest create(BloodRequestDTO request) {
-        // Lấy MedicalStaff từ User
-        User user = userRepository.findById(request.getMedID())
-                .orElseThrow(() -> new IllegalArgumentException("Medical staff not found"));
-        if(!(user instanceof MedicalStaff)) {
-            throw new IllegalArgumentException("User is not a medical satff");
-        }
-        MedicalStaff medicalStaff = (MedicalStaff) user;
-        // Tạo yêu cầu máu
-        BloodRequest bloodRequest = new BloodRequest();
-        bloodRequest.setReqCreateDate(request.getReqCreatedDate());
-        bloodRequest.setIsEmergency(request.getIsEmergency());
-        bloodRequest.setReqStatus(request.getReqStatus());
-        bloodRequest.setMedicalStaff(medicalStaff);
-        //Gán BloodStaff nếu có
-        if(request.getStaID()!=null) {
-            User staffUser = userRepository.findById(request.getStaID())
-                    .orElseThrow(() -> new IllegalArgumentException("Staff not found"));
-            if (!(staffUser instanceof Staff)) {
-                throw new IllegalArgumentException("User is not a staff");
-            }
-            bloodRequest.setStaff((Staff) staffUser);
-        }
-        //Chi tiết yêu cầu
-        List<BloodRequestDetail> details = new ArrayList<>();
-        for (BloodRequestDetailDTO dto : request.getDetails()) {
-            BloodRequestDetailId id = new BloodRequestDetailId(null, dto.getBloodType());
+        for(BloodRequestDetailDTO d : dto.getDetails()) {
             BloodRequestDetail detail = new BloodRequestDetail();
-            detail.setId(id);
-            detail.setPackCount(dto.getPackCount());
-            detail.setPackVolume(dto.getPackVolume());
-            detail.setBloodRequest(bloodRequest);
-            details.add(detail);
+            detail.setReqID(saved.getReqID());
+            detail.setBloodType(d.getBloodType());
+            detail.setPackVolume(d.getPackVolume());
+            detail.setPackCount(d.getPackCount());
+            detailRepo.save(detail);
         }
-        bloodRequest.setDetails(details);
-        return bloodRequestRepository.save(bloodRequest);
+        return saved;
     }
 
-    public BloodRequest update(Long id, BloodRequest req) {
-        BloodRequest existing = getById(id);
-        existing.setReqCreateDate(req.getReqCreateDate());
-        existing.setIsEmergency(req.getIsEmergency());
-        existing.setReqStatus(req.getReqStatus());
-        existing.setStaff(req.getStaff());
-        existing.setMedicalStaff(req.getMedicalStaff());
-        return bloodRequestRepository.save(existing);
+    // Cập nhập yêu cầu - Medical Staff
+    public BloodRequest updateRequest(Long id, BloodRequestDTO dto) {
+        BloodRequest req = reqRepo.findById(id)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy yêu cầu"));
+
+        if(!req.getReqStatus().equals("PENDING")) {
+            throw new IllegalStateException("Chỉ được cập nhập khi trạng thái là PENDING");
+        }
+
+        req.setIsEmergency(dto.getIsEmergency());
+        reqRepo.save(req);
+
+        detailRepo.deleteAll(detailRepo.findByReqID(id));
+        for (BloodRequestDetailDTO d : dto.getDetails()) {
+            BloodRequestDetail detail = new BloodRequestDetail();
+            detail.setReqID(req.getReqID());
+            detail.setBloodType(d.getBloodType());
+            detail.setPackVolume(d.getPackVolume());
+            detail.setPackCount(d.getPackCount());
+            detailRepo.save(detail);
+        }
+
+        return req;
     }
-    public void delete(Long id) {
-        bloodRequestRepository.deleteById(id);
+
+    // Hủy yêu cầu - Medical Staff
+    public void cancelRequest(Long id) {
+        BloodRequest req = reqRepo.findById(id)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy yêu cầu"));
+        req.setReqStatus(Status.CANCELLED);
+        reqRepo.save(req);
+    }
+
+    // Duyệt/ Từ chối yêu cầu - Staff
+    public BloodRequest respondToRequest(Long id, String action, Long staffId) {
+        BloodRequest req = reqRepo.findById(id)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy yêu cầu"));
+        if(action.equalsIgnoreCase("accept")) {
+            req.setReqStatus(Status.APPROVED);
+        } else if (action.equalsIgnoreCase("reject")) {
+            req.setReqStatus(Status.REJECTED);
+        } else {
+            throw new IllegalArgumentException("Hành động không hợp lệ");
+        }
+
+        Staff staff = new Staff();
+        staff.setUserID(staffId);
+        req.setStaff(staff);
+
+        return reqRepo.save(req);
+    }
+
+    // Cập nhập trạng thái xử lý - Staff
+    public BloodRequest updateProcessingStatus(Long id, Status newStatus) {
+        BloodRequest req = reqRepo.findById(id)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy yêu cầu"));
+        req.setReqStatus(newStatus);
+        return reqRepo.save(req);
+    }
+
+    public List<BloodRequest> getRequestByMedical(Long medId) {
+        return reqRepo.findByMedicalStaff_UserID(medId);
+    }
+
+    public List<BloodRequest> getRequestsByStaff(Long staId) {
+        return reqRepo.findByStaff_UserID(staId);
+    }
+
+    public List<BloodRequest> getAllRequests() {
+        return reqRepo.findAll();
     }
 }

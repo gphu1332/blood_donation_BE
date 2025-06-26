@@ -7,19 +7,18 @@ import lombok.Data;
 @Data
 @IdClass(BloodRequestDetailId.class)
 public class BloodRequestDetail {
-    @EmbeddedId
-    private BloodRequestDetailId id;
 
     @Id
+    @Column(name = "ReqID")
     private Long reqID;
+
+    @Id
+    private String bloodType;
+
     private int packVolume;
     private int packCount;
-    @Id
+
     @ManyToOne
-    @JoinColumn(name = "BloodType")
-    private BloodType bloodType;
-    @ManyToOne
-    @MapsId("reqID")
     @JoinColumn(name = "ReqID", insertable = false, updatable = false)
     private BloodRequest bloodRequest;
 }
