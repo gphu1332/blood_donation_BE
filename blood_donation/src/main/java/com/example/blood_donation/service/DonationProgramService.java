@@ -8,6 +8,7 @@ import com.example.blood_donation.repositoty.DonationProgramRepository;
 import com.example.blood_donation.repositoty.LocationRepository;
 import com.example.blood_donation.repositoty.SlotRepository;
 import jakarta.persistence.EntityNotFoundException;
+import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -19,7 +20,7 @@ import java.util.stream.Collectors;
 public class DonationProgramService {
 
     @Autowired
-    private DonationProgramRepository repository;
+    private DonationProgramRepository donationProgramRepository;
 
     @Autowired
     private SlotRepository slotRepository;
@@ -28,15 +29,23 @@ public class DonationProgramService {
     private LocationRepository locationRepository;
 
     public List<DonationProgramDTO> getAll() {
-        return repository.findAll().stream()
+        return donationProgramRepository.findAll().stream()
                 .map(this::mapToDTO)
                 .collect(Collectors.toList());
     }
 
     public DonationProgramDTO getById(Long id) {
-        DonationProgram program = repository.findById(id)
+        DonationProgram program = donationProgramRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Donation program not found"));
         return mapToDTO(program);
+    }
+
+    public List<DonationProgramDTO> searchByDateAndLocation(LocalDate date, String location) {
+        List<DonationProgram> programs = donationProgramRepository
+                .findByStartDateAndLocation_Name(date, location);
+        return programs.stream()
+                .map(this::mapToDTO)
+                .collect(Collectors.toList());
     }
 
     public DonationProgramDTO create(DonationProgramDTO dto) {
@@ -60,12 +69,12 @@ public class DonationProgramService {
             program.setSlots(slots);
         }
 
-        DonationProgram saved = repository.save(program);
+        DonationProgram saved = donationProgramRepository.save(program);
         return mapToDTO(saved);
     }
 
     public DonationProgramDTO update(Long id, DonationProgramDTO dto) {
-        DonationProgram existing = repository.findById(id)
+        DonationProgram existing = donationProgramRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Donation program not found"));
 
         existing.setProName(dto.getProName());
@@ -84,12 +93,12 @@ public class DonationProgramService {
             existing.setSlots(slots);
         }
 
-        DonationProgram updated = repository.save(existing);
+        DonationProgram updated = donationProgramRepository.save(existing);
         return mapToDTO(updated);
     }
 
     public void delete(Long id) {
-        repository.deleteById(id);
+        donationProgramRepository.deleteById(id);
     }
 
     // ✨ Hàm ánh xạ từ Entity → DTO

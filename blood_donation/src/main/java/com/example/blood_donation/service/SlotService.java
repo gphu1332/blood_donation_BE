@@ -85,6 +85,9 @@ public class SlotService {
         return slotRepository.save(slot);
     }
 
+    public List<Slot> getSlotsByProgram(Long programId) {
+        return slotRepository.findByProgramId(programId);
+    }
 }
 
 
