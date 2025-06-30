@@ -37,4 +37,10 @@ public class SlotAPI {
         return ResponseEntity.ok(slotService.registerSlot(appointmentDTO));
     }
 
+    @PreAuthorize("hasAnyRole('ADMIN', 'MEMBER')")
+    @GetMapping("/search")
+    public ResponseEntity<List<Slot>> getSlotsByProgram(@RequestParam Long programId) {
+        return ResponseEntity.ok(slotService.getSlotsByProgram(programId));
+    }
+
 }
