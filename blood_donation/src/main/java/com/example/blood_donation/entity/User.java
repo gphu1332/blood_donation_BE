@@ -38,7 +38,6 @@ public class User implements UserDetails {
     public String email;
 
     //    @Pattern(regexp = "^(84|0[3|5|7|8|9])[0-9]{8}$", message = "Phone invalid!")
-    @Column(unique = true)
     public String phone;
 
     public String address;
