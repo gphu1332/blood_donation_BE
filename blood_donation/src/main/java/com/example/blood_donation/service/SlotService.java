@@ -35,7 +35,7 @@ public class SlotService {
     }
 
     public User registerSlot(AppointmentDTO dto) {
-        User user = userRepository.findById(dto.getUserID())
+        User user = userRepository.findByPhone(dto.getPhone())
                 .orElseThrow(() -> new BadRequestException("User not found"));
 
         // ✅ Kiểm tra nếu đã có appointment
@@ -85,6 +85,9 @@ public class SlotService {
         return slotRepository.save(slot);
     }
 
+    public List<Slot> getSlotsByProgram(Long programId) {
+        return slotRepository.findByProgramId(programId);
+    }
 }
 
 

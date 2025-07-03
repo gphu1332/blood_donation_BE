@@ -30,4 +30,7 @@ public class DonationDetail {
     @ManyToOne
     @JoinColumn(name = "member_id")
     private Member member;
+    @ManyToOne
+    @JoinColumn(name = "staff_id")
+    private Staff staff;
 }
