@@ -38,10 +38,10 @@ public class AdminUserAPI {
     }
 
     @PostMapping
-    public ResponseEntity<UserDTO> createUser(@RequestBody UserDTO userDTO) {
+    public ResponseEntity<AdminUserDTO> createUser(@RequestBody AdminUserDTO userDTO) {
         User user = modelMapper.map(userDTO, User.class);
         User savedUser = adminUserService.createUser(user);
-        UserDTO responseDTO = modelMapper.map(savedUser, UserDTO.class);
+        AdminUserDTO responseDTO = modelMapper.map(savedUser, AdminUserDTO.class);
         return ResponseEntity.status(HttpStatus.CREATED).body(responseDTO);
     }
 
