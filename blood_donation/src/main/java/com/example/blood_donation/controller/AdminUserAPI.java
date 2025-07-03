@@ -1,6 +1,8 @@
 package com.example.blood_donation.controller;
 
 import com.example.blood_donation.dto.AdminUserDTO;
+import com.example.blood_donation.dto.AdminUserResponseDTO;
+import com.example.blood_donation.dto.CreateAdminUserDTO;
 import com.example.blood_donation.dto.UserDTO;
 import com.example.blood_donation.entity.User;
 import com.example.blood_donation.service.AdminUserService;
@@ -10,7 +12,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -38,10 +39,9 @@ public class AdminUserAPI {
     }
 
     @PostMapping
-    public ResponseEntity<AdminUserDTO> createUser(@RequestBody AdminUserDTO userDTO) {
-        User user = modelMapper.map(userDTO, User.class);
-        User savedUser = adminUserService.createUser(user);
-        AdminUserDTO responseDTO = modelMapper.map(savedUser, AdminUserDTO.class);
+    public ResponseEntity<AdminUserResponseDTO> createUser(
+            @RequestBody CreateAdminUserDTO createDto) {
+        AdminUserResponseDTO responseDTO = adminUserService.createUserByAdmin(createDto);
         return ResponseEntity.status(HttpStatus.CREATED).body(responseDTO);
     }
 
