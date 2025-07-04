@@ -9,6 +9,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import java.security.Principal;
 import java.time.LocalDate;
 import java.util.List;
 
@@ -30,18 +31,36 @@ public class DonationProgramAPI {
         return ResponseEntity.ok(service.getById(id));
     }
 
+    /**
+     * Tạo chương trình hiến máu mới.
+     * Gán admin dựa trên tài khoản đang đăng nhập.
+     */
     @PostMapping
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<DonationProgramDTO> create(@RequestBody DonationProgramDTO dto) {
-        return ResponseEntity.ok(service.create(dto));
+    public ResponseEntity<DonationProgramDTO> create(
+            @RequestBody DonationProgramDTO dto,
+            Principal principal
+    ) {
+        DonationProgramDTO created = service.create(dto, principal.getName());
+        return ResponseEntity.ok(created);
     }
 
+    /**
+     * Cập nhật chương trình.
+     */
     @PutMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<DonationProgramDTO> update(@PathVariable Long id, @RequestBody DonationProgramDTO dto) {
-        return ResponseEntity.ok(service.update(id, dto));
+    public ResponseEntity<DonationProgramDTO> update(
+            @PathVariable Long id,
+            @RequestBody DonationProgramDTO dto
+    ) {
+        DonationProgramDTO updated = service.update(id, dto);
+        return ResponseEntity.ok(updated);
     }
 
+    /**
+     * Xóa chương trình.
+     */
     @DeleteMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Void> delete(@PathVariable Long id) {
@@ -49,11 +68,16 @@ public class DonationProgramAPI {
         return ResponseEntity.noContent().build();
     }
 
+    /**
+     * Tìm kiếm chương trình theo ngày giữa starDate và endDate và địa điểm.
+     */
     @GetMapping("/search")
-    public ResponseEntity<List<DonationProgramDTO>> searchPrograms(
+    public ResponseEntity<List<DonationProgramDTO>> searchByDateRangeAndLocation(
             @RequestParam("date") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date,
-            @RequestParam("location") String location) {
-        return ResponseEntity.ok(service.searchByDateAndLocation(date, location));
+            @RequestParam("locationId") Long locationId
+    ) {
+        List<DonationProgramDTO> results = service.searchByDateInRangeAndLocationID(date, locationId);
+        return ResponseEntity.ok(results);
     }
 
 }

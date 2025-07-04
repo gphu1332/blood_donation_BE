@@ -12,7 +12,6 @@ public class Location {
     private Long id;
 
     private String name;
-    private String address;
 
     // Một Location tổ chức nhiều Program
     @OneToMany(mappedBy = "location", cascade = CascadeType.ALL, orphanRemoval = true)

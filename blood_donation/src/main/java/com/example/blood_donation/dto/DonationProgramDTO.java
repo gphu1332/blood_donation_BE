@@ -11,8 +11,9 @@ public class DonationProgramDTO {
     private String proName;
     private List<Long> slotIds;
     private Long locationId;
+    private String address;
     private LocalDate endDate;
     private LocalDate startDate;
-//    Người tạo chương trình (nếu cần)
-//    private Long adminId;
+    private Long adminId;
 }
+
