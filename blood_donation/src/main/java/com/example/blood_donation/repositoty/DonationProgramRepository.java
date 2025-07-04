@@ -9,5 +9,10 @@ import java.util.List;
 
 @Repository
 public interface DonationProgramRepository extends JpaRepository<DonationProgram, Long> {
-    List<DonationProgram> findByStartDateAndLocation_Name(LocalDate startDate, String locationName);
+    List<DonationProgram> findByStartDateLessThanEqualAndEndDateGreaterThanEqualAndLocation_Id(
+            LocalDate date,
+            LocalDate date2,
+            Long locationId
+    );
+
 }

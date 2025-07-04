@@ -4,9 +4,11 @@ import com.example.blood_donation.dto.DonationProgramDTO;
 import com.example.blood_donation.entity.DonationProgram;
 import com.example.blood_donation.entity.Location;
 import com.example.blood_donation.entity.Slot;
+import com.example.blood_donation.entity.User;
 import com.example.blood_donation.repositoty.DonationProgramRepository;
 import com.example.blood_donation.repositoty.LocationRepository;
 import com.example.blood_donation.repositoty.SlotRepository;
+import com.example.blood_donation.repositoty.UserRepository;
 import jakarta.persistence.EntityNotFoundException;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,7 +16,6 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 public class DonationProgramService {
@@ -28,32 +29,49 @@ public class DonationProgramService {
     @Autowired
     private LocationRepository locationRepository;
 
+    @Autowired
+    private UserRepository userRepository;
+
+    @Autowired
+    private ModelMapper modelMapper;
+
+    /**
+     * Lấy tất cả chương trình.
+     */
     public List<DonationProgramDTO> getAll() {
         return donationProgramRepository.findAll().stream()
                 .map(this::mapToDTO)
-                .collect(Collectors.toList());
+                .toList();
     }
 
+    /**
+     * Lấy chương trình theo ID.
+     */
     public DonationProgramDTO getById(Long id) {
         DonationProgram program = donationProgramRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Donation program not found"));
         return mapToDTO(program);
     }
 
-    public List<DonationProgramDTO> searchByDateAndLocation(LocalDate date, String location) {
+    /**
+     * Tìm chương trình có date nằm giữa startDate và endDate, theo locationId.
+     */
+    public List<DonationProgramDTO> searchByDateInRangeAndLocationID(LocalDate date, Long locationId) {
         List<DonationProgram> programs = donationProgramRepository
-                .findByStartDateAndLocation_Name(date, location);
+                .findByStartDateLessThanEqualAndEndDateGreaterThanEqualAndLocation_Id(
+                        date, date, locationId
+                );
         return programs.stream()
                 .map(this::mapToDTO)
-                .collect(Collectors.toList());
+                .toList();
     }
 
-    public DonationProgramDTO create(DonationProgramDTO dto) {
-        DonationProgram program = new DonationProgram();
-        program.setProName(dto.getProName());
+    /**
+     * Tạo mới DonationProgram, tự động gán admin từ người đăng nhập.
+     */
+    public DonationProgramDTO create(DonationProgramDTO dto, String adminUsername) {
+        DonationProgram program = modelMapper.map(dto, DonationProgram.class);
         program.setDateCreated(LocalDate.now());
-        program.setEndDate(dto.getEndDate());
-        program.setStartDate(dto.getStartDate());
 
         // Gán location
         if (dto.getLocationId() != null) {
@@ -62,10 +80,15 @@ public class DonationProgramService {
             program.setLocation(location);
         }
 
+        // Gán admin
+        User admin = userRepository.findByUsername(adminUsername)
+                .orElseThrow(() -> new EntityNotFoundException("Admin user not found"));
+        program.setAdmin(admin);
+
         // Gán slots
         if (dto.getSlotIds() != null && !dto.getSlotIds().isEmpty()) {
             List<Slot> slots = slotRepository.findAllById(dto.getSlotIds());
-            slots.forEach(slot -> slot.setProgram(program)); // gán ngược lại để giữ quan hệ bidirectional
+            slots.forEach(slot -> slot.setProgram(program));
             program.setSlots(slots);
         }
 
@@ -73,20 +96,24 @@ public class DonationProgramService {
         return mapToDTO(saved);
     }
 
+    /**
+     * Cập nhật chương trình.
+     */
     public DonationProgramDTO update(Long id, DonationProgramDTO dto) {
         DonationProgram existing = donationProgramRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Donation program not found"));
 
         existing.setProName(dto.getProName());
+        existing.setStartDate(dto.getStartDate());
+        existing.setEndDate(dto.getEndDate());
+        existing.setAddress(dto.getAddress());
 
-        // Cập nhật location
         if (dto.getLocationId() != null) {
             Location location = locationRepository.findById(dto.getLocationId())
                     .orElseThrow(() -> new EntityNotFoundException("Location not found"));
             existing.setLocation(location);
         }
 
-        // Cập nhật slots
         if (dto.getSlotIds() != null) {
             List<Slot> slots = slotRepository.findAllById(dto.getSlotIds());
             slots.forEach(slot -> slot.setProgram(existing));
@@ -97,27 +124,30 @@ public class DonationProgramService {
         return mapToDTO(updated);
     }
 
+    /**
+     * Xóa chương trình.
+     */
     public void delete(Long id) {
         donationProgramRepository.deleteById(id);
     }
 
-    // ✨ Hàm ánh xạ từ Entity → DTO
+    /**
+     * Map Entity -> DTO.
+     */
     private DonationProgramDTO mapToDTO(DonationProgram program) {
-        DonationProgramDTO dto = new DonationProgramDTO();
-        dto.setId(program.getId());
-        dto.setProName(program.getProName());
-        dto.setEndDate(program.getEndDate());
-        dto.setStartDate(program.getStartDate());
+        DonationProgramDTO dto = modelMapper.map(program, DonationProgramDTO.class);
 
         if (program.getLocation() != null) {
             dto.setLocationId(program.getLocation().getId());
         }
-
+        if (program.getAdmin() != null) {
+            dto.setAdminId(program.getAdmin().getUserID());
+        }
         if (program.getSlots() != null) {
             dto.setSlotIds(
                     program.getSlots().stream()
                             .map(Slot::getSlotID)
-                            .collect(Collectors.toList())
+                            .toList()
             );
         }
 

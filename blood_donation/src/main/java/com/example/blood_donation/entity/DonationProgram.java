@@ -18,6 +18,8 @@ public class DonationProgram {
     private LocalDate endDate;
     private LocalDate startDate;
 
+    private String address;
+
     // Mỗi Program được tổ chức tại 1 Location
     @ManyToOne
     @JoinColumn(name = "location_id")

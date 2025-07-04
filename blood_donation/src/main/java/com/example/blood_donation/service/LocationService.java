@@ -42,8 +42,6 @@ public class LocationService {
                 .orElseThrow(() -> new EntityNotFoundException("Location not found"));
 
         location.setName(dto.getName());
-        location.setAddress(dto.getAddress());
-
         return modelMapper.map(locationRepository.save(location), LocationDTO.class);
     }
 

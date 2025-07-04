@@ -1,6 +1,7 @@
 package com.example.blood_donation.controller;
 
 import com.example.blood_donation.dto.AppointmentDTO;
+import com.example.blood_donation.dto.AppointmentRequest;
 import com.example.blood_donation.enums.Status;
 import com.example.blood_donation.service.AdminUserService;
 import com.example.blood_donation.service.AppointmentService;
@@ -44,33 +45,26 @@ public class AppointmentAPI {
     @PreAuthorize("hasRole('MEMBER')")
     public ResponseEntity<AppointmentDTO> createAppointment(
             @RequestParam Long userId,
-            @RequestParam Long slotId,
-            @RequestParam String date,
-            @RequestParam Long programId
+            @RequestBody AppointmentRequest request
     ) {
-        LocalDate parsedDate = LocalDate.parse(date);
-        AppointmentDTO created = appointmentService.createAppointment(userId, slotId, parsedDate, programId);
+        AppointmentDTO created = appointmentService.createAppointment(userId, request);
         return ResponseEntity.ok(created);
     }
+
 
 
     //  dat lich appointment (Hospital staff)
     @PostMapping("/hospital-staff-create")
-    @PreAuthorize("hasRole('HOSPITAL_STAFF')") // Hoặc ADMIN tùy theo phân quyền
+    @PreAuthorize("hasRole('HOSPITAL_STAFF')")
     public ResponseEntity<AppointmentDTO> createAppointmentByPhone(
             @RequestParam String phone,
-            @RequestParam Long slotId,
-            @RequestParam String date,
-            @RequestParam Long programId
+            @RequestBody AppointmentRequest request
     ) {
-        Long userId = adminUserService.findUserIdByPhone(phone);
-
-        LocalDate parsedDate = LocalDate.parse(date);
-
-        AppointmentDTO created = appointmentService.createAppointmentByPhoneAndProgram(phone, slotId, parsedDate, programId);
-
+        AppointmentDTO created = appointmentService.createAppointmentByPhoneAndProgram(phone, request);
         return ResponseEntity.ok(created);
     }
+
+
 
 
     //  Cap nhat trang thai Appointment
