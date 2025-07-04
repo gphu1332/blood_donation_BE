@@ -4,10 +4,12 @@ import com.example.blood_donation.dto.DonationProgramDTO;
 import com.example.blood_donation.service.DonationProgramService;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
 import java.util.List;
 
 @RestController
@@ -46,4 +48,12 @@ public class DonationProgramAPI {
         service.delete(id);
         return ResponseEntity.noContent().build();
     }
+
+    @GetMapping("/search")
+    public ResponseEntity<List<DonationProgramDTO>> searchPrograms(
+            @RequestParam("date") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date,
+            @RequestParam("location") String location) {
+        return ResponseEntity.ok(service.searchByDateAndLocation(date, location));
+    }
+
 }
