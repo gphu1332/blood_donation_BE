@@ -5,11 +5,13 @@ import com.example.blood_donation.entity.DonationProgram;
 import com.example.blood_donation.entity.Location;
 import com.example.blood_donation.entity.Slot;
 import com.example.blood_donation.entity.User;
+import com.example.blood_donation.exception.exceptons.BadRequestException;
 import com.example.blood_donation.repositoty.DonationProgramRepository;
 import com.example.blood_donation.repositoty.LocationRepository;
 import com.example.blood_donation.repositoty.SlotRepository;
 import com.example.blood_donation.repositoty.UserRepository;
 import jakarta.persistence.EntityNotFoundException;
+import jakarta.transaction.Transactional;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -69,23 +71,25 @@ public class DonationProgramService {
     /**
      * Tạo mới DonationProgram, tự động gán admin từ người đăng nhập.
      */
+    @Transactional
     public DonationProgramDTO create(DonationProgramDTO dto, String adminUsername) {
-        DonationProgram program = modelMapper.map(dto, DonationProgram.class);
+        DonationProgram program = new DonationProgram();
+        program.setProName(dto.getProName());
+        program.setStartDate(dto.getStartDate());
+        program.setEndDate(dto.getEndDate());
         program.setDateCreated(LocalDate.now());
+        program.setAddress(dto.getAddress());
 
-        // Gán location
         if (dto.getLocationId() != null) {
             Location location = locationRepository.findById(dto.getLocationId())
                     .orElseThrow(() -> new EntityNotFoundException("Location not found"));
             program.setLocation(location);
         }
 
-        // Gán admin
         User admin = userRepository.findByUsername(adminUsername)
                 .orElseThrow(() -> new EntityNotFoundException("Admin user not found"));
         program.setAdmin(admin);
 
-        // Gán slots
         if (dto.getSlotIds() != null && !dto.getSlotIds().isEmpty()) {
             List<Slot> slots = slotRepository.findAllById(dto.getSlotIds());
             slots.forEach(slot -> slot.setProgram(program));
@@ -95,6 +99,8 @@ public class DonationProgramService {
         DonationProgram saved = donationProgramRepository.save(program);
         return mapToDTO(saved);
     }
+
+
 
     /**
      * Cập nhật chương trình.
@@ -135,7 +141,12 @@ public class DonationProgramService {
      * Map Entity -> DTO.
      */
     private DonationProgramDTO mapToDTO(DonationProgram program) {
-        DonationProgramDTO dto = modelMapper.map(program, DonationProgramDTO.class);
+        DonationProgramDTO dto = new DonationProgramDTO();
+        dto.setId(program.getId()); // hoặc setProId(program.getId())
+        dto.setProName(program.getProName());
+        dto.setStartDate(program.getStartDate());
+        dto.setEndDate(program.getEndDate());
+        dto.setAddress(program.getAddress());
 
         if (program.getLocation() != null) {
             dto.setLocationId(program.getLocation().getId());
@@ -144,13 +155,12 @@ public class DonationProgramService {
             dto.setAdminId(program.getAdmin().getUserID());
         }
         if (program.getSlots() != null) {
-            dto.setSlotIds(
-                    program.getSlots().stream()
-                            .map(Slot::getSlotID)
-                            .toList()
-            );
+            dto.setSlotIds(program.getSlots()
+                    .stream()
+                    .map(Slot::getSlotID)
+                    .toList());
         }
-
         return dto;
     }
+
 }

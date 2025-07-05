@@ -9,11 +9,11 @@ import java.util.List;
 public class DonationProgramDTO {
     private Long id;
     private String proName;
-    private List<Long> slotIds;
-    private Long locationId;
-    private String address;
-    private LocalDate endDate;
     private LocalDate startDate;
+    private LocalDate endDate;
+    private String address;
+    private Long locationId;
+    private List<Long> slotIds;
     private Long adminId;
 }
 

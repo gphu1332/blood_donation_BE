@@ -70,43 +70,44 @@ public class AppointmentService {
         appointment.setStatus(Status.PENDING);
         appointment.setUser(user);
 
-        Appointment savedAppointment = appointmentRepository.save(appointment);
-
         // Lưu câu trả lời
         if (request.getAnswers() != null) {
             for (AnswerRequest ar : request.getAnswers()) {
-                Question q = questionRepository.findById(ar.getQuestionId())
+                Question question = questionRepository.findById(ar.getQuestionId())
                         .orElseThrow(() -> new BadRequestException("Question not found: " + ar.getQuestionId()));
 
                 Answer answer = new Answer();
-                answer.setAppointment(savedAppointment);
-                answer.setQuestion(q);
-
-                if (ar.getAnswerText() != null) {
-                    answer.setAnswerText(ar.getAnswerText());
-                }
-
-                Answer savedAnswer = answerRepository.save(answer);
+                answer.setQuestion(question);
+                appointment.addAnswer(answer);
 
                 if (ar.getSelectedOptionIds() != null) {
                     for (Long optionId : ar.getSelectedOptionIds()) {
                         Option opt = optionRepository.findById(optionId)
                                 .orElseThrow(() -> new BadRequestException("Option not found: " + optionId));
 
+                        // Validate nếu option yêu cầu text nhưng không nhập
+                        if (Boolean.TRUE.equals(opt.getRequiresText()) && (ar.getAdditionalText() == null || ar.getAdditionalText().isBlank())) {
+                            throw new BadRequestException("Option '" + opt.getLabel() + "' requires additional text");
+                        }
+
                         AnswerOption ao = new AnswerOption();
-                        ao.setAnswer(savedAnswer);
                         ao.setOption(opt);
-                        ao.setAdditionalText(ar.getAnswerText());
-                        answerOptionRepository.save(ao);
+                        ao.setAdditionalText(ar.getAdditionalText());
+                        answer.addAnswerOption(ao);
                     }
                 }
             }
         }
 
+        Appointment savedAppointment = appointmentRepository.save(appointment);
+
         user.setAppointment(savedAppointment);
         userRepository.save(user);
 
-        AppointmentDTO dto = modelMapper.map(savedAppointment, AppointmentDTO.class);
+        AppointmentDTO dto = new AppointmentDTO();
+        dto.setId(savedAppointment.getId());
+        dto.setDate(savedAppointment.getDate());
+        dto.setStatus(savedAppointment.getStatus());
         dto.setPhone(user.getPhone());
         return dto;
     }
@@ -136,8 +137,6 @@ public class AppointmentService {
         appointment.setStatus(Status.APPROVED);
         appointment.setUser(user);
 
-        Appointment savedAppointment = appointmentRepository.save(appointment);
-
         // Lưu câu trả lời
         if (request.getAnswers() != null) {
             for (AnswerRequest ar : request.getAnswers()) {
@@ -145,40 +144,37 @@ public class AppointmentService {
                         .orElseThrow(() -> new BadRequestException("Question not found: " + ar.getQuestionId()));
 
                 Answer answer = new Answer();
-                answer.setAppointment(savedAppointment);
                 answer.setQuestion(q);
-
-                if (ar.getAnswerText() != null) {
-                    answer.setAnswerText(ar.getAnswerText());
-                }
-
-                Answer savedAnswer = answerRepository.save(answer);
 
                 if (ar.getSelectedOptionIds() != null) {
                     for (Long optionId : ar.getSelectedOptionIds()) {
                         Option opt = optionRepository.findById(optionId)
                                 .orElseThrow(() -> new BadRequestException("Option not found: " + optionId));
 
+                        // Validate requiresText
+                        if (Boolean.TRUE.equals(opt.getRequiresText()) &&
+                                (ar.getAdditionalText() == null || ar.getAdditionalText().isBlank())) {
+                            throw new BadRequestException("Option '" + opt.getLabel() + "' requires additional text");
+                        }
+
                         AnswerOption ao = new AnswerOption();
-                        ao.setAnswer(savedAnswer);
                         ao.setOption(opt);
-                        ao.setAdditionalText(ar.getAnswerText());
-                        answerOptionRepository.save(ao);
+                        ao.setAdditionalText(ar.getAdditionalText());
+                        answer.addAnswerOption(ao);
                     }
                 }
+
+                appointment.addAnswer(answer);
             }
         }
 
-        user.setAppointment(savedAppointment);
-        userRepository.save(user);
+        user.setAppointment(appointment);
+        Appointment savedAppointment = appointmentRepository.save(appointment);
 
         AppointmentDTO dto = modelMapper.map(savedAppointment, AppointmentDTO.class);
         dto.setPhone(user.getPhone());
         return dto;
     }
-
-
-
 
 
     /**

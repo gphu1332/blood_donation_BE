@@ -19,6 +19,8 @@ public class AnswerOption {
     private Option option;
 
     @Column(length = 500)
-    private String additionalText; // nếu chọn option cần nhập thêm
+    private String additionalText;
 }
+
+
 

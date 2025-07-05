@@ -8,6 +8,5 @@ import java.util.List;
 public class AnswerRequest {
     private Long questionId;
     private List<Long> selectedOptionIds;
-    private String answerText;
     private String additionalText;
 }

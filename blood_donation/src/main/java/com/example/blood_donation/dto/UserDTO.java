@@ -5,9 +5,11 @@ import com.example.blood_donation.enums.Role;
 import com.example.blood_donation.enums.TypeBlood;
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Data
 @AllArgsConstructor
+@NoArgsConstructor
 public class UserDTO {
     public Long userID;
     public String username;
