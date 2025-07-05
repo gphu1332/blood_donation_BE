@@ -1,5 +1,6 @@
 package com.example.blood_donation.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.Data;
 
@@ -12,6 +13,7 @@ public class AnswerOption {
 
     @ManyToOne
     @JoinColumn(name = "answer_id")
+    @JsonIgnore
     private Answer answer;
 
     @ManyToOne

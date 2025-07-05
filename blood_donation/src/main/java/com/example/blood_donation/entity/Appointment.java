@@ -20,8 +20,8 @@ public class Appointment {
     @Enumerated(EnumType.STRING)
     private Status status;
 
-    @OneToOne
-    @JoinColumn(name = "user_id", unique = true)
+    @ManyToOne
+    @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
     @ManyToOne
@@ -39,6 +39,6 @@ public class Appointment {
         answers.add(answer);
         answer.setAppointment(this);
     }
-
 }
+
 
