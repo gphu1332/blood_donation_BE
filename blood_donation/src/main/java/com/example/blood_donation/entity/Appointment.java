@@ -34,5 +34,11 @@ public class Appointment {
 
     @OneToMany(mappedBy = "appointment", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Answer> answers = new ArrayList<>();
+
+    public void addAnswer(Answer answer) {
+        answers.add(answer);
+        answer.setAppointment(this);
+    }
+
 }
 

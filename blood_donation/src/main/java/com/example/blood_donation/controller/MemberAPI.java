@@ -4,9 +4,11 @@ import com.example.blood_donation.dto.CreateUpdateMemberRequest;
 import com.example.blood_donation.dto.UserDTO;
 import com.example.blood_donation.entity.User;
 import com.example.blood_donation.service.MemberService;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -15,6 +17,8 @@ import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/staff/members")
+@PreAuthorize("hasRole('STAFF')")
+@SecurityRequirement(name = "api")
 public class MemberAPI {
 
     @Autowired

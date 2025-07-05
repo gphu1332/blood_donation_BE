@@ -1,31 +1,23 @@
-package com.example.blood_donation.entity;
-
+package com.example.blood_donation.dto;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
-import jakarta.persistence.*;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
 import java.time.LocalTime;
 
-
-@Entity
 @Data
-public class Slot {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long slotID;
+public class SlotRequest {
 
     private String label;
 
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "HH:mm")
+    @Schema(example = "07:00")
     private LocalTime start;
 
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "HH:mm")
+    @Schema(example = "11:00")
     private LocalTime end;
-
-    @ManyToOne
-    @JoinColumn(name = "program_id")
-    private DonationProgram program;
 }
 
 

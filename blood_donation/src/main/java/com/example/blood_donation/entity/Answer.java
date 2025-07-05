@@ -3,6 +3,9 @@ package com.example.blood_donation.entity;
 import jakarta.persistence.*;
 import lombok.Data;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @Entity
 @Data
 public class Answer {
@@ -18,7 +21,11 @@ public class Answer {
     @JoinColumn(name = "question_id")
     private Question question;
 
-    // Nếu người dùng chỉ nhập text (TEXT question)
-    @Column(length = 500)
-    private String answerText;
+    @OneToMany(mappedBy = "answer", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<AnswerOption> answerOptions = new ArrayList<>();
+
+    public void addAnswerOption(AnswerOption ao) {
+        answerOptions.add(ao);
+        ao.setAnswer(this);
+    }
 }
