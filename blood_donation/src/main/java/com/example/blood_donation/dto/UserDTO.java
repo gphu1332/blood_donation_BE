@@ -3,11 +3,13 @@ package com.example.blood_donation.dto;
 import com.example.blood_donation.enums.Gender;
 import com.example.blood_donation.enums.Role;
 import com.example.blood_donation.enums.TypeBlood;
+import lombok.AllArgsConstructor;
 import lombok.Data;
 
 @Data
+@AllArgsConstructor
 public class UserDTO {
-    public String userID;
+    public Long userID;
     public String username;
     public String password;
     public String fullName;

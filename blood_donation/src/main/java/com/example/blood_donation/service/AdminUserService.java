@@ -5,6 +5,7 @@ import com.example.blood_donation.dto.AdminUserResponseDTO;
 import com.example.blood_donation.dto.CreateAdminUserDTO;
 import com.example.blood_donation.dto.UserDTO;
 import com.example.blood_donation.entity.User;
+import com.example.blood_donation.enums.Role;
 import com.example.blood_donation.exception.exceptons.BadRequestException;
 import com.example.blood_donation.repositoty.AdminUserRepository;
 import com.example.blood_donation.repositoty.UserRepository;
@@ -31,7 +32,8 @@ public class AdminUserService {
     private PasswordEncoder passwordEncoder;
 
     public List<User> getAllUsers() {
-        return adminUserRepository.findAll();
+        List<Role> allowedRoles = List.of(Role.ADMIN, Role.STAFF, Role.HOSPITAL_STAFF);
+        return adminUserRepository.findByRoleIn(allowedRoles);
     }
 
     public Optional<User> getUserById(Long id) {
@@ -64,6 +66,7 @@ public class AdminUserService {
         User user = adminUserRepository.findById(id)
                 .orElseThrow(() -> new BadRequestException("User not found"));
 
+        user.setUsername(adminDTO.getUsername());
         user.setFullName(adminDTO.getFullName());
         user.setEmail(adminDTO.getEmail());
         user.setPhone(adminDTO.getPhone());
@@ -73,10 +76,16 @@ public class AdminUserService {
         user.setTypeBlood(adminDTO.getTypeBlood());
         user.setRole(adminDTO.getRole());
 
+        if (adminDTO.getPassword() != null && !adminDTO.getPassword().isBlank()) {
+            String hashedPassword = passwordEncoder.encode(adminDTO.getPassword());
+            user.setPassword(hashedPassword);
+        }
+
         User updatedUser = adminUserRepository.save(user);
 
         return modelMapper.map(updatedUser, UserDTO.class);
     }
+
 
     public void deleteUser(Long id) {
         adminUserRepository.deleteById(id);
