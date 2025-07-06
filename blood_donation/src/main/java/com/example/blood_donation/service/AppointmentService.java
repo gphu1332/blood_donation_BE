@@ -64,6 +64,8 @@ public class AppointmentService {
         // Trả về DTO
         AppointmentDTO dto = modelMapper.map(savedAppointment, AppointmentDTO.class);
         dto.setPhone(user.getPhone());
+        dto.setAddress(savedAppointment.getProgram().getAddress());
+        dto.setTimeRange(savedAppointment.getSlot().getStart() + " - " + savedAppointment.getSlot().getEnd());
         return dto;
     }
 
@@ -84,11 +86,12 @@ public class AppointmentService {
         }
 
         Appointment appointment = buildAppointment(request, user, Status.APPROVED);
-
         Appointment savedAppointment = appointmentRepository.save(appointment);
 
         AppointmentDTO dto = modelMapper.map(savedAppointment, AppointmentDTO.class);
         dto.setPhone(user.getPhone());
+        dto.setAddress(savedAppointment.getProgram().getAddress());
+        dto.setTimeRange(savedAppointment.getSlot().getStart() + " - " + savedAppointment.getSlot().getEnd());
         return dto;
     }
 
@@ -101,7 +104,12 @@ public class AppointmentService {
 
         appointment.setStatus(newStatus);
         appointmentRepository.save(appointment);
-        return modelMapper.map(appointment, AppointmentDTO.class);
+
+        AppointmentDTO dto = modelMapper.map(appointment, AppointmentDTO.class);
+        dto.setPhone(appointment.getUser().getPhone());
+        dto.setAddress(appointment.getProgram().getAddress());
+        dto.setTimeRange(appointment.getSlot().getStart() + " - " + appointment.getSlot().getEnd());
+        return dto;
     }
 
     /**
@@ -109,7 +117,13 @@ public class AppointmentService {
      */
     public Optional<AppointmentDTO> getAppointmentById(Long id) {
         return appointmentRepository.findById(id)
-                .map(app -> modelMapper.map(app, AppointmentDTO.class));
+                .map(app -> {
+                    AppointmentDTO dto = modelMapper.map(app, AppointmentDTO.class);
+                    dto.setPhone(app.getUser().getPhone());
+                    dto.setAddress(app.getProgram().getAddress());
+                    dto.setTimeRange(app.getSlot().getStart() + " - " + app.getSlot().getEnd());
+                    return dto;
+                });
     }
 
     /**
@@ -117,7 +131,13 @@ public class AppointmentService {
      */
     public List<AppointmentDTO> getAll() {
         return appointmentRepository.findAll().stream()
-                .map(app -> modelMapper.map(app, AppointmentDTO.class))
+                .map(app -> {
+                    AppointmentDTO dto = modelMapper.map(app, AppointmentDTO.class);
+                    dto.setPhone(app.getUser().getPhone());
+                    dto.setAddress(app.getProgram().getAddress());
+                    dto.setTimeRange(app.getSlot().getStart() + " - " + app.getSlot().getEnd());
+                    return dto;
+                })
                 .toList();
     }
 
@@ -211,6 +231,7 @@ public class AppointmentService {
                 appointment.addAnswer(answer);
             }
         }
+
         return appointment;
     }
 }

@@ -13,4 +13,6 @@ public class AppointmentDTO {
     private String phone;
     private Long slotID;
     private Long programId;
+    private String address;         // từ program
+    private String timeRange;       // từ slot
 }
