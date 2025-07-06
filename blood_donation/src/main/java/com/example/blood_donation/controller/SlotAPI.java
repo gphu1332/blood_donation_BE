@@ -26,4 +26,10 @@ public class SlotAPI {
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
+    @GetMapping("/{id}")
+    public ResponseEntity<SlotResponse> getSlotById(@PathVariable Long id) {
+        SlotResponse slot = slotService.getSlotById(id);
+        return ResponseEntity.ok(slot);
+    }
+
 }

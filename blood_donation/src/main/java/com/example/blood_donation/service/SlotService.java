@@ -14,6 +14,19 @@ public class SlotService {
     @Autowired
     private SlotRepository slotRepository;
 
+    public SlotResponse getSlotById(Long id) {
+        Slot slot = slotRepository.findById(id)
+                .orElseThrow(() -> new BadRequestException("Slot not found with id: " + id));
+
+        SlotResponse response = new SlotResponse();
+        response.setSlotID(slot.getSlotID());
+        response.setLabel(slot.getLabel());
+        response.setStart(slot.getStart());
+        response.setEnd(slot.getEnd());
+        return response;
+    }
+
+
     public SlotResponse create(SlotRequest request) {
         // Validate request
         if (request.getLabel() == null || request.getLabel().isBlank()) {
