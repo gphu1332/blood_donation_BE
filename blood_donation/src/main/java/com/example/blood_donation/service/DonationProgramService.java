@@ -163,4 +163,16 @@ public class DonationProgramService {
         return dto;
     }
 
+    public List<DonationProgramDTO> searchByDateRange(LocalDate startDate, LocalDate endDate) {
+        if (endDate == null) {
+            endDate = startDate;
+        }
+        List<DonationProgram> programs = donationProgramRepository
+                .findByStartDateLessThanEqualAndEndDateGreaterThanEqual(endDate, startDate);
+        return programs.stream()
+                .map(this::mapToDTO)
+                .toList();
+    }
+
+
 }

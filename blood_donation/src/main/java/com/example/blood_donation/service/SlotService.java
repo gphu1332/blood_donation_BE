@@ -5,15 +5,19 @@ import com.example.blood_donation.dto.SlotResponse;
 import com.example.blood_donation.entity.Slot;
 import com.example.blood_donation.exception.exceptons.BadRequestException;
 import com.example.blood_donation.repositoty.SlotRepository;
+import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
 
 @Service
 public class SlotService {
 
     @Autowired
     private SlotRepository slotRepository;
-
+    @Autowired
+    private ModelMapper modelMapper;
     public SlotResponse getSlotById(Long id) {
         Slot slot = slotRepository.findById(id)
                 .orElseThrow(() -> new BadRequestException("Slot not found with id: " + id));
@@ -61,4 +65,11 @@ public class SlotService {
         response.setEnd(slot.getEnd());
         return response;
     }
+
+    public List<SlotResponse> getAll() {
+        return slotRepository.findAll().stream()
+                .map(slot -> modelMapper.map(slot, SlotResponse.class))
+                .toList();
+    }
+
 }

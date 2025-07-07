@@ -11,6 +11,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/api/slots")
 @SecurityRequirement(name = "api")
@@ -30,6 +32,11 @@ public class SlotAPI {
     public ResponseEntity<SlotResponse> getSlotById(@PathVariable Long id) {
         SlotResponse slot = slotService.getSlotById(id);
         return ResponseEntity.ok(slot);
+    }
+    @GetMapping
+    public ResponseEntity<List<SlotResponse>> getAllSlots() {
+        List<SlotResponse> slots = slotService.getAll();
+        return ResponseEntity.ok(slots);
     }
 
 }

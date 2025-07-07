@@ -14,5 +14,8 @@ public interface DonationProgramRepository extends JpaRepository<DonationProgram
             LocalDate date2,
             Long locationId
     );
-
+    List<DonationProgram> findByStartDateLessThanEqualAndEndDateGreaterThanEqual(
+            LocalDate endDate,
+            LocalDate startDate
+    );
 }

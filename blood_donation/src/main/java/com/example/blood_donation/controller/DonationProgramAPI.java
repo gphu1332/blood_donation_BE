@@ -79,5 +79,14 @@ public class DonationProgramAPI {
         List<DonationProgramDTO> results = service.searchByDateInRangeAndLocationID(date, locationId);
         return ResponseEntity.ok(results);
     }
+    @GetMapping("/search-range")
+    public ResponseEntity<List<DonationProgramDTO>> searchByDateRange(
+            @RequestParam("startDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
+            @RequestParam(value = "endDate", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate
+    ) {
+        List<DonationProgramDTO> results = service.searchByDateRange(startDate, endDate);
+        return ResponseEntity.ok(results);
+    }
+
 
 }

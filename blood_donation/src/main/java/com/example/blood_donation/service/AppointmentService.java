@@ -234,4 +234,20 @@ public class AppointmentService {
 
         return appointment;
     }
+
+    public List<AppointmentDTO> getByUserId(Long userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new BadRequestException("User not found"));
+
+        return user.getAppointments().stream()
+                .filter(app -> app.getStatus() != Status.CANCELLED && app.getStatus() != Status.REJECTED)
+                .map(app -> {
+                    AppointmentDTO dto = modelMapper.map(app, AppointmentDTO.class);
+                    dto.setPhone(app.getUser().getPhone());
+                    dto.setAddress(app.getProgram().getAddress());
+                    dto.setTimeRange(app.getSlot().getStart() + " - " + app.getSlot().getEnd());
+                    return dto;
+                }).toList();
+    }
+
 }

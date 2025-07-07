@@ -101,4 +101,17 @@ public class AppointmentAPI {
         appointmentService.deleteAppointmentWithPermission(id, username);
         return ResponseEntity.noContent().build();
     }
+
+    /**
+     * Lấy tất cả các lịch hẹn của 1 người dùng.
+     */
+    @GetMapping("/by-user")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MEMBER')")
+    public ResponseEntity<List<AppointmentDTO>> getAppointmentsByUser(
+            @RequestParam Long userId
+    ) {
+        List<AppointmentDTO> list = appointmentService.getByUserId(userId);
+        return ResponseEntity.ok(list);
+    }
+
 }
