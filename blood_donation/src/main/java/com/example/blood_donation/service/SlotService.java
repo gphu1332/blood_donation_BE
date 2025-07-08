@@ -16,23 +16,65 @@ public class SlotService {
 
     @Autowired
     private SlotRepository slotRepository;
+
     @Autowired
     private ModelMapper modelMapper;
+
+    /**
+     * Lấy slot theo ID.
+     */
     public SlotResponse getSlotById(Long id) {
         Slot slot = slotRepository.findById(id)
                 .orElseThrow(() -> new BadRequestException("Slot not found with id: " + id));
 
+        return mapToResponse(slot);
+    }
+
+    /**
+     * Tạo mới slot không gắn chương trình.
+     */
+    public SlotResponse create(SlotRequest request) {
+        validateSlotRequest(request);
+
+        Slot slot = new Slot();
+        slot.setLabel(request.getLabel());
+        slot.setStart(request.getStart());
+        slot.setEnd(request.getEnd());
+
+        // Chưa gán với chương trình nào, sẽ được gán sau
+        Slot saved = slotRepository.save(slot);
+        return mapToResponse(saved);
+    }
+
+    /**
+     * Trả về danh sách tất cả slot.
+     */
+    public List<SlotResponse> getAll() {
+        return slotRepository.findAll().stream()
+                .map(this::mapToResponse)
+                .toList();
+    }
+
+    /**
+     * Ánh xạ từ entity sang response DTO.
+     */
+    private SlotResponse mapToResponse(Slot slot) {
         SlotResponse response = new SlotResponse();
         response.setSlotID(slot.getSlotID());
         response.setLabel(slot.getLabel());
         response.setStart(slot.getStart());
         response.setEnd(slot.getEnd());
+
+        // Optional: bạn có thể trả về danh sách programId nếu cần
+        // response.setProgramIds(slot.getPrograms().stream().map(p -> p.getId()).toList());
+
         return response;
     }
 
-
-    public SlotResponse create(SlotRequest request) {
-        // Validate request
+    /**
+     * Validate logic đầu vào cho tạo mới.
+     */
+    private void validateSlotRequest(SlotRequest request) {
         if (request.getLabel() == null || request.getLabel().isBlank()) {
             throw new BadRequestException("Label must not be empty");
         }
@@ -42,34 +84,5 @@ public class SlotService {
         if (request.getStart().isAfter(request.getEnd())) {
             throw new BadRequestException("Start time must be before end time");
         }
-
-        // Map request -> entity
-        Slot slot = new Slot();
-        slot.setLabel(request.getLabel());
-        slot.setStart(request.getStart());
-        slot.setEnd(request.getEnd());
-        slot.setProgram(null); // Slot chưa gán Program, sau này khi gán Program sẽ set
-
-        // Save
-        Slot saved = slotRepository.save(slot);
-
-        // Map entity -> response
-        return mapToResponse(saved);
     }
-
-    private SlotResponse mapToResponse(Slot slot) {
-        SlotResponse response = new SlotResponse();
-        response.setSlotID(slot.getSlotID());
-        response.setLabel(slot.getLabel());
-        response.setStart(slot.getStart());
-        response.setEnd(slot.getEnd());
-        return response;
-    }
-
-    public List<SlotResponse> getAll() {
-        return slotRepository.findAll().stream()
-                .map(slot -> modelMapper.map(slot, SlotResponse.class))
-                .toList();
-    }
-
 }
