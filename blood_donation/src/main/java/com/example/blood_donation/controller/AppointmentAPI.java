@@ -114,4 +114,15 @@ public class AppointmentAPI {
         return ResponseEntity.ok(list);
     }
 
+    /**
+     * Lấy toàn bộ lịch sử appointment của user (bao gồm đã hủy, đã hoàn thành, đang tiến hành...).
+     */
+    @GetMapping("/history")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MEMBER')")
+    public ResponseEntity<List<AppointmentDTO>> getAppointmentHistory(@RequestParam Long userId) {
+        List<AppointmentDTO> history = appointmentService.getFullHistoryByUser(userId);
+        return ResponseEntity.ok(history);
+    }
+
+
 }

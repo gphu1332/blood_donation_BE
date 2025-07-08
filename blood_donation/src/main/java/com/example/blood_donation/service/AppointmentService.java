@@ -250,4 +250,24 @@ public class AppointmentService {
                 }).toList();
     }
 
+    /**
+     * Trả về toàn bộ lịch sử appointments của user (không lọc trạng thái).
+     */
+    public List<AppointmentDTO> getFullHistoryByUser(Long userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new BadRequestException("User not found"));
+
+        return user.getAppointments().stream()
+                .sorted((a1, a2) -> a2.getDate().compareTo(a1.getDate())) // Sắp xếp mới nhất lên đầu
+                .map(app -> {
+                    AppointmentDTO dto = modelMapper.map(app, AppointmentDTO.class);
+                    dto.setPhone(app.getUser().getPhone());
+                    dto.setAddress(app.getProgram().getAddress());
+                    dto.setTimeRange(app.getSlot().getStart() + " - " + app.getSlot().getEnd());
+                    return dto;
+                })
+                .toList();
+    }
+
+
 }
