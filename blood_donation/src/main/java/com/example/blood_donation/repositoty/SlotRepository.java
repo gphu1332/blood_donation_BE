@@ -6,6 +6,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import java.util.List;
 
 public interface SlotRepository extends JpaRepository<Slot, Long> {
-    List<Slot> findByProgramId(Long programId);
+    List<Slot> findByPrograms_Id(Long programId);
 
 }

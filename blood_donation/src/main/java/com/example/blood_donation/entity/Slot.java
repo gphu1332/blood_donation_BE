@@ -6,6 +6,7 @@ import jakarta.persistence.*;
 import lombok.Data;
 
 import java.time.LocalTime;
+import java.util.List;
 
 
 @Entity
@@ -23,9 +24,8 @@ public class Slot {
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "HH:mm")
     private LocalTime end;
 
-    @ManyToOne
-    @JoinColumn(name = "program_id")
-    private DonationProgram program;
+    @ManyToMany(mappedBy = "slots")
+    private List<DonationProgram> programs;
 }
 
 
