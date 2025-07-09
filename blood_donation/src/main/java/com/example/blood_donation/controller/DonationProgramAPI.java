@@ -76,7 +76,7 @@ public class DonationProgramAPI {
             @RequestParam("date") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date,
             @RequestParam("locationId") Long locationId
     ) {
-        List<DonationProgramDTO> results = service.searchByDateInRangeAndLocationID(date, locationId);
+        List<DonationProgramDTO> results = service.searchByDateInRangeAndCityID(date, locationId);
         return ResponseEntity.ok(results);
     }
     @GetMapping("/search-range")

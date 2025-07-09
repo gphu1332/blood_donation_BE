@@ -32,13 +32,15 @@ public class Appointment {
     @JoinColumn(name = "program_id")
     private DonationProgram program;
 
-    @OneToMany(mappedBy = "appointment", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Answer> answers = new ArrayList<>();
-
-    public void addAnswer(Answer answer) {
-        answers.add(answer);
-        answer.setAppointment(this);
-    }
+    private String answer1;
+    private String answer2;
+    private String answer3;
+    private String answer4;
+    private String answer5;
+    private String answer6;
+    private String answer7;
+    private String answer8;
+    private String answer9;
 }
 
 

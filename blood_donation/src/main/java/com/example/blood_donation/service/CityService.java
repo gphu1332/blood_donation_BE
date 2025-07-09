@@ -1,8 +1,8 @@
 package com.example.blood_donation.service;
 
 import com.example.blood_donation.dto.LocationDTO;
-import com.example.blood_donation.entity.Location;
-import com.example.blood_donation.repositoty.LocationRepository;
+import com.example.blood_donation.entity.City;
+import com.example.blood_donation.repositoty.CityRepository;
 import jakarta.persistence.EntityNotFoundException;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,40 +12,40 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
-public class LocationService {
+public class CityService {
 
     @Autowired
-    private LocationRepository locationRepository;
+    private CityRepository cityRepository;
 
     @Autowired
     private ModelMapper modelMapper;
 
     public List<LocationDTO> getAllLocations() {
-        return locationRepository.findAll().stream()
-                .map(location -> modelMapper.map(location, LocationDTO.class))
+        return cityRepository.findAll().stream()
+                .map(city -> modelMapper.map(city, LocationDTO.class))
                 .collect(Collectors.toList());
     }
 
     public LocationDTO getLocationById(Long id) {
-        Location location = locationRepository.findById(id)
+        City city = cityRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Location not found"));
-        return modelMapper.map(location, LocationDTO.class);
+        return modelMapper.map(city, LocationDTO.class);
     }
 
     public LocationDTO createLocation(LocationDTO dto) {
-        Location location = modelMapper.map(dto, Location.class);
-        return modelMapper.map(locationRepository.save(location), LocationDTO.class);
+        City city = modelMapper.map(dto, City.class);
+        return modelMapper.map(cityRepository.save(city), LocationDTO.class);
     }
 
     public LocationDTO updateLocation(Long id, LocationDTO dto) {
-        Location location = locationRepository.findById(id)
+        City city = cityRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Location not found"));
 
-        location.setName(dto.getName());
-        return modelMapper.map(locationRepository.save(location), LocationDTO.class);
+        city.setName(dto.getName());
+        return modelMapper.map(cityRepository.save(city), LocationDTO.class);
     }
 
     public void deleteLocation(Long id) {
-        locationRepository.deleteById(id);
+        cityRepository.deleteById(id);
     }
 }

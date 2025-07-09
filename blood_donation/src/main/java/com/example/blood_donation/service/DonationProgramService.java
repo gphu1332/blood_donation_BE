@@ -2,11 +2,11 @@ package com.example.blood_donation.service;
 
 import com.example.blood_donation.dto.DonationProgramDTO;
 import com.example.blood_donation.entity.DonationProgram;
-import com.example.blood_donation.entity.Location;
+import com.example.blood_donation.entity.City;
 import com.example.blood_donation.entity.Slot;
 import com.example.blood_donation.entity.User;
 import com.example.blood_donation.repositoty.DonationProgramRepository;
-import com.example.blood_donation.repositoty.LocationRepository;
+import com.example.blood_donation.repositoty.CityRepository;
 import com.example.blood_donation.repositoty.SlotRepository;
 import com.example.blood_donation.repositoty.UserRepository;
 import jakarta.persistence.EntityNotFoundException;
@@ -28,7 +28,7 @@ public class DonationProgramService {
     private SlotRepository slotRepository;
 
     @Autowired
-    private LocationRepository locationRepository;
+    private CityRepository cityRepository;
 
     @Autowired
     private UserRepository userRepository;
@@ -61,16 +61,12 @@ public class DonationProgramService {
 
     /**
      * Tìm kiếm các chương trình có ngày diễn ra nằm trong khoảng startDate - endDate
-     * và thuộc Location chỉ định.
-     *
-     * @param date ngày cần tìm kiếm.
-     * @param locationId ID địa điểm.
-     * @return danh sách chương trình phù hợp.
+     * và thuộc City chỉ định.
      */
-    public List<DonationProgramDTO> searchByDateInRangeAndLocationID(LocalDate date, Long locationId) {
+    public List<DonationProgramDTO> searchByDateInRangeAndCityID(LocalDate date, Long cityId) {
         List<DonationProgram> programs = donationProgramRepository
-                .findByStartDateLessThanEqualAndEndDateGreaterThanEqualAndLocation_Id(
-                        date, date, locationId
+                .findByStartDateLessThanEqualAndEndDateGreaterThanEqualAndCity_Id(
+                        date, date, cityId
                 );
         return programs.stream()
                 .map(this::mapToDTO)
@@ -95,10 +91,10 @@ public class DonationProgramService {
         program.setContact(dto.getContact());
         program.setImageUrl(dto.getImageUrl());
 
-        if (dto.getLocationId() != null) {
-            Location location = locationRepository.findById(dto.getLocationId())
-                    .orElseThrow(() -> new EntityNotFoundException("Location not found"));
-            program.setLocation(location);
+        if (dto.getCityId() != null) {
+            City city = cityRepository.findById(dto.getCityId())
+                    .orElseThrow(() -> new EntityNotFoundException("City not found"));
+            program.setCity(city);
         }
 
         User admin = userRepository.findByUsername(adminUsername)
@@ -134,10 +130,10 @@ public class DonationProgramService {
         existing.setImageUrl(dto.getImageUrl());
 
         // Cập nhật địa điểm nếu có
-        if (dto.getLocationId() != null) {
-            Location location = locationRepository.findById(dto.getLocationId())
-                    .orElseThrow(() -> new EntityNotFoundException("Location not found"));
-            existing.setLocation(location);
+        if (dto.getCityId() != null) {
+            City city = cityRepository.findById(dto.getCityId())
+                    .orElseThrow(() -> new EntityNotFoundException("City not found"));
+            existing.setCity(city);
         }
 
         // Cập nhật danh sách Slot nếu có
@@ -196,8 +192,8 @@ public class DonationProgramService {
         dto.setContact(program.getContact());
         dto.setTypeBlood(program.getTypeBlood());
 
-        if (program.getLocation() != null) {
-            dto.setLocationId(program.getLocation().getId());
+        if (program.getCity() != null) {
+            dto.setCityId(program.getCity().getId());
         }
 
         if (program.getAdmin() != null) {
