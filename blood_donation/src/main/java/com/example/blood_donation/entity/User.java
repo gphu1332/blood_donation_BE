@@ -62,7 +62,7 @@ public class User implements UserDetails {
 
     private String token;
 
-    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
     private List<Appointment> appointments = new ArrayList<>();
 
 
