@@ -1,6 +1,6 @@
 package com.example.blood_donation.service;
 
-import com.example.blood_donation.dto.LocationDTO;
+import com.example.blood_donation.dto.CityDTO;
 import com.example.blood_donation.entity.City;
 import com.example.blood_donation.repositoty.CityRepository;
 import jakarta.persistence.EntityNotFoundException;
@@ -20,29 +20,29 @@ public class CityService {
     @Autowired
     private ModelMapper modelMapper;
 
-    public List<LocationDTO> getAllLocations() {
+    public List<CityDTO> getAllLocations() {
         return cityRepository.findAll().stream()
-                .map(city -> modelMapper.map(city, LocationDTO.class))
+                .map(city -> modelMapper.map(city, CityDTO.class))
                 .collect(Collectors.toList());
     }
 
-    public LocationDTO getLocationById(Long id) {
+    public CityDTO getLocationById(Long id) {
         City city = cityRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Location not found"));
-        return modelMapper.map(city, LocationDTO.class);
+        return modelMapper.map(city, CityDTO.class);
     }
 
-    public LocationDTO createLocation(LocationDTO dto) {
+    public CityDTO createLocation(CityDTO dto) {
         City city = modelMapper.map(dto, City.class);
-        return modelMapper.map(cityRepository.save(city), LocationDTO.class);
+        return modelMapper.map(cityRepository.save(city), CityDTO.class);
     }
 
-    public LocationDTO updateLocation(Long id, LocationDTO dto) {
+    public CityDTO updateLocation(Long id, CityDTO dto) {
         City city = cityRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Location not found"));
 
         city.setName(dto.getName());
-        return modelMapper.map(cityRepository.save(city), LocationDTO.class);
+        return modelMapper.map(cityRepository.save(city), CityDTO.class);
     }
 
     public void deleteLocation(Long id) {
