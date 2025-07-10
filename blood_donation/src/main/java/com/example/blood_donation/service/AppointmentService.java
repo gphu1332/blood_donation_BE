@@ -39,11 +39,9 @@ public class AppointmentService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new BadRequestException("User not found"));
 
-        // Kiểm tra user đã có appointment active chưa
+        // Kiểm tra user đã có appointment đang hoạt động chưa (PENDING hoặc APPROVED)
         boolean hasActiveAppointment = user.getAppointments().stream()
-                .anyMatch(a -> a.getStatus() != Status.FULFILLED
-                        && a.getStatus() != Status.CANCELLED
-                        && a.getStatus() != Status.REJECTED);
+                .anyMatch(a -> a.getStatus() == Status.PENDING || a.getStatus() == Status.APPROVED);
 
         if (hasActiveAppointment) {
             throw new BadRequestException("You already have an active appointment. Complete or cancel it before booking a new one.");
@@ -71,9 +69,7 @@ public class AppointmentService {
                 .orElseThrow(() -> new BadRequestException("User not found with phone: " + phone));
 
         boolean hasActiveAppointment = user.getAppointments().stream()
-                .anyMatch(a -> a.getStatus() != Status.FULFILLED
-                        && a.getStatus() != Status.CANCELLED
-                        && a.getStatus() != Status.REJECTED);
+                .anyMatch(a -> a.getStatus() == Status.PENDING || a.getStatus() == Status.APPROVED);
 
         if (hasActiveAppointment) {
             throw new BadRequestException("User already has an active appointment.");
@@ -156,7 +152,6 @@ public class AppointmentService {
             throw new BadRequestException("You don't have permission to delete this appointment.");
         }
 
-        owner.getAppointments().remove(appointment);
         appointmentRepository.delete(appointment);
     }
 
@@ -169,11 +164,6 @@ public class AppointmentService {
 
         if (appointment.getStatus() == Status.FULFILLED) {
             throw new BadRequestException("Cannot delete a fulfilled appointment.");
-        }
-
-        User user = appointment.getUser();
-        if (user != null) {
-            user.getAppointments().remove(appointment);
         }
 
         appointmentRepository.delete(appointment);
@@ -210,7 +200,6 @@ public class AppointmentService {
         return appointment;
     }
 
-
     public List<AppointmentDTO> getByUserId(Long userId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new BadRequestException("User not found"));
@@ -244,6 +233,4 @@ public class AppointmentService {
                 })
                 .toList();
     }
-
-
 }
