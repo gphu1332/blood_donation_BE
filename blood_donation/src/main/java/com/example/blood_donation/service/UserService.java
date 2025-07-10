@@ -33,6 +33,7 @@ public class UserService {
         existingUser.setEmail(userDTO.getEmail());
         existingUser.setPhone(userDTO.getPhone());
         existingUser.setAddress(userDTO.getAddress());
+        existingUser.setBirthdate(userDTO.getBirthdate());
         existingUser.setCccd(userDTO.getCccd());
         existingUser.setGender(userDTO.getGender());
         existingUser.setTypeBlood(userDTO.getTypeBlood());

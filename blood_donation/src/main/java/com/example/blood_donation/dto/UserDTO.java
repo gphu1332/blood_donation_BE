@@ -6,12 +6,14 @@ import com.example.blood_donation.enums.TypeBlood;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import com.fasterxml.jackson.annotation.JsonFormat;
 
 import java.time.LocalDate;
 
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
+@JsonFormat(pattern = "yyyy-MM-dd")
 public class UserDTO {
     public Long userID;
     public String username;

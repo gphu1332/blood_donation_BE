@@ -73,11 +73,11 @@ public class DonationProgramAPI {
      * Tìm kiếm chương trình theo ngày giữa startDate và endDate và địa điểm.
      */
     @GetMapping("/search")
-    public ResponseEntity<List<DonationProgramResponse>> searchByDateRangeAndLocation(
+    public ResponseEntity<List<DonationProgramResponse>> searchByDateRangeAndCity(
             @RequestParam("date") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date,
-            @RequestParam("locationId") Long locationId
+            @RequestParam("cityId") Long cityId
     ) {
-        List<DonationProgramResponse> results = service.searchByDateInRangeAndCityID(date, locationId);
+        List<DonationProgramResponse> results = service.searchByDateInRangeAndCityID(date, cityId);
         return ResponseEntity.ok(results);
     }
 
