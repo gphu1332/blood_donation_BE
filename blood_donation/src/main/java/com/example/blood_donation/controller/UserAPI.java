@@ -11,7 +11,8 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/api/users")
 @SecurityRequirement(name = "api")
-public class UserAPI {
+public class
+UserAPI {
     @Autowired
     private UserService userService;
 
