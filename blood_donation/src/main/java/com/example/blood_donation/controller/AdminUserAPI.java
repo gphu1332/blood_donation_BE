@@ -18,6 +18,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/admin/users")
+@SecurityRequirement(name = "api")
 @PreAuthorize("hasRole('ADMIN')")
 @SecurityRequirement(name = "api")
 public class AdminUserAPI {

@@ -7,6 +7,8 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDate;
+
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
@@ -17,6 +19,7 @@ public class UserDTO {
     public String fullName;
     public String email;
     public String phone;
+    private LocalDate birthdate;
     public String address;
     public String cccd;
     public TypeBlood typeBlood;
