@@ -1,7 +1,7 @@
 package com.example.blood_donation.controller;
 
 import com.example.blood_donation.dto.LocationDTO;
-import com.example.blood_donation.service.LocationService;
+import com.example.blood_donation.service.CityService;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -17,31 +17,31 @@ import java.util.List;
 public class LocationAPI {
 
     @Autowired
-    private LocationService locationService;
+    private CityService cityService;
 
     @GetMapping
     public List<LocationDTO> getAllLocations() {
-        return locationService.getAllLocations();
+        return cityService.getAllLocations();
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<LocationDTO> getLocation(@PathVariable Long id) {
-        return ResponseEntity.ok(locationService.getLocationById(id));
+        return ResponseEntity.ok(cityService.getLocationById(id));
     }
 
     @PostMapping
     public ResponseEntity<LocationDTO> createLocation(@RequestBody LocationDTO dto) {
-        return ResponseEntity.ok(locationService.createLocation(dto));
+        return ResponseEntity.ok(cityService.createLocation(dto));
     }
 
     @PutMapping("/{id}")
     public ResponseEntity<LocationDTO> updateLocation(@PathVariable Long id, @RequestBody LocationDTO dto) {
-        return ResponseEntity.ok(locationService.updateLocation(id, dto));
+        return ResponseEntity.ok(cityService.updateLocation(id, dto));
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<?> deleteLocation(@PathVariable Long id) {
-        locationService.deleteLocation(id);
+        cityService.deleteLocation(id);
         return ResponseEntity.noContent().build();
     }
 }

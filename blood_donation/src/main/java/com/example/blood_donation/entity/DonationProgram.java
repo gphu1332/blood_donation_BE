@@ -24,10 +24,10 @@ public class DonationProgram {
     private Double latitude;
     private Double longitude;
 
-    // Mỗi Program được tổ chức tại 1 Location
+    // Mỗi Program được tổ chức tại 1 city
     @ManyToOne
-    @JoinColumn(name = "location_id")
-    private Location location;
+    @JoinColumn(name = "city_id")
+    private City city;
 
     // Mỗi Program có nhiều Slot
     @ManyToMany

@@ -1,6 +1,5 @@
 package com.example.blood_donation.service;
 
-import com.example.blood_donation.dto.AnswerRequest;
 import com.example.blood_donation.dto.AppointmentDTO;
 import com.example.blood_donation.dto.AppointmentRequest;
 import com.example.blood_donation.entity.*;
@@ -32,11 +31,6 @@ public class AppointmentService {
     @Autowired
     private DonationProgramRepository donationProgramRepository;
 
-    @Autowired
-    private QuestionRepository questionRepository;
-
-    @Autowired
-    private OptionRepository optionRepository;
 
     /**
      * Tạo appointment mới cho user (MEMBER), chỉ khi không có appointment chưa hoàn thành.
@@ -202,38 +196,20 @@ public class AppointmentService {
         appointment.setStatus(status);
         appointment.setUser(user);
 
-        // Xử lý answers
-        if (request.getAnswers() != null) {
-            for (AnswerRequest ar : request.getAnswers()) {
-                Question q = questionRepository.findById(ar.getQuestionId())
-                        .orElseThrow(() -> new BadRequestException("Question not found: " + ar.getQuestionId()));
-
-                Answer answer = new Answer();
-                answer.setQuestion(q);
-
-                if (ar.getSelectedOptionIds() != null) {
-                    for (Long optionId : ar.getSelectedOptionIds()) {
-                        Option opt = optionRepository.findById(optionId)
-                                .orElseThrow(() -> new BadRequestException("Option not found: " + optionId));
-
-                        if (Boolean.TRUE.equals(opt.getRequiresText())
-                                && (ar.getAdditionalText() == null || ar.getAdditionalText().isBlank())) {
-                            throw new BadRequestException("Option '" + opt.getLabel() + "' requires additional text.");
-                        }
-
-                        AnswerOption ao = new AnswerOption();
-                        ao.setOption(opt);
-                        ao.setAdditionalText(ar.getAdditionalText());
-                        answer.addAnswerOption(ao);
-                    }
-                }
-
-                appointment.addAnswer(answer);
-            }
-        }
+        // Gán 9 câu trả lời vào entity
+        appointment.setAnswer1(request.getAnswer1());
+        appointment.setAnswer2(request.getAnswer2());
+        appointment.setAnswer3(request.getAnswer3());
+        appointment.setAnswer4(request.getAnswer4());
+        appointment.setAnswer5(request.getAnswer5());
+        appointment.setAnswer6(request.getAnswer6());
+        appointment.setAnswer7(request.getAnswer7());
+        appointment.setAnswer8(request.getAnswer8());
+        appointment.setAnswer9(request.getAnswer9());
 
         return appointment;
     }
+
 
     public List<AppointmentDTO> getByUserId(Long userId) {
         User user = userRepository.findById(userId)

@@ -8,7 +8,4 @@ import org.springframework.data.jpa.repository.Query;
 import java.util.Optional;
 
 public interface AppointmentRepository extends JpaRepository<Appointment, Long> {
-
-    @Query("SELECT a FROM Appointment a WHERE a.user.userID = :userId AND a.status <> 'FULFILLED'")
-    Optional<Appointment> findActiveAppointmentByUserId(Long userId);
 }

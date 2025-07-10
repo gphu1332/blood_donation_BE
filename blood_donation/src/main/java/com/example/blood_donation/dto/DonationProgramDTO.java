@@ -17,7 +17,7 @@ public class DonationProgramDTO {
     private Double longitude;
     private String address;
     private List<Long> slotIds;
-    private Long locationId;
+    private Long cityId;
     private TypeBlood typeBlood;
     private String description;
     private String contact;
