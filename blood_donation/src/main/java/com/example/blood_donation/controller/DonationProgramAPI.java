@@ -1,6 +1,7 @@
 package com.example.blood_donation.controller;
 
 import com.example.blood_donation.dto.DonationProgramDTO;
+import com.example.blood_donation.dto.DonationProgramResponse;
 import com.example.blood_donation.service.DonationProgramService;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,12 +23,12 @@ public class DonationProgramAPI {
     private DonationProgramService service;
 
     @GetMapping
-    public List<DonationProgramDTO> getAll() {
+    public List<DonationProgramResponse> getAll() {
         return service.getAll();
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<DonationProgramDTO> getById(@PathVariable Long id) {
+    public ResponseEntity<DonationProgramResponse> getById(@PathVariable Long id) {
         return ResponseEntity.ok(service.getById(id));
     }
 
@@ -37,11 +38,11 @@ public class DonationProgramAPI {
      */
     @PostMapping
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<DonationProgramDTO> create(
+    public ResponseEntity<DonationProgramResponse> create(
             @RequestBody DonationProgramDTO dto,
             Principal principal
     ) {
-        DonationProgramDTO created = service.create(dto, principal.getName());
+        DonationProgramResponse created = service.create(dto, principal.getName());
         return ResponseEntity.ok(created);
     }
 
@@ -50,11 +51,11 @@ public class DonationProgramAPI {
      */
     @PutMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<DonationProgramDTO> update(
+    public ResponseEntity<DonationProgramResponse> update(
             @PathVariable Long id,
             @RequestBody DonationProgramDTO dto
     ) {
-        DonationProgramDTO updated = service.update(id, dto);
+        DonationProgramResponse updated = service.update(id, dto);
         return ResponseEntity.ok(updated);
     }
 
@@ -69,24 +70,23 @@ public class DonationProgramAPI {
     }
 
     /**
-     * Tìm kiếm chương trình theo ngày giữa starDate và endDate và địa điểm.
+     * Tìm kiếm chương trình theo ngày giữa startDate và endDate và địa điểm.
      */
     @GetMapping("/search")
-    public ResponseEntity<List<DonationProgramDTO>> searchByDateRangeAndLocation(
+    public ResponseEntity<List<DonationProgramResponse>> searchByDateRangeAndLocation(
             @RequestParam("date") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date,
             @RequestParam("locationId") Long locationId
     ) {
-        List<DonationProgramDTO> results = service.searchByDateInRangeAndCityID(date, locationId);
+        List<DonationProgramResponse> results = service.searchByDateInRangeAndCityID(date, locationId);
         return ResponseEntity.ok(results);
     }
+
     @GetMapping("/search-range")
-    public ResponseEntity<List<DonationProgramDTO>> searchByDateRange(
+    public ResponseEntity<List<DonationProgramResponse>> searchByDateRange(
             @RequestParam("startDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
             @RequestParam(value = "endDate", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate
     ) {
-        List<DonationProgramDTO> results = service.searchByDateRange(startDate, endDate);
+        List<DonationProgramResponse> results = service.searchByDateRange(startDate, endDate);
         return ResponseEntity.ok(results);
     }
-
-
 }

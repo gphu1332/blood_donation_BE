@@ -26,11 +26,10 @@ public class AppointmentService {
     private SlotRepository slotRepository;
 
     @Autowired
-    private ModelMapper modelMapper;
-
-    @Autowired
     private DonationProgramRepository donationProgramRepository;
 
+    @Autowired
+    private ModelMapper modelMapper;
 
     /**
      * Tạo appointment mới cho user (MEMBER), chỉ khi không có appointment chưa hoàn thành.
@@ -38,6 +37,9 @@ public class AppointmentService {
     public AppointmentDTO createAppointment(Long userId, AppointmentRequest request) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new BadRequestException("User not found"));
+
+        // Kiểm tra thông tin cá nhân
+        validateUserProfile(user);
 
         // Kiểm tra user đã có appointment đang hoạt động chưa (PENDING hoặc APPROVED)
         boolean hasActiveAppointment = user.getAppointments().stream()
@@ -54,11 +56,7 @@ public class AppointmentService {
         Appointment savedAppointment = appointmentRepository.save(appointment);
 
         // Trả về DTO
-        AppointmentDTO dto = modelMapper.map(savedAppointment, AppointmentDTO.class);
-        dto.setPhone(user.getPhone());
-        dto.setAddress(savedAppointment.getProgram().getAddress());
-        dto.setTimeRange(savedAppointment.getSlot().getStart() + " - " + savedAppointment.getSlot().getEnd());
-        return dto;
+        return mapToDTO(savedAppointment);
     }
 
     /**
@@ -67,6 +65,9 @@ public class AppointmentService {
     public AppointmentDTO createAppointmentByPhoneAndProgram(String phone, AppointmentRequest request) {
         User user = userRepository.findByPhone(phone)
                 .orElseThrow(() -> new BadRequestException("User not found with phone: " + phone));
+
+        // Kiểm tra thông tin cá nhân
+        validateUserProfile(user);
 
         boolean hasActiveAppointment = user.getAppointments().stream()
                 .anyMatch(a -> a.getStatus() == Status.PENDING || a.getStatus() == Status.APPROVED);
@@ -78,11 +79,21 @@ public class AppointmentService {
         Appointment appointment = buildAppointment(request, user, Status.APPROVED);
         Appointment savedAppointment = appointmentRepository.save(appointment);
 
-        AppointmentDTO dto = modelMapper.map(savedAppointment, AppointmentDTO.class);
-        dto.setPhone(user.getPhone());
-        dto.setAddress(savedAppointment.getProgram().getAddress());
-        dto.setTimeRange(savedAppointment.getSlot().getStart() + " - " + savedAppointment.getSlot().getEnd());
-        return dto;
+        return mapToDTO(savedAppointment);
+    }
+
+    /**
+     * Kiểm tra thông tin cá nhân bắt buộc của user
+     */
+    private void validateUserProfile(User user) {
+        if (user.getCccd() == null || user.getCccd().isBlank()
+                || user.getBirthdate() == null
+                || user.getGender() == null
+                || user.getTypeBlood() == null
+                || user.getAddress() == null || user.getAddress().isBlank()
+                || user.getPhone() == null || user.getPhone().isBlank()) {
+            throw new BadRequestException("Vui lòng cập nhật thông tin cá nhân để đặt lịch");
+        }
     }
 
     /**
@@ -95,25 +106,14 @@ public class AppointmentService {
         appointment.setStatus(newStatus);
         appointmentRepository.save(appointment);
 
-        AppointmentDTO dto = modelMapper.map(appointment, AppointmentDTO.class);
-        dto.setPhone(appointment.getUser().getPhone());
-        dto.setAddress(appointment.getProgram().getAddress());
-        dto.setTimeRange(appointment.getSlot().getStart() + " - " + appointment.getSlot().getEnd());
-        return dto;
+        return mapToDTO(appointment);
     }
 
     /**
      * Lấy appointment theo ID.
      */
     public Optional<AppointmentDTO> getAppointmentById(Long id) {
-        return appointmentRepository.findById(id)
-                .map(app -> {
-                    AppointmentDTO dto = modelMapper.map(app, AppointmentDTO.class);
-                    dto.setPhone(app.getUser().getPhone());
-                    dto.setAddress(app.getProgram().getAddress());
-                    dto.setTimeRange(app.getSlot().getStart() + " - " + app.getSlot().getEnd());
-                    return dto;
-                });
+        return appointmentRepository.findById(id).map(this::mapToDTO);
     }
 
     /**
@@ -121,13 +121,7 @@ public class AppointmentService {
      */
     public List<AppointmentDTO> getAll() {
         return appointmentRepository.findAll().stream()
-                .map(app -> {
-                    AppointmentDTO dto = modelMapper.map(app, AppointmentDTO.class);
-                    dto.setPhone(app.getUser().getPhone());
-                    dto.setAddress(app.getProgram().getAddress());
-                    dto.setTimeRange(app.getSlot().getStart() + " - " + app.getSlot().getEnd());
-                    return dto;
-                })
+                .map(this::mapToDTO)
                 .toList();
     }
 
@@ -206,13 +200,8 @@ public class AppointmentService {
 
         return user.getAppointments().stream()
                 .filter(app -> app.getStatus() != Status.CANCELLED && app.getStatus() != Status.REJECTED)
-                .map(app -> {
-                    AppointmentDTO dto = modelMapper.map(app, AppointmentDTO.class);
-                    dto.setPhone(app.getUser().getPhone());
-                    dto.setAddress(app.getProgram().getAddress());
-                    dto.setTimeRange(app.getSlot().getStart() + " - " + app.getSlot().getEnd());
-                    return dto;
-                }).toList();
+                .map(this::mapToDTO)
+                .toList();
     }
 
     /**
@@ -224,13 +213,20 @@ public class AppointmentService {
 
         return user.getAppointments().stream()
                 .sorted((a1, a2) -> a2.getDate().compareTo(a1.getDate())) // Sắp xếp mới nhất lên đầu
-                .map(app -> {
-                    AppointmentDTO dto = modelMapper.map(app, AppointmentDTO.class);
-                    dto.setPhone(app.getUser().getPhone());
-                    dto.setAddress(app.getProgram().getAddress());
-                    dto.setTimeRange(app.getSlot().getStart() + " - " + app.getSlot().getEnd());
-                    return dto;
-                })
+                .map(this::mapToDTO)
                 .toList();
+    }
+
+    /**
+     * Chuyển đổi sang DTO có thêm địa chỉ và khung giờ
+     */
+    private AppointmentDTO mapToDTO(Appointment app) {
+        AppointmentDTO dto = modelMapper.map(app, AppointmentDTO.class);
+        dto.setPhone(app.getUser().getPhone());
+        if (app.getProgram().getAddress() != null) {
+            dto.setAddress(app.getProgram().getAddress().getName());
+        }
+        dto.setTimeRange(app.getSlot().getStart() + " - " + app.getSlot().getEnd());
+        return dto;
     }
 }
