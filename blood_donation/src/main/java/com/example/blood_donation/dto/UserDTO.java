@@ -5,6 +5,8 @@ import com.example.blood_donation.enums.Role;
 import com.example.blood_donation.enums.TypeBlood;
 import lombok.Data;
 
+import java.time.LocalDate;
+
 @Data
 public class UserDTO {
     public String userID;
@@ -13,6 +15,7 @@ public class UserDTO {
     public String fullName;
     public String email;
     public String phone;
+    private LocalDate birthdate;
     public String address;
     public String cccd;
     public TypeBlood typeBlood;
