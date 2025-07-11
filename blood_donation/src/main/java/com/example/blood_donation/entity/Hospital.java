@@ -14,6 +14,6 @@ public class Hospital {
     private String name;
 
     @ManyToOne
-    @JoinColumn(name = "location_id")
-    private Adress location;
+    @JoinColumn(name = "adress_id")
+    private Adress adress;
 }

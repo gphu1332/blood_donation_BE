@@ -48,10 +48,10 @@ public class AppointmentAPI {
     }
 
     /**
-     * ADMIN cập nhật trạng thái appointment.
+     * HOSPITAL_STAFF hoặc STAFF cập nhật trạng thái appointment.
      */
     @PatchMapping("/{id}/status")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAnyRole('HOSPITAL_STAFF', 'STAFF')")
     public ResponseEntity<AppointmentDTO> updateStatus(
             @PathVariable Long id,
             @RequestParam Status status) {
@@ -63,7 +63,7 @@ public class AppointmentAPI {
      * Lấy danh sách tất cả appointments.
      */
     @GetMapping
-    @PreAuthorize("hasAnyRole('ADMIN', 'STAFF')")
+    @PreAuthorize("hasAnyRole('HOSPITAL_STAFF', 'STAFF')")
     public ResponseEntity<List<AppointmentDTO>> getAll() {
         List<AppointmentDTO> list = appointmentService.getAll();
         return ResponseEntity.ok(list);
@@ -81,24 +81,24 @@ public class AppointmentAPI {
     }
 
     /**
-     * ADMIN xóa appointment.
+     * HOSPITAL_STAFF hoặc STAFF xóa appointment.
      */
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAnyRole('HOSPITAL_STAFF', 'STAFF')")
     public ResponseEntity<Void> delete(@PathVariable Long id) {
         appointmentService.deleteAppointment(id);
         return ResponseEntity.noContent().build();
     }
 
     /**
-     * User hoặc Admin xóa appointment nếu chưa hoàn thành.
+     * User hoặc Staff hoặc Hospitall staff xóa appointment nếu chưa hoàn thành.
      */
     @DeleteMapping("/{id}/with-permission")
-    @PreAuthorize("hasAnyRole('ADMIN', 'MEMBER')")
+    @PreAuthorize("hasAnyRole('HOSPITAL_STAFF', 'STAFF', 'MEMBER')")
     public ResponseEntity<Void> deleteWithPermission(
             @PathVariable Long id,
-            @RequestParam String username) {
-        appointmentService.deleteAppointmentWithPermission(id, username);
+            @RequestParam Long userID) {
+        appointmentService.deleteAppointmentWithPermission(id, userID);
         return ResponseEntity.noContent().build();
     }
 
@@ -106,7 +106,7 @@ public class AppointmentAPI {
      * Lấy tất cả các lịch hẹn của 1 người dùng.
      */
     @GetMapping("/by-user")
-    @PreAuthorize("hasAnyRole('ADMIN', 'MEMBER')")
+    @PreAuthorize("hasAnyRole('HOSPITAL_STAFF', 'STAFF', 'MEMBER')")
     public ResponseEntity<List<AppointmentDTO>> getAppointmentsByUser(
             @RequestParam Long userId
     ) {
@@ -118,11 +118,9 @@ public class AppointmentAPI {
      * Lấy toàn bộ lịch sử appointment của user (bao gồm đã hủy, đã hoàn thành, đang tiến hành...).
      */
     @GetMapping("/history")
-    @PreAuthorize("hasAnyRole('ADMIN', 'MEMBER')")
+    @PreAuthorize("hasAnyRole('HOSPITAL_STAFF', 'STAFF', 'MEMBER')")
     public ResponseEntity<List<AppointmentDTO>> getAppointmentHistory(@RequestParam Long userId) {
         List<AppointmentDTO> history = appointmentService.getFullHistoryByUser(userId);
         return ResponseEntity.ok(history);
     }
-
-
 }
