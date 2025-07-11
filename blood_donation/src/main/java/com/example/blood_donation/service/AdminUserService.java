@@ -110,7 +110,19 @@ public class AdminUserService {
     }
 
     public void deleteUser(Long id) {
+        User user = adminUserRepository.findById(id)
+                .orElseThrow(() -> new BadRequestException("User not found"));
+
+        if (user.getRole() == Role.ADMIN) {
+            long adminCount = adminUserRepository.countByRole(Role.ADMIN);
+
+            if (adminCount <= 1) {
+                throw new BadRequestException("Không thể xóa tài khoản ADMIN duy nhất còn lại.");
+            }
+        }
+
         adminUserRepository.deleteById(id);
     }
+
 }
 

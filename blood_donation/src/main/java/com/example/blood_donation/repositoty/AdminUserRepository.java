@@ -8,4 +8,6 @@ import java.util.List;
 
 public interface AdminUserRepository extends JpaRepository<User, Long> {
     List<User> findByRoleIn(List<Role> roles);
+
+    long countByRole(Role role);
 }

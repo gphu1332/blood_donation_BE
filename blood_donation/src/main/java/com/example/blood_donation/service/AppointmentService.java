@@ -174,7 +174,7 @@ public class AppointmentService {
     /**
      * Xóa appointment nếu chưa hoàn thành, có quyền.
      */
-    public void deleteAppointmentWithPermission(Long appointmentId, String requesterUsername) {
+    public void deleteAppointmentWithPermission(Long appointmentId, Long requesterUserID) {
         Appointment appointment = appointmentRepository.findById(appointmentId)
                 .orElseThrow(() -> new BadRequestException("Appointment not found"));
 
@@ -182,11 +182,11 @@ public class AppointmentService {
             throw new BadRequestException("Cannot delete a fulfilled appointment.");
         }
 
-        User requester = userRepository.findByUsername(requesterUsername)
+        User requester = userRepository.findByUserID(requesterUserID)
                 .orElseThrow(() -> new BadRequestException("Requester not found"));
 
         User owner = appointment.getUser();
-        boolean isOwner = owner.getUsername().equals(requesterUsername);
+        boolean isOwner = owner.getUsername().equals(requesterUserID);
 
         String role = requester.getRole().name();
         boolean hasPermission = isOwner || role.equals("MEMBER") || role.equals("STAFF") || role.equals("HOSPITAL_STAFF");

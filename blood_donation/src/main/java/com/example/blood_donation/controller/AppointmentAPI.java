@@ -97,8 +97,8 @@ public class AppointmentAPI {
     @PreAuthorize("hasAnyRole('HOSPITAL_STAFF', 'STAFF', 'MEMBER')")
     public ResponseEntity<Void> deleteWithPermission(
             @PathVariable Long id,
-            @RequestParam String username) {
-        appointmentService.deleteAppointmentWithPermission(id, username);
+            @RequestParam Long userID) {
+        appointmentService.deleteAppointmentWithPermission(id, userID);
         return ResponseEntity.noContent().build();
     }
 
