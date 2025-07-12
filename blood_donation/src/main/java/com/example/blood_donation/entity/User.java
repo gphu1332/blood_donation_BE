@@ -53,7 +53,11 @@ public class User implements UserDetails {
 
     private String address;
 
-    @Pattern(regexp = "^0\\d{11}$\n", message = "CCCD invalid!")
+
+    private Double latitude;
+    private Double longitude;
+
+    @Pattern(regexp = "^\\d{12}$", message = "CCCD invalid!")
     @Column(unique = true)
     private String cccd;
 
@@ -71,6 +75,11 @@ public class User implements UserDetails {
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
     private List<Appointment> appointments = new ArrayList<>();
+
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
+    List<Notification> notifications;
+
 
 
 

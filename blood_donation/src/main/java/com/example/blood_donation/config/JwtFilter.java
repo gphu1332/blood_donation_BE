@@ -43,11 +43,15 @@ public class JwtFilter extends OncePerRequestFilter {
     private final List<String> PUBLIC_API = List.of(
             "POST:/api/register",
             "POST:/api/login",
+            "POST:/api/generate-otp",
+            "POST:/api/verify-otp",
             "GET:/v3/api-docs/**",
             "GET:/swagger-ui/**"
     );
 
     public boolean isPermitted(String uri, String method) {
+        System.out.println(uri);
+        System.out.println(method);
         AntPathMatcher matcher = new AntPathMatcher();
 
         return PUBLIC_API.stream().anyMatch(pattern -> {
@@ -73,6 +77,7 @@ public class JwtFilter extends OncePerRequestFilter {
 
         if (isPermitted(uri, method)) {
             filterChain.doFilter(request, response);
+
             return;
         }
 
