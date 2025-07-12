@@ -31,7 +31,7 @@ public class RegisterRequest {
 
     @NotBlank(message = "Xác nhận mật khẩu không được để trống")
     @Schema(description = "Xác nhận lại mật khẩu", example = "Abc123@")
-    private String comfirmPassword;
+    private String confirmPassword;
 }
 
 
