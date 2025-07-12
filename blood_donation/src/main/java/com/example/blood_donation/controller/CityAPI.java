@@ -1,6 +1,6 @@
 package com.example.blood_donation.controller;
 
-import com.example.blood_donation.dto.LocationDTO;
+import com.example.blood_donation.dto.CityDTO;
 import com.example.blood_donation.service.CityService;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,31 +11,31 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/locations")
+@RequestMapping("/api/city")
 @SecurityRequirement(name = "api")
 @PreAuthorize("hasRole('ADMIN')")
-public class LocationAPI {
+public class CityAPI {
 
     @Autowired
     private CityService cityService;
 
     @GetMapping
-    public List<LocationDTO> getAllLocations() {
+    public List<CityDTO> getAllLocations() {
         return cityService.getAllLocations();
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<LocationDTO> getLocation(@PathVariable Long id) {
+    public ResponseEntity<CityDTO> getLocation(@PathVariable Long id) {
         return ResponseEntity.ok(cityService.getLocationById(id));
     }
 
     @PostMapping
-    public ResponseEntity<LocationDTO> createLocation(@RequestBody LocationDTO dto) {
+    public ResponseEntity<CityDTO> createLocation(@RequestBody CityDTO dto) {
         return ResponseEntity.ok(cityService.createLocation(dto));
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<LocationDTO> updateLocation(@PathVariable Long id, @RequestBody LocationDTO dto) {
+    public ResponseEntity<CityDTO> updateLocation(@PathVariable Long id, @RequestBody CityDTO dto) {
         return ResponseEntity.ok(cityService.updateLocation(id, dto));
     }
 

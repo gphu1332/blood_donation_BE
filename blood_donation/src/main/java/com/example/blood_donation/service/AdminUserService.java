@@ -4,10 +4,13 @@ import com.example.blood_donation.dto.AdminUserDTO;
 import com.example.blood_donation.dto.AdminUserResponseDTO;
 import com.example.blood_donation.dto.CreateAdminUserDTO;
 import com.example.blood_donation.dto.UserDTO;
+import com.example.blood_donation.entity.Hospital;
+import com.example.blood_donation.entity.MedicalStaff;
 import com.example.blood_donation.entity.User;
 import com.example.blood_donation.enums.Role;
 import com.example.blood_donation.exception.exceptons.BadRequestException;
 import com.example.blood_donation.repositoty.AdminUserRepository;
+import com.example.blood_donation.repositoty.HospitalRepository;
 import com.example.blood_donation.repositoty.UserRepository;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,6 +34,9 @@ public class AdminUserService {
     @Autowired
     private PasswordEncoder passwordEncoder;
 
+    @Autowired
+    private HospitalRepository hospitalRepository;
+
     public List<User> getAllUsers() {
         List<Role> allowedRoles = List.of(Role.ADMIN, Role.STAFF, Role.HOSPITAL_STAFF);
         return adminUserRepository.findByRoleIn(allowedRoles);
@@ -50,6 +56,15 @@ public class AdminUserService {
     public AdminUserResponseDTO createUserByAdmin(CreateAdminUserDTO dto) {
         // Map DTO -> Entity
         User user = modelMapper.map(dto, User.class);
+
+        // Nếu là HOSPITAL_STAFF -> ép kiểu và gán hospital
+        if(dto.getRole() == Role.HOSPITAL_STAFF && dto.getHospitalId() != null) {
+            if(user instanceof MedicalStaff staff) {
+                Hospital hospital = hospitalRepository.findById(dto.getHospitalId())
+                        .orElseThrow(() -> new BadRequestException("Hospital not found"));
+                staff.setHospital(hospital);
+            }
+        }
 
         // Hash password
         String hashedPassword = passwordEncoder.encode(dto.getPassword());
@@ -75,10 +90,18 @@ public class AdminUserService {
         user.setGender(adminDTO.getGender());
         user.setTypeBlood(adminDTO.getTypeBlood());
         user.setRole(adminDTO.getRole());
+        user.setBirthdate(adminDTO.getBirthdate());
 
         if (adminDTO.getPassword() != null && !adminDTO.getPassword().isBlank()) {
             String hashedPassword = passwordEncoder.encode(adminDTO.getPassword());
             user.setPassword(hashedPassword);
+        }
+
+        // Nếu là Hospital Staff -> set hospital
+        if (user instanceof MedicalStaff staff && adminDTO.getHospitalId() != null) {
+            Hospital hospital = hospitalRepository.findById(adminDTO.getHospitalId())
+                    .orElseThrow(() -> new BadRequestException("Hospital not found"));
+            staff.setHospital(hospital);
         }
 
         User updatedUser = adminUserRepository.save(user);
@@ -86,9 +109,20 @@ public class AdminUserService {
         return modelMapper.map(updatedUser, UserDTO.class);
     }
 
-
     public void deleteUser(Long id) {
+        User user = adminUserRepository.findById(id)
+                .orElseThrow(() -> new BadRequestException("User not found"));
+
+        if (user.getRole() == Role.ADMIN) {
+            long adminCount = adminUserRepository.countByRole(Role.ADMIN);
+
+            if (adminCount <= 1) {
+                throw new BadRequestException("Không thể xóa tài khoản ADMIN duy nhất còn lại.");
+            }
+        }
+
         adminUserRepository.deleteById(id);
     }
+
 }
 
