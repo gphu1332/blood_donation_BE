@@ -6,6 +6,7 @@ import com.example.blood_donation.dto.UserDTO;
 import com.example.blood_donation.entity.User;
 import com.example.blood_donation.enums.Role;
 import com.example.blood_donation.exception.exceptons.AuthenticationException;
+import com.example.blood_donation.exception.exceptons.BadRequestException;
 import com.example.blood_donation.repositoty.AuthenticationRepository;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -36,7 +37,11 @@ public class AuthenticationService implements UserDetailsService {
     @Autowired
     private TokenService tokenService;
 
-    public UserDTO register( RegisterRequest request) {
+    public UserDTO register(RegisterRequest request) {
+        if (!request.getPassword().equals(request.getConfirmPassword())) {
+            throw new BadRequestException("Mật khẩu xác nhận không khớp");
+        }
+
         User user = new User();
         user.setFullName(request.getFullName());
         user.setEmail(request.getEmail());
@@ -53,6 +58,7 @@ public class AuthenticationService implements UserDetailsService {
 
         return dto;
     }
+
 
     public UserDTO login(LoginRequest loginRequest) {
        try {
