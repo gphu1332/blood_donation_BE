@@ -20,4 +20,5 @@ public class AdminUserDTO {
     private Gender gender;
     private TypeBlood typeBlood;
     private Role role;
+    private Long hospitalId;
 }

@@ -18,6 +18,7 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import com.fasterxml.jackson.annotation.JsonFormat;
 
 @Entity
 @Data
@@ -42,10 +43,19 @@ public class User implements UserDetails {
     @Column(unique = true)
     private String email;
 
-    //    @Pattern(regexp = "^(84|0[3|5|7|8|9])[0-9]{8}$", message = "Phone invalid!")
+    @Pattern(regexp = "^0(3[2-9]|5[2689]|7[06-9]|8[1-5]|9[0-4 6-9])\\d{7}$\n", message = "Phone invalid!")
+//  03x: 032–039 (Viettel)
+//  05x: 052, 056, 058, 059 (Vietnamobile/Gmobile)
+//  07x: 070, 076–079 (MobiFone)
+//  08x: 081–085 (Vinaphone)
+//  09x: 090–094, 096–099 (các mạng khác)
     public String phone;
 
     private String address;
+
+
+    private Double latitude;
+    private Double longitude;
 
     @Pattern(regexp = "^\\d{12}$", message = "CCCD invalid!")
     @Column(unique = true)
@@ -58,12 +68,18 @@ public class User implements UserDetails {
     @Enumerated(EnumType.STRING)
     private Gender gender;
 
+    @JsonFormat(pattern = "yyyy-MM-dd")
     private LocalDate birthdate;
 
     private String token;
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
     private List<Appointment> appointments = new ArrayList<>();
+
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
+    List<Notification> notifications;
+
 
 
 

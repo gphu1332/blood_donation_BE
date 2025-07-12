@@ -2,6 +2,7 @@ package com.example.blood_donation.controller;
 
 import com.example.blood_donation.entity.BloodUnit;
 import com.example.blood_donation.service.BloodUnitService;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -11,6 +12,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/blood-units")
+@SecurityRequirement(name = "api")
 public class BloodUnitController {
     @Autowired
     private BloodUnitService service;

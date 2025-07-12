@@ -20,4 +20,6 @@ public class AdminUserResponseDTO {
     private TypeBlood typeBlood;
     private Role role;
     private String username;
+    private Long hospitalId;
+    private String hospitalName;
 }

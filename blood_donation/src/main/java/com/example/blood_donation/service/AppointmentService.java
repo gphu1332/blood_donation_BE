@@ -10,6 +10,8 @@ import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Optional;
 
@@ -26,18 +28,21 @@ public class AppointmentService {
     private SlotRepository slotRepository;
 
     @Autowired
-    private ModelMapper modelMapper;
-
-    @Autowired
     private DonationProgramRepository donationProgramRepository;
 
+    @Autowired
+    private ModelMapper modelMapper;
 
     /**
-     * Tạo appointment mới cho user (MEMBER), chỉ khi không có appointment chưa hoàn thành.
+     * Tạo appointment mới cho user (MEMBER), chỉ khi không có appointment chưa hoàn thành,
+     * và phải cách ít nhất 10 ngày kể từ lần hiến máu trước (FULFILLED).
      */
     public AppointmentDTO createAppointment(Long userId, AppointmentRequest request) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new BadRequestException("User not found"));
+
+        // Kiểm tra thông tin cá nhân
+        validateUserProfile(user);
 
         // Kiểm tra user đã có appointment đang hoạt động chưa (PENDING hoặc APPROVED)
         boolean hasActiveAppointment = user.getAppointments().stream()
@@ -47,27 +52,47 @@ public class AppointmentService {
             throw new BadRequestException("You already have an active appointment. Complete or cancel it before booking a new one.");
         }
 
-        // Tạo Appointment
-        Appointment appointment = buildAppointment(request, user, Status.PENDING);
+        // Kiểm tra số ngày từ lần hiến gần nhất
+        Optional<Appointment> lastFulfilled = user.getAppointments().stream()
+                .filter(a -> a.getStatus() == Status.FULFILLED)
+                .max((a1, a2) -> a1.getDate().compareTo(a2.getDate()));
 
-        // Lưu DB
+        if (lastFulfilled.isPresent()) {
+            LocalDate desiredDate = request.getDate();
+            LocalDate lastDonationDate = lastFulfilled.get().getDate();
+
+            long daysBetween = ChronoUnit.DAYS.between(lastDonationDate, desiredDate);
+
+            if (daysBetween < 10) {
+                throw new BadRequestException("Bạn chỉ được đặt lịch sau ít nhất 10 ngày kể từ lần hiến máu gần nhất.");
+            }
+
+            if (daysBetween < 14) {
+                System.out.println("⚠️ Cảnh báo: Người dùng đặt lịch khi chưa đủ 14 ngày kể từ lần hiến máu trước.");
+            }
+        }
+
+        Appointment appointment = buildAppointment(request, user, Status.PENDING);
         Appointment savedAppointment = appointmentRepository.save(appointment);
 
-        // Trả về DTO
-        AppointmentDTO dto = modelMapper.map(savedAppointment, AppointmentDTO.class);
-        dto.setPhone(user.getPhone());
-        dto.setAddress(savedAppointment.getProgram().getAddress());
-        dto.setTimeRange(savedAppointment.getSlot().getStart() + " - " + savedAppointment.getSlot().getEnd());
-        return dto;
+        return mapToDTO(savedAppointment);
     }
 
+
+
     /**
-     * Tạo appointment cho staff tạo giùm user qua số điện thoại.
+     * Tạo appointment cho staff tạo giùm user qua số điện thoại,
+     * chỉ khi user không có appointment đang hoạt động,
+     * và cách lần hiến máu gần nhất ít nhất 10 ngày.
      */
     public AppointmentDTO createAppointmentByPhoneAndProgram(String phone, AppointmentRequest request) {
         User user = userRepository.findByPhone(phone)
                 .orElseThrow(() -> new BadRequestException("User not found with phone: " + phone));
 
+        // Kiểm tra thông tin cá nhân
+        validateUserProfile(user);
+
+        // Kiểm tra appointment đang hoạt động
         boolean hasActiveAppointment = user.getAppointments().stream()
                 .anyMatch(a -> a.getStatus() == Status.PENDING || a.getStatus() == Status.APPROVED);
 
@@ -75,14 +100,46 @@ public class AppointmentService {
             throw new BadRequestException("User already has an active appointment.");
         }
 
+        // Kiểm tra số ngày từ lần hiến máu gần nhất
+        Optional<Appointment> lastFulfilled = user.getAppointments().stream()
+                .filter(a -> a.getStatus() == Status.FULFILLED)
+                .max((a1, a2) -> a1.getDate().compareTo(a2.getDate()));
+
+        if (lastFulfilled.isPresent()) {
+            LocalDate desiredDate = request.getDate();
+            LocalDate lastDonationDate = lastFulfilled.get().getDate();
+
+            long daysBetween = ChronoUnit.DAYS.between(lastDonationDate, desiredDate);
+
+            if (daysBetween < 10) {
+                throw new BadRequestException("Người dùng chỉ được đặt lịch sau ít nhất 10 ngày kể từ lần hiến máu gần nhất.");
+            }
+
+            if (daysBetween < 14) {
+                System.out.println("⚠️ STAFF đặt lịch cho user khi chưa đủ 14 ngày kể từ lần hiến máu trước.");
+            }
+        }
+
         Appointment appointment = buildAppointment(request, user, Status.APPROVED);
         Appointment savedAppointment = appointmentRepository.save(appointment);
 
-        AppointmentDTO dto = modelMapper.map(savedAppointment, AppointmentDTO.class);
-        dto.setPhone(user.getPhone());
-        dto.setAddress(savedAppointment.getProgram().getAddress());
-        dto.setTimeRange(savedAppointment.getSlot().getStart() + " - " + savedAppointment.getSlot().getEnd());
-        return dto;
+        return mapToDTO(savedAppointment);
+    }
+
+
+
+    /**
+     * Kiểm tra thông tin cá nhân bắt buộc của user
+     */
+    private void validateUserProfile(User user) {
+        if (user.getCccd() == null || user.getCccd().isBlank()
+                || user.getBirthdate() == null
+                || user.getGender() == null
+                || user.getTypeBlood() == null
+                || user.getAddress() == null || user.getAddress().isBlank()
+                || user.getPhone() == null || user.getPhone().isBlank()) {
+            throw new BadRequestException("Vui lòng cập nhật thông tin cá nhân để đặt lịch");
+        }
     }
 
     /**
@@ -95,25 +152,14 @@ public class AppointmentService {
         appointment.setStatus(newStatus);
         appointmentRepository.save(appointment);
 
-        AppointmentDTO dto = modelMapper.map(appointment, AppointmentDTO.class);
-        dto.setPhone(appointment.getUser().getPhone());
-        dto.setAddress(appointment.getProgram().getAddress());
-        dto.setTimeRange(appointment.getSlot().getStart() + " - " + appointment.getSlot().getEnd());
-        return dto;
+        return mapToDTO(appointment);
     }
 
     /**
      * Lấy appointment theo ID.
      */
     public Optional<AppointmentDTO> getAppointmentById(Long id) {
-        return appointmentRepository.findById(id)
-                .map(app -> {
-                    AppointmentDTO dto = modelMapper.map(app, AppointmentDTO.class);
-                    dto.setPhone(app.getUser().getPhone());
-                    dto.setAddress(app.getProgram().getAddress());
-                    dto.setTimeRange(app.getSlot().getStart() + " - " + app.getSlot().getEnd());
-                    return dto;
-                });
+        return appointmentRepository.findById(id).map(this::mapToDTO);
     }
 
     /**
@@ -121,20 +167,14 @@ public class AppointmentService {
      */
     public List<AppointmentDTO> getAll() {
         return appointmentRepository.findAll().stream()
-                .map(app -> {
-                    AppointmentDTO dto = modelMapper.map(app, AppointmentDTO.class);
-                    dto.setPhone(app.getUser().getPhone());
-                    dto.setAddress(app.getProgram().getAddress());
-                    dto.setTimeRange(app.getSlot().getStart() + " - " + app.getSlot().getEnd());
-                    return dto;
-                })
+                .map(this::mapToDTO)
                 .toList();
     }
 
     /**
      * Xóa appointment nếu chưa hoàn thành, có quyền.
      */
-    public void deleteAppointmentWithPermission(Long appointmentId, String requesterUsername) {
+    public void deleteAppointmentWithPermission(Long appointmentId, Long requesterUserID) {
         Appointment appointment = appointmentRepository.findById(appointmentId)
                 .orElseThrow(() -> new BadRequestException("Appointment not found"));
 
@@ -142,21 +182,25 @@ public class AppointmentService {
             throw new BadRequestException("Cannot delete a fulfilled appointment.");
         }
 
-        User owner = appointment.getUser();
-        boolean isOwner = owner.getUsername().equals(requesterUsername);
-        boolean isAdmin = userRepository.findByUsername(requesterUsername)
-                .map(u -> u.getRole().name().equals("ADMIN"))
-                .orElse(false);
+        User requester = userRepository.findByUserID(requesterUserID)
+                .orElseThrow(() -> new BadRequestException("Requester not found"));
 
-        if (!isOwner && !isAdmin) {
+        User owner = appointment.getUser();
+        boolean isOwner = owner.getUsername().equals(requesterUserID);
+
+        String role = requester.getRole().name();
+        boolean hasPermission = isOwner || role.equals("MEMBER") || role.equals("STAFF") || role.equals("HOSPITAL_STAFF");
+
+        if (!hasPermission) {
             throw new BadRequestException("You don't have permission to delete this appointment.");
         }
 
         appointmentRepository.delete(appointment);
     }
 
+
     /**
-     * ADMIN xóa appointment bất kỳ.
+     * HOSPITAL_STAFF hoặc STAFF xóa appointment bất kỳ.
      */
     public void deleteAppointment(Long appointmentId) {
         Appointment appointment = appointmentRepository.findById(appointmentId)
@@ -170,7 +214,7 @@ public class AppointmentService {
     }
 
     /**
-     * Dùng chung logic khởi tạo Appointment.
+     *  Tạo Appointment.
      */
     private Appointment buildAppointment(AppointmentRequest request, User user, Status status) {
         Slot slot = slotRepository.findById(request.getSlotId())
@@ -186,7 +230,7 @@ public class AppointmentService {
         appointment.setStatus(status);
         appointment.setUser(user);
 
-        // Gán 9 câu trả lời vào entity
+        // Gán 9 câu trả lời
         appointment.setAnswer1(request.getAnswer1());
         appointment.setAnswer2(request.getAnswer2());
         appointment.setAnswer3(request.getAnswer3());
@@ -206,13 +250,8 @@ public class AppointmentService {
 
         return user.getAppointments().stream()
                 .filter(app -> app.getStatus() != Status.CANCELLED && app.getStatus() != Status.REJECTED)
-                .map(app -> {
-                    AppointmentDTO dto = modelMapper.map(app, AppointmentDTO.class);
-                    dto.setPhone(app.getUser().getPhone());
-                    dto.setAddress(app.getProgram().getAddress());
-                    dto.setTimeRange(app.getSlot().getStart() + " - " + app.getSlot().getEnd());
-                    return dto;
-                }).toList();
+                .map(this::mapToDTO)
+                .toList();
     }
 
     /**
@@ -224,13 +263,20 @@ public class AppointmentService {
 
         return user.getAppointments().stream()
                 .sorted((a1, a2) -> a2.getDate().compareTo(a1.getDate())) // Sắp xếp mới nhất lên đầu
-                .map(app -> {
-                    AppointmentDTO dto = modelMapper.map(app, AppointmentDTO.class);
-                    dto.setPhone(app.getUser().getPhone());
-                    dto.setAddress(app.getProgram().getAddress());
-                    dto.setTimeRange(app.getSlot().getStart() + " - " + app.getSlot().getEnd());
-                    return dto;
-                })
+                .map(this::mapToDTO)
                 .toList();
+    }
+
+    /**
+     * Chuyển đổi sang DTO
+     */
+    private AppointmentDTO mapToDTO(Appointment app) {
+        AppointmentDTO dto = modelMapper.map(app, AppointmentDTO.class);
+        dto.setPhone(app.getUser().getPhone());
+        if (app.getProgram().getAddress() != null) {
+            dto.setAddress(app.getProgram().getAddress().getName());
+        }
+        dto.setTimeRange(app.getSlot().getStart() + " - " + app.getSlot().getEnd());
+        return dto;
     }
 }

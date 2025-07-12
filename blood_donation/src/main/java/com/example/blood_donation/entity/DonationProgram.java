@@ -19,17 +19,16 @@ public class DonationProgram {
     private LocalDate endDate;
     private LocalDate startDate;
 
-    private String address;
-
-    private Double latitude;
-    private Double longitude;
+    @ManyToOne
+    @JoinColumn(name = "address_id")
+    private Adress address;
 
     // Mỗi Program được tổ chức tại 1 city
     @ManyToOne
     @JoinColumn(name = "city_id")
     private City city;
 
-    // Mỗi Program có nhiều Slot
+    // Mỗi Program có 1 hoặc nhiều Slot
     @ManyToMany
     @JoinTable(
             name = "program_slot",
@@ -38,8 +37,11 @@ public class DonationProgram {
     )
     private List<Slot> slots;
 
+    @ElementCollection(targetClass = TypeBlood.class)
+    @CollectionTable(name = "program_blood_types", joinColumns = @JoinColumn(name = "program_id"))
     @Enumerated(EnumType.STRING)
-    private TypeBlood typeBlood;
+    @Column(name = "blood_type")
+    private List<TypeBlood> typeBloods;
 
     @Column(columnDefinition = "TEXT")
     private String description;
@@ -51,6 +53,8 @@ public class DonationProgram {
     @ManyToOne
     @JoinColumn(name = "admin_id")
     private User admin;
+
+    @OneToOne(cascade = CascadeType.ALL)
+    @JoinColumn(name = "healthCheck_id")
+    HealthCheck healthCheck;
 }
-
-
