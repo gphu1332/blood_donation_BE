@@ -53,8 +53,4 @@ public class DonationProgram {
     @ManyToOne
     @JoinColumn(name = "admin_id")
     private User admin;
-
-    @OneToOne(cascade = CascadeType.ALL)
-    @JoinColumn(name = "healthCheck_id")
-    HealthCheck healthCheck;
 }

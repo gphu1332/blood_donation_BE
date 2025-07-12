@@ -33,6 +33,4 @@ public class DonationDetail {
     @ManyToOne
     @JoinColumn(name = "staff_id")
     private Staff staff;
-
-
 }
