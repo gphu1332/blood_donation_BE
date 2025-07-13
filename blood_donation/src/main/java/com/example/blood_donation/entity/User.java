@@ -36,14 +36,13 @@ public class User implements UserDetails {
 
     //    @Pattern(regexp = "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)[A-Za-z\\d]{8,}$", message = "Password invalid!")
     private String password;
-    private String confirmPassword;
     private String fullName;
 
     @Email
     @Column(unique = true)
     private String email;
 
-    @Pattern(regexp = "^0(3[2-9]|5[2689]|7[06-9]|8[1-5]|9[0-4 6-9])\\d{7}$\n", message = "Phone invalid!")
+    @Pattern(regexp = "^0(3[2-9]|5[2689]|7[06-9]|8[1-5]|9[0-4 6-9])\\d{7}$", message = "Phone invalid!")
 //  03x: 032–039 (Viettel)
 //  05x: 052, 056, 058, 059 (Vietnamobile/Gmobile)
 //  07x: 070, 076–079 (MobiFone)
