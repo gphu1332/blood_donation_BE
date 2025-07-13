@@ -18,12 +18,11 @@ public class UserDTO {
     public Long userID;
     public String username;
     public String password;
-//    private String confirmPassword;
     public String fullName;
     public String email;
     public String phone;
     private LocalDate birthdate;
-    public String address;
+    public AdressDTO address;
     public String cccd;
     public TypeBlood typeBlood;
     public Role role;

@@ -94,7 +94,7 @@ public class NotificationService {
 
             double distance = calculateDistanceKm(
                     centerLat, centerLng,
-                    user.getLatitude(), user.getLongitude()
+                    user.getAddress().getLatitude(), user.getAddress().getLongitude()
             );
             if (distance <= radiusKm) {
                 Notification notification = new Notification();

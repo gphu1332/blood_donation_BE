@@ -1,6 +1,8 @@
 package com.example.blood_donation.service;
 
+import com.example.blood_donation.dto.AdressDTO;
 import com.example.blood_donation.dto.UserDTO;
+import com.example.blood_donation.entity.Adress;
 import com.example.blood_donation.entity.User;
 import com.example.blood_donation.exception.exceptons.BadRequestException;
 import com.example.blood_donation.repositoty.UserRepository;
@@ -18,7 +20,6 @@ public class UserService {
     private UserRepository userRepository;
     @Autowired
     private ModelMapper modelMapper;
-
 
     public UserDTO updateUser(Long id, UserDTO userDTO) {
         Optional<User> optionalUser = userRepository.findById(id);
@@ -43,7 +44,17 @@ public class UserService {
         existingUser.setFullName(userDTO.getFullName());
         existingUser.setEmail(userDTO.getEmail());
         existingUser.setPhone(userDTO.getPhone());
-        existingUser.setAddress(userDTO.getAddress());
+
+        // ✅ Chuyển AddressDTO → Adress entity
+        AdressDTO addressDTO = userDTO.getAddress();
+        if (addressDTO != null) {
+            Adress address = new Adress();
+            address.setName(addressDTO.getName());
+            address.setLatitude(addressDTO.getLatitude());
+            address.setLongitude(addressDTO.getLongitude());
+            existingUser.setAddress(address);
+        }
+
         existingUser.setBirthdate(userDTO.getBirthdate());
         existingUser.setCccd(userDTO.getCccd());
         existingUser.setGender(userDTO.getGender());
@@ -52,7 +63,4 @@ public class UserService {
         User updatedUser = userRepository.save(existingUser);
         return modelMapper.map(updatedUser, UserDTO.class);
     }
-
-
-
 }

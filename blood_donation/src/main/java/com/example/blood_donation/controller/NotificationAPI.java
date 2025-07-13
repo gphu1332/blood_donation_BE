@@ -31,7 +31,7 @@ public class NotificationAPI {
     @Autowired
     NotificationService notificationService;
 
-//    @PreAuthorize("hasRole('STAFF')")
+    @PreAuthorize("hasRole('STAFF')")
     @PostMapping
     @Operation(
             summary = "Tạo thông báo mới",
@@ -41,7 +41,7 @@ public class NotificationAPI {
         return ResponseEntity.ok(notificationService.createNotification(request));
     }
 
-//    @PreAuthorize("hasRole('STAFF')")
+    @PreAuthorize("hasRole('STAFF')")
     @PutMapping("/{id}")
     @Operation(summary = "Cập nhật thông báo", description = "Cập nhật tiêu đề, nội dung và trạng thái đã đọc của thông báo")
     @ApiResponses({
@@ -64,6 +64,8 @@ public class NotificationAPI {
     public ResponseEntity<List<Notification>> getMyNotifications() {
         return ResponseEntity.ok(notificationService.getNotificationsByCurrentUSer());
     }
+
+
     @PutMapping("/{id}/read")
     @Operation(summary = "Đánh dấu đã đọc", description = "Đánh dấu một thông báo là đã đọc")
     @ApiResponses({
@@ -74,7 +76,7 @@ public class NotificationAPI {
         return ResponseEntity.ok(notificationService.markAsRead(id));
     }
 
-//        @PreAuthorize("hasRole('STAFF')")
+    @PreAuthorize("hasRole('STAFF')")
     @GetMapping
     @Operation(summary = "Lấy danh sách thông báo có lọc", description = "Lọc theo userId và khoảng thời gian tạo. Hỗ trợ phân trang và sắp xếp.")
     @ApiResponses({
