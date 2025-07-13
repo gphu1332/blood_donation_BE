@@ -21,14 +21,14 @@ public class UserAPI {
 
     @PutMapping("/{id}")
     @Operation(
-            summary = "Cập nhật thông tin người dùng",
-            description = "Cập nhật thông tin người dùng có role là MEMBER sau khi đăng nhập"
+        summary = "Cập nhật thông tin người dùng",
+        description = "Cập nhật thông tin người dùng có role là MEMBER sau khi đăng nhập"
     )
     @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "Cập nhật thông tin thành công"),
-            @ApiResponse(responseCode = "400", description = "Dữ liệu không hợp lệ"),
-            @ApiResponse(responseCode = "401", description = "Không có quyền truy cập"),
-            @ApiResponse(responseCode = "404", description = "Không tìm thấy người dùng")
+        @ApiResponse(responseCode = "200", description = "Cập nhật thông tin thành công"),
+        @ApiResponse(responseCode = "400", description = "Dữ liệu không hợp lệ"),
+        @ApiResponse(responseCode = "401", description = "Không có quyền truy cập"),
+        @ApiResponse(responseCode = "404", description = "Không tìm thấy người dùng")
     })
     public ResponseEntity<UserDTO> updateUser(
             @Parameter(description = "ID của người dùng cần cập nhật") @PathVariable Long id,
