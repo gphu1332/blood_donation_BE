@@ -8,7 +8,7 @@ import com.example.blood_donation.entity.MedicalStaff;
 import com.example.blood_donation.entity.Staff;
 import com.example.blood_donation.enums.Status;
 import com.example.blood_donation.repositoty.BloodRequestDetailRepository;
-
+import com.example.blood_donation.dto.BloodRequestResponseDTO;
 import com.example.blood_donation.repositoty.BloodRequestRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -143,4 +143,63 @@ public class BloodRequestService {
     public List<BloodRequest> getAllRequests() {
         return reqRepo.findAll();
     }
+// Phan Kim code test BE
+    public List<BloodRequestResponseDTO> getAllRequestDTOs() {
+        List<BloodRequest> all = reqRepo.findAll();
+
+        return all.stream().map(req -> {
+            BloodRequestResponseDTO dto = new BloodRequestResponseDTO();
+            dto.setReqID(req.getReqID());
+            dto.setIsEmergency(req.getIsEmergency());
+            dto.setStatus(req.getStatus().toString());
+            dto.setReqCreateDate(req.getReqCreateDate());
+
+            List<BloodRequestDetailDTO> detailDTOs = req.getDetails().stream().map(detail -> {
+                BloodRequestDetailDTO d = new BloodRequestDetailDTO();
+                d.setBloodType(detail.getBloodType());
+                d.setPackCount(detail.getPackCount());
+                d.setPackVolume(detail.getPackVolume());
+                return d;
+            }).toList();
+
+            dto.setDetails(detailDTOs);
+            return dto;
+        }).toList();
+    }
+
+    public List<BloodRequestResponseDTO> getRequestsByMedicalDTO(Long medId) {
+        List<BloodRequest> requests = reqRepo.findByMedicalStaff_UserID(medId);
+        return requests.stream().map(req -> {
+            BloodRequestResponseDTO dto = new BloodRequestResponseDTO();
+            dto.setReqID(req.getReqID());
+            dto.setIsEmergency(req.getIsEmergency());
+            dto.setStatus(req.getStatus().name());
+            dto.setReqCreateDate(req.getReqCreateDate());
+
+            List<BloodRequestDetailDTO> detailDTOs = req.getDetails().stream().map(d -> {
+                BloodRequestDetailDTO dDTO = new BloodRequestDetailDTO();
+                dDTO.setBloodType(d.getBloodType());
+                dDTO.setPackVolume(d.getPackVolume());
+                dDTO.setPackCount(d.getPackCount());
+                return dDTO;
+            }).toList();
+
+            dto.setDetails(detailDTOs);
+            return dto;
+        }).toList();
+    }
+
+    public void deleteRequest(Long id) {
+        BloodRequest request = reqRepo.findById(id)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy yêu cầu"));
+
+        // Delete all details first
+        detailRepo.deleteAll(detailRepo.findByReqID(id));
+
+        // Then delete the request
+        reqRepo.deleteById(id);
+    }
+
+
+
 }
