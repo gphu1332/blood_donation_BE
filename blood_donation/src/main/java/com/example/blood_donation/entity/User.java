@@ -50,11 +50,11 @@ public class User implements UserDetails {
 //  09x: 090–094, 096–099 (các mạng khác)
     public String phone;
 
-    private String address;
 
+    @OneToOne(cascade = CascadeType.ALL)
+    @JoinColumn(name = "address_id")
+    private Adress address;
 
-    private Double latitude;
-    private Double longitude;
 
     @Pattern(regexp = "^\\d{12}$", message = "CCCD invalid!")
     @Column(unique = true)
