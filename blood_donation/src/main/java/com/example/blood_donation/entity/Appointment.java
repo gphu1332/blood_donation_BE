@@ -9,7 +9,6 @@ import java.time.LocalDate;
 @Entity
 @Data
 public class Appointment {
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -19,19 +18,27 @@ public class Appointment {
     @Enumerated(EnumType.STRING)
     private Status status;
 
-
-    // Mỗi Appointment gắn với 1 User
-    @OneToOne
-    @JoinColumn(name = "user_id", unique = true)
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
-    // Mỗi Appointment thuộc về một Slot
     @ManyToOne
     @JoinColumn(name = "slot_id")
     private Slot slot;
 
-    // Mỗi Appointment thuộc về một Program
     @ManyToOne
     @JoinColumn(name = "program_id")
     private DonationProgram program;
+
+    private String answer1;
+    private String answer2;
+    private String answer3;
+    private String answer4;
+    private String answer5;
+    private String answer6;
+    private String answer7;
+    private String answer8;
+    private String answer9;
 }
+
+

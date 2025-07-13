@@ -15,24 +15,27 @@ import java.util.List;
 public class BlogAPI {
     @Autowired
     private BlogService blogService;
+
     @PostMapping
     public ResponseEntity<Blog> create(@RequestBody Blog blog) {
         return ResponseEntity.ok(blogService.create(blog));
     }
+
     @GetMapping
     public List<Blog> getAll() {
         return blogService.getAll();
     }
+
     @GetMapping("/{id}")
-    public Blog getById(@PathVariable Integer id) {
+    public Blog getById(@PathVariable Long id) {
         return blogService.getById(id);
     }
     @PutMapping("/{id}")
-    public Blog update(@PathVariable Integer id, @RequestBody Blog blog) {
+    public Blog update(@PathVariable Long id, @RequestBody Blog blog) {
         return blogService.update(id, blog);
     }
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> delete(@PathVariable Integer id) {
+    public ResponseEntity<Void> delete(@PathVariable Long id) {
         blogService.delete(id);
         return ResponseEntity.noContent().build();
     }

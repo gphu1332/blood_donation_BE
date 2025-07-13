@@ -1,111 +1,201 @@
 package com.example.blood_donation.service;
 
 import com.example.blood_donation.dto.DonationProgramDTO;
-import com.example.blood_donation.entity.DonationProgram;
-import com.example.blood_donation.entity.Location;
-import com.example.blood_donation.entity.Slot;
-import com.example.blood_donation.repositoty.DonationProgramRepository;
-import com.example.blood_donation.repositoty.LocationRepository;
-import com.example.blood_donation.repositoty.SlotRepository;
+import com.example.blood_donation.dto.DonationProgramResponse;
+import com.example.blood_donation.entity.*;
+import com.example.blood_donation.repositoty.*;
 import jakarta.persistence.EntityNotFoundException;
+import jakarta.transaction.Transactional;
+import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 public class DonationProgramService {
 
     @Autowired
-    private DonationProgramRepository repository;
+    private DonationProgramRepository donationProgramRepository;
 
     @Autowired
     private SlotRepository slotRepository;
 
     @Autowired
-    private LocationRepository locationRepository;
+    private CityRepository cityRepository;
 
-    public List<DonationProgramDTO> getAll() {
-        return repository.findAll().stream()
-                .map(this::mapToDTO)
-                .collect(Collectors.toList());
+    @Autowired
+    private UserRepository userRepository;
+
+    @Autowired
+    private AdressRepository adressRepository;
+
+    @Autowired
+    private ModelMapper modelMapper;
+
+    /**
+     * Lấy danh sách tất cả chương trình hiến máu.
+     */
+    public List<DonationProgramResponse> getAll() {
+        return donationProgramRepository.findAll().stream()
+                .map(this::mapToResponseDTO)
+                .toList();
     }
 
-    public DonationProgramDTO getById(Long id) {
-        DonationProgram program = repository.findById(id)
+    /**
+     * Lấy thông tin chương trình theo ID.
+     */
+    public DonationProgramResponse getById(Long id) {
+        DonationProgram program = donationProgramRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Donation program not found"));
-        return mapToDTO(program);
+        return mapToResponseDTO(program);
     }
 
-    public DonationProgramDTO create(DonationProgramDTO dto) {
+    /**
+     * Tìm kiếm các chương trình có ngày diễn ra nằm trong khoảng startDate - endDate
+     * và thuộc City chỉ định.
+     */
+    public List<DonationProgramResponse> searchByDateInRangeAndCityID(LocalDate date, Long cityId) {
+        List<DonationProgram> programs = donationProgramRepository
+                .findByStartDateLessThanEqualAndEndDateGreaterThanEqualAndCity_Id(date, date, cityId);
+        return programs.stream()
+                .map(this::mapToResponseDTO)
+                .toList();
+    }
+
+    /**
+     * Tạo mới một chương trình hiến máu và gán người tạo là Admin hiện tại.
+     */
+    @Transactional
+    public DonationProgramResponse create(DonationProgramDTO dto, String adminUsername) {
         DonationProgram program = new DonationProgram();
         program.setProName(dto.getProName());
+        program.setStartDate(dto.getStartDate());
+        program.setEndDate(dto.getEndDate());
         program.setDateCreated(LocalDate.now());
+        program.setTypeBloods(dto.getTypeBloods());
+        program.setDescription(dto.getDescription());
+        program.setContact(dto.getContact());
+        program.setImageUrl(dto.getImageUrl());
 
-        // Gán location
-        if (dto.getLocationId() != null) {
-            Location location = locationRepository.findById(dto.getLocationId())
-                    .orElseThrow(() -> new EntityNotFoundException("Location not found"));
-            program.setLocation(location);
+        if (dto.getCityId() != null) {
+            City city = cityRepository.findById(dto.getCityId())
+                    .orElseThrow(() -> new EntityNotFoundException("City not found"));
+            program.setCity(city);
         }
 
-        // Gán slots
+        if (dto.getAddressId() != null) {
+            Adress address = adressRepository.findById(dto.getAddressId())
+                    .orElseThrow(() -> new EntityNotFoundException("Address not found"));
+            program.setAddress(address);
+        }
+
+        User admin = userRepository.findByUsername(adminUsername)
+                .orElseThrow(() -> new EntityNotFoundException("Admin user not found"));
+        program.setAdmin(admin);
+
         if (dto.getSlotIds() != null && !dto.getSlotIds().isEmpty()) {
             List<Slot> slots = slotRepository.findAllById(dto.getSlotIds());
-            slots.forEach(slot -> slot.setProgram(program)); // gán ngược lại để giữ quan hệ bidirectional
             program.setSlots(slots);
         }
 
-        DonationProgram saved = repository.save(program);
-        return mapToDTO(saved);
+        DonationProgram saved = donationProgramRepository.save(program);
+        return mapToResponseDTO(saved);
     }
 
-    public DonationProgramDTO update(Long id, DonationProgramDTO dto) {
-        DonationProgram existing = repository.findById(id)
+    /**
+     * Cập nhật thông tin chương trình đã có.
+     */
+    public DonationProgramResponse update(Long id, DonationProgramDTO dto) {
+        DonationProgram existing = donationProgramRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Donation program not found"));
 
         existing.setProName(dto.getProName());
+        existing.setStartDate(dto.getStartDate());
+        existing.setEndDate(dto.getEndDate());
+        existing.setTypeBloods(dto.getTypeBloods());
+        existing.setDescription(dto.getDescription());
+        existing.setContact(dto.getContact());
+        existing.setImageUrl(dto.getImageUrl());
 
-        // Cập nhật location
-        if (dto.getLocationId() != null) {
-            Location location = locationRepository.findById(dto.getLocationId())
-                    .orElseThrow(() -> new EntityNotFoundException("Location not found"));
-            existing.setLocation(location);
+        if (dto.getAddressId() != null) {
+            Adress address = adressRepository.findById(dto.getAddressId())
+                    .orElseThrow(() -> new EntityNotFoundException("Address not found"));
+            existing.setAddress(address);
         }
 
-        // Cập nhật slots
+        if (dto.getCityId() != null) {
+            City city = cityRepository.findById(dto.getCityId())
+                    .orElseThrow(() -> new EntityNotFoundException("City not found"));
+            existing.setCity(city);
+        }
+
         if (dto.getSlotIds() != null) {
-            List<Slot> slots = slotRepository.findAllById(dto.getSlotIds());
-            slots.forEach(slot -> slot.setProgram(existing));
-            existing.setSlots(slots);
+            List<Slot> updatedSlots = slotRepository.findAllById(dto.getSlotIds());
+            existing.setSlots(updatedSlots);
         }
 
-        DonationProgram updated = repository.save(existing);
-        return mapToDTO(updated);
+        DonationProgram updated = donationProgramRepository.save(existing);
+        return mapToResponseDTO(updated);
     }
 
+    /**
+     * Xoá một chương trình theo ID.
+     */
     public void delete(Long id) {
-        repository.deleteById(id);
+        donationProgramRepository.deleteById(id);
     }
 
-    // ✨ Hàm ánh xạ từ Entity → DTO
-    private DonationProgramDTO mapToDTO(DonationProgram program) {
-        DonationProgramDTO dto = new DonationProgramDTO();
+    /**
+     * Tìm kiếm chương trình có ngày trong khoảng chỉ định.
+     */
+    public List<DonationProgramResponse> searchByDateRange(LocalDate startDate, LocalDate endDate) {
+        if (endDate == null) {
+            endDate = startDate;
+        }
+        List<DonationProgram> programs = donationProgramRepository
+                .findByStartDateLessThanEqualAndEndDateGreaterThanEqual(endDate, startDate);
+        return programs.stream()
+                .map(this::mapToResponseDTO)
+                .toList();
+    }
+
+    /**
+     * Chuyển từ entity DonationProgram sang DTO để hiển thị.
+     */
+    private DonationProgramResponse mapToResponseDTO(DonationProgram program) {
+        DonationProgramResponse dto = new DonationProgramResponse();
         dto.setId(program.getId());
         dto.setProName(program.getProName());
+        dto.setStartDate(program.getStartDate());
+        dto.setEndDate(program.getEndDate());
+        dto.setDateCreated(program.getDateCreated());
 
-        if (program.getLocation() != null) {
-            dto.setLocationId(program.getLocation().getId());
+        if (program.getAddress() != null) {
+            dto.setAddressId(program.getAddress().getId());
+        }
+
+        dto.setDescription(program.getDescription());
+        dto.setImageUrl(program.getImageUrl());
+        dto.setContact(program.getContact());
+
+        // ✅ Gán danh sách typeBloods
+        dto.setTypeBloods(program.getTypeBloods());
+
+        if (program.getCity() != null) {
+            dto.setCityId(program.getCity().getId());
+        }
+
+        if (program.getAdmin() != null) {
+            dto.setAdminId(program.getAdmin().getUserID());
         }
 
         if (program.getSlots() != null) {
-            dto.setSlotIds(
-                    program.getSlots().stream()
-                            .map(Slot::getSlotID)
-                            .collect(Collectors.toList())
-            );
+            dto.setSlotIds(program.getSlots()
+                    .stream()
+                    .map(Slot::getSlotID)
+                    .toList());
         }
 
         return dto;

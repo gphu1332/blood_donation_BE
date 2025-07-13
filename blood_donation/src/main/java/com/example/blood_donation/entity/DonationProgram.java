@@ -1,5 +1,6 @@
 package com.example.blood_donation.entity;
 
+import com.example.blood_donation.enums.TypeBlood;
 import jakarta.persistence.*;
 import lombok.Data;
 
@@ -15,19 +16,45 @@ public class DonationProgram {
 
     private String proName;
     private LocalDate dateCreated;
+    private LocalDate endDate;
+    private LocalDate startDate;
 
-    // Mỗi Program được tổ chức tại 1 Location
     @ManyToOne
-    @JoinColumn(name = "location_id")
-    private Location location;
+    @JoinColumn(name = "address_id")
+    private Adress address;
 
-    // Mỗi Program có nhiều Slot
-    @OneToMany(mappedBy = "program", cascade = CascadeType.ALL, orphanRemoval = true)
+    // Mỗi Program được tổ chức tại 1 city
+    @ManyToOne
+    @JoinColumn(name = "city_id")
+    private City city;
+
+    // Mỗi Program có 1 hoặc nhiều Slot
+    @ManyToMany
+    @JoinTable(
+            name = "program_slot",
+            joinColumns = @JoinColumn(name = "program_id"),
+            inverseJoinColumns = @JoinColumn(name = "slot_id")
+    )
     private List<Slot> slots;
+
+    @ElementCollection(targetClass = TypeBlood.class)
+    @CollectionTable(name = "program_blood_types", joinColumns = @JoinColumn(name = "program_id"))
+    @Enumerated(EnumType.STRING)
+    @Column(name = "blood_type")
+    private List<TypeBlood> typeBloods;
+
+    @Column(columnDefinition = "TEXT")
+    private String description;
+
+    private String imageUrl;
+
+    private String contact;
 
     @ManyToOne
     @JoinColumn(name = "admin_id")
     private User admin;
+
+    @OneToOne(cascade = CascadeType.ALL)
+    @JoinColumn(name = "healthCheck_id")
+    HealthCheck healthCheck;
 }
-
-

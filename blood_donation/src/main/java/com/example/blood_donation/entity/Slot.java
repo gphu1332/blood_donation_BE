@@ -1,7 +1,7 @@
 package com.example.blood_donation.entity;
 
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.persistence.*;
 import lombok.Data;
 
@@ -17,16 +17,15 @@ public class Slot {
     private Long slotID;
 
     private String label;
+
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "HH:mm")
     private LocalTime start;
+
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "HH:mm")
     private LocalTime end;
-    private boolean isDeleted = false;
 
-    // Mỗi Slot thuộc về 1 Program
-    @ManyToOne
-    @JoinColumn(name = "program_id")
-    private DonationProgram program;
-
-    @OneToMany(mappedBy = "slot")
-    @JsonIgnore
-    private List<Appointment> appointments;
+    @ManyToMany(mappedBy = "slots")
+    private List<DonationProgram> programs;
 }
+
+

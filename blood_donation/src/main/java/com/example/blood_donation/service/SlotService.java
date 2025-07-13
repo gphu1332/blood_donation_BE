@@ -1,19 +1,14 @@
 package com.example.blood_donation.service;
 
-import com.example.blood_donation.dto.AppointmentDTO;
+import com.example.blood_donation.dto.SlotRequest;
+import com.example.blood_donation.dto.SlotResponse;
 import com.example.blood_donation.entity.Slot;
-import com.example.blood_donation.entity.User;
-import com.example.blood_donation.entity.Appointment;
 import com.example.blood_donation.exception.exceptons.BadRequestException;
-import com.example.blood_donation.repositoty.AuthenticationRepository;
 import com.example.blood_donation.repositoty.SlotRepository;
-import com.example.blood_donation.repositoty.UserRepository;
-import com.example.blood_donation.repositoty.AppointmentRepository;
+import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalTime;
-import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -23,68 +18,71 @@ public class SlotService {
     private SlotRepository slotRepository;
 
     @Autowired
-    private UserRepository userRepository;
+    private ModelMapper modelMapper;
 
-    @Autowired
-    private AppointmentRepository appointmentRepository;
-    @Autowired
-    private AuthenticationRepository authenticationRepository;
+    /**
+     * Lấy slot theo ID.
+     */
+    public SlotResponse getSlotById(Long id) {
+        Slot slot = slotRepository.findById(id)
+                .orElseThrow(() -> new BadRequestException("Slot not found with id: " + id));
 
-    public List<Slot> getSlot() {
-        return slotRepository.findAll();
+        return mapToResponse(slot);
     }
 
-    public User registerSlot(AppointmentDTO dto) {
-        User user = userRepository.findByPhone(dto.getPhone())
-                .orElseThrow(() -> new BadRequestException("User not found"));
+    /**
+     * Tạo mới slot không gắn chương trình.
+     */
+    public SlotResponse create(SlotRequest request) {
+        validateSlotRequest(request);
 
-        // ✅ Kiểm tra nếu đã có appointment
-        if (user.getAppointment() != null) {
-            throw new BadRequestException("You have already registered a donation appointment.");
+        Slot slot = new Slot();
+        slot.setLabel(request.getLabel());
+        slot.setStart(request.getStart());
+        slot.setEnd(request.getEnd());
+
+        // Chưa gán với chương trình nào, sẽ được gán sau
+        Slot saved = slotRepository.save(slot);
+        return mapToResponse(saved);
+    }
+
+    /**
+     * Trả về danh sách tất cả slot.
+     */
+    public List<SlotResponse> getAll() {
+        return slotRepository.findAll().stream()
+                .map(this::mapToResponse)
+                .toList();
+    }
+
+    /**
+     * Ánh xạ từ entity sang response DTO.
+     */
+    private SlotResponse mapToResponse(Slot slot) {
+        SlotResponse response = new SlotResponse();
+        response.setSlotID(slot.getSlotID());
+        response.setLabel(slot.getLabel());
+        response.setStart(slot.getStart());
+        response.setEnd(slot.getEnd());
+
+        // Optional: bạn có thể trả về danh sách programId nếu cần
+        // response.setProgramIds(slot.getPrograms().stream().map(p -> p.getId()).toList());
+
+        return response;
+    }
+
+    /**
+     * Validate logic đầu vào cho tạo mới.
+     */
+    private void validateSlotRequest(SlotRequest request) {
+        if (request.getLabel() == null || request.getLabel().isBlank()) {
+            throw new BadRequestException("Label must not be empty");
         }
-
-        // Tìm hoặc tạo appointment theo ngày + slot
-        Slot slot = slotRepository.findById(dto.getSlotID())
-                .orElseThrow(() -> new BadRequestException("Slot not found"));
-
-        Appointment appointment = appointmentRepository.findByDateAndSlot(dto.getDate(), slot)
-                .orElseGet(() -> {
-                    Appointment newAppointment = new Appointment();
-                    newAppointment.setDate(dto.getDate());
-                    newAppointment.setSlot(slot);
-                    return appointmentRepository.save(newAppointment);
-                });
-
-        // Gán appointment cho user
-        user.setAppointment(appointment);
-        return userRepository.save(user);
-    }
-
-
-
-
-    public void generateSlot() {
-//          generate tu dong slot tu 7h sang toi 17h chieu
-        LocalTime start = LocalTime.of(7, 0);
-        LocalTime end = LocalTime.of(17, 0);
-        List<Slot> slots = new ArrayList<>();
-
-        while (start.isBefore(end)) {
-            Slot slot = new Slot();
-            slot.setStart(start);
-            slot.setLabel(start.toString());
-            slot.setEnd(start.plusHours(30));
-
-            slots.add(slot);
-            start = start.plusMinutes(30);
+        if (request.getStart() == null || request.getEnd() == null) {
+            throw new BadRequestException("Start and end times must not be null");
         }
-        slotRepository.saveAll(slots);
+        if (request.getStart().isAfter(request.getEnd())) {
+            throw new BadRequestException("Start time must be before end time");
+        }
     }
-
-    public Slot createSlot(Slot slot) {
-        return slotRepository.save(slot);
-    }
-
 }
-
-

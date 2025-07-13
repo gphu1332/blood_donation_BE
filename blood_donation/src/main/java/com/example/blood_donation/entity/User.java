@@ -7,61 +7,81 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.Pattern;
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import com.fasterxml.jackson.annotation.JsonFormat;
 
 @Entity
 @Data
 @Inheritance(strategy = InheritanceType.JOINED)
+@NoArgsConstructor
+@AllArgsConstructor
 public class User implements UserDetails {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    public long userID;
+    private long userID;
 
     @Column(unique = true)
-    public String username;
+    private String username;
 
     //    @Pattern(regexp = "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)[A-Za-z\\d]{8,}$", message = "Password invalid!")
-    public String password;
-
-    public String fullName;
+    private String password;
+    private String confirmPassword;
+    private String fullName;
 
     @Email
     @Column(unique = true)
-    public String email;
+    private String email;
 
-    //    @Pattern(regexp = "^(84|0[3|5|7|8|9])[0-9]{8}$", message = "Phone invalid!")
-    @Column(unique = true)
+    @Pattern(regexp = "^0(3[2-9]|5[2689]|7[06-9]|8[1-5]|9[0-4 6-9])\\d{7}$\n", message = "Phone invalid!")
+//  03x: 032–039 (Viettel)
+//  05x: 052, 056, 058, 059 (Vietnamobile/Gmobile)
+//  07x: 070, 076–079 (MobiFone)
+//  08x: 081–085 (Vinaphone)
+//  09x: 090–094, 096–099 (các mạng khác)
     public String phone;
 
-    public String address;
+    private String address;
+
+
+    private Double latitude;
+    private Double longitude;
 
     @Pattern(regexp = "^\\d{12}$", message = "CCCD invalid!")
     @Column(unique = true)
-    public String cccd;
+    private String cccd;
 
     @Enumerated(EnumType.STRING)
-    public TypeBlood typeBlood;
+    private TypeBlood typeBlood;
     @Enumerated(EnumType.STRING)
-    public Role role;
+    private Role role;
     @Enumerated(EnumType.STRING)
-    public Gender gender;
+    private Gender gender;
 
-    public LocalDate birthdate;
+    @JsonFormat(pattern = "yyyy-MM-dd")
+    private LocalDate birthdate;
 
-    public String token;
+    private String token;
 
-    @ManyToOne
-    @JoinColumn(name = "appointment_id")
-    @JsonIgnore
-    private Appointment appointment;
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
+    private List<Appointment> appointments = new ArrayList<>();
+
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
+    List<Notification> notifications;
+
+
+
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
