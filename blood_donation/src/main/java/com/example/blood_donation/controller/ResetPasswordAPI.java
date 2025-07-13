@@ -27,8 +27,6 @@ public class ResetPasswordAPI {
     }
 
 
-
-
     @PostMapping("/verify-otp")
     @Operation(summary = "Xác minh mã OTP", description = "Xác minh OTP trước khi cho phép đổi mật khẩu")
     @ApiResponses({
