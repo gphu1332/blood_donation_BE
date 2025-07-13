@@ -69,6 +69,16 @@ public class DonationProgramService {
      */
     @Transactional
     public DonationProgramResponse create(DonationProgramDTO dto, String adminUsername) {
+        // 1. Validate trùng chương trình tại địa chỉ
+        if (dto.getAddressId() != null) {
+            List<DonationProgram> conflicts = donationProgramRepository
+                    .findConflictingPrograms(dto.getAddressId(), dto.getStartDate(), dto.getEndDate());
+
+            if (!conflicts.isEmpty()) {
+                throw new IllegalStateException("Đã có chương trình tại địa chỉ này trong khoảng thời gian đã chọn.");
+            }
+        }
+
         DonationProgram program = new DonationProgram();
         program.setProName(dto.getProName());
         program.setStartDate(dto.getStartDate());
@@ -107,9 +117,20 @@ public class DonationProgramService {
     /**
      * Cập nhật thông tin chương trình đã có.
      */
+    @Transactional
     public DonationProgramResponse update(Long id, DonationProgramDTO dto) {
         DonationProgram existing = donationProgramRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Donation program not found"));
+
+        // Validate trùng chương trình tại địa chỉ (loại trừ chính mình)
+        if (dto.getAddressId() != null) {
+            List<DonationProgram> conflicts = donationProgramRepository
+                    .findConflictingProgramsExcludingSelf(dto.getAddressId(), dto.getStartDate(), dto.getEndDate(), id);
+
+            if (!conflicts.isEmpty()) {
+                throw new IllegalStateException("Đã có chương trình tại địa chỉ này trong khoảng thời gian đã chọn.");
+            }
+        }
 
         existing.setProName(dto.getProName());
         existing.setStartDate(dto.getStartDate());
@@ -139,6 +160,7 @@ public class DonationProgramService {
         DonationProgram updated = donationProgramRepository.save(existing);
         return mapToResponseDTO(updated);
     }
+
 
     /**
      * Xoá một chương trình theo ID.
@@ -171,6 +193,7 @@ public class DonationProgramService {
         dto.setStartDate(program.getStartDate());
         dto.setEndDate(program.getEndDate());
         dto.setDateCreated(program.getDateCreated());
+        dto.setStatus(program.getStatus());
 
         if (program.getAddress() != null) {
             dto.setAddressId(program.getAddress().getId());

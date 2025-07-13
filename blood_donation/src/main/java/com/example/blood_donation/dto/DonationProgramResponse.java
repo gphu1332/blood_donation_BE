@@ -1,5 +1,6 @@
 package com.example.blood_donation.dto;
 
+import com.example.blood_donation.enums.ProgramStatus;
 import com.example.blood_donation.enums.TypeBlood;
 import lombok.Data;
 
@@ -25,4 +26,7 @@ public class DonationProgramResponse {
     private Long adminId;
 
     private List<Long> slotIds;
+
+    private ProgramStatus status;
+
 }

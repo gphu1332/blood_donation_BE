@@ -1,5 +1,6 @@
 package com.example.blood_donation.entity;
 
+import com.example.blood_donation.enums.ProgramStatus;
 import com.example.blood_donation.enums.TypeBlood;
 import jakarta.persistence.*;
 import lombok.Data;
@@ -57,4 +58,23 @@ public class DonationProgram {
     @OneToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "healthCheck_id")
     HealthCheck healthCheck;
+
+    @Transient
+    private ProgramStatus status;
+
+    public ProgramStatus getStatus() {
+        LocalDate today = LocalDate.now();
+
+        if (startDate != null && endDate != null) {
+            if (today.isBefore(startDate)) {
+                return ProgramStatus.NOT_STARTED;
+            } else if ((today.isEqual(startDate) || today.isAfter(startDate)) && today.isBefore(endDate.plusDays(1))) {
+                return ProgramStatus.ACTIVE;
+            } else {
+                return ProgramStatus.FINISHED;
+            }
+        }
+
+        return null; // nếu thiếu ngày
+    }
 }
