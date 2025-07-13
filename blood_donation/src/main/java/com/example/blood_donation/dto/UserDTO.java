@@ -18,7 +18,7 @@ public class UserDTO {
     public Long userID;
     public String username;
     public String password;
-    private String confirmPassword;
+//    private String confirmPassword;
     public String fullName;
     public String email;
     public String phone;

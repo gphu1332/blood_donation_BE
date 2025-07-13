@@ -1,7 +1,5 @@
 package com.example.blood_donation.dto;
 
-import com.example.blood_donation.enums.Gender;
-import com.example.blood_donation.enums.TypeBlood;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;

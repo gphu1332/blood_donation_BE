@@ -28,6 +28,17 @@ public class UserService {
 
         User existingUser = optionalUser.get();
 
+        // Kiểm tra username đã tồn tại cho user khác chưa
+        if (userRepository.existsByUsernameAndUserIDNot(userDTO.getUsername(), id)) {
+            throw new BadRequestException("Username already exists");
+        }
+        if (userRepository.existsByEmailAndUserIDNot(userDTO.getEmail(), id)) {
+            throw new BadRequestException("Email already exists");
+        }
+        if (userRepository.existsByCccdAndUserIDNot(userDTO.getCccd(), id)) {
+            throw new BadRequestException("CCCD already exists");
+        }
+
         existingUser.setUsername(userDTO.getUsername());
         existingUser.setFullName(userDTO.getFullName());
         existingUser.setEmail(userDTO.getEmail());
@@ -41,6 +52,7 @@ public class UserService {
         User updatedUser = userRepository.save(existingUser);
         return modelMapper.map(updatedUser, UserDTO.class);
     }
+
 
 
 }
