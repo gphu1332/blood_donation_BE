@@ -16,50 +16,82 @@ import java.util.concurrent.TimeUnit;
 
 @Service
 public class ResetPasswordService {
-    @Autowired
-    UserRepository userRepository;
-    @Autowired
-    TokenService tokenService;
-    @Autowired
-    AuthenticationService authenticationService;
 
+    @Autowired
+    private UserRepository userRepository;
 
-    private final Map<String, String> otpStorage = new ConcurrentHashMap<>();
-    private final Map<String, Boolean> verifiedOtpEmails = new ConcurrentHashMap<>();
-    private final ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor();
+    @Autowired
+    private TokenService tokenService;
+
+    @Autowired
+    private AuthenticationService authenticationService;
+
     @Autowired
     private PasswordEncoder passwordEncoder;
 
+    // Lưu OTP tạm thời
+    private final Map<String, String> otpStorage = new ConcurrentHashMap<>();
+
+    // Lưu trạng thái xác minh OTP
+    private final Map<String, Boolean> verifiedOtpEmails = new ConcurrentHashMap<>();
+
+    // Scheduler để xóa OTP sau một thời gian
+    private final ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor();
+
+    /**
+     * Gửi mã OTP đến email
+     */
     public String generateOtp(String email) {
         String otp = String.valueOf(new java.util.Random().nextInt(900000) + 100000);
         otpStorage.put(email, otp);
 
-        // Lên lịch xóa sau 1 phút
+        // Sau 1 phút sẽ tự động xóa OTP
         scheduler.schedule(() -> otpStorage.remove(email), 1, TimeUnit.MINUTES);
 
         return otp;
     }
+
+    /**
+     * Xác minh mã OTP, nếu đúng thì trả về token và đánh dấu email đã xác minh
+     */
     public String verifyOtp(String email, String otp) {
         boolean isValid = otp.equals(otpStorage.get(email));
-        String token = "";
-        if (isValid) {
-            User user = userRepository.findByEmail(email).orElseThrow(() -> new BadRequestException("User not found"));
-           token = tokenService.generateToken(user);
+
+        if (!isValid) {
+            throw new BadRequestException("Mã OTP không hợp lệ hoặc đã hết hạn");
         }
-        return token;
+
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new BadRequestException("Không tìm thấy người dùng"));
+
+        // Xác minh thành công thì lưu trạng thái
+        verifiedOtpEmails.put(email, true);
+
+        return tokenService.generateToken(user);
     }
 
-
+    /**
+     * Đặt lại mật khẩu mới sau khi đã xác minh OTP
+     */
     public void resetPassword(ResetPasswordRequest request) {
         if (!request.getNewPassword().equals(request.getConfirmPassword())) {
             throw new IllegalArgumentException("Mật khẩu xác nhận không khớp");
         }
 
         User user = authenticationService.getCurrentUser();
+        String email = user.getEmail();
 
+        // Kiểm tra đã xác minh OTP chưa
+        if (!verifiedOtpEmails.getOrDefault(email, false)) {
+            throw new BadRequestException("Email chưa được xác minh OTP");
+        }
+
+        // Cập nhật mật khẩu
         user.setPassword(passwordEncoder.encode(request.getNewPassword()));
         userRepository.save(user);
+
+        // Dọn dẹp trạng thái sau khi đặt lại mật khẩu thành công
+        verifiedOtpEmails.remove(email);
+        otpStorage.remove(email); // Phòng trường hợp chưa bị xoá tự động
     }
-
-
 }
