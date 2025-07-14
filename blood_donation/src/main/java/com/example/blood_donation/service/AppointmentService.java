@@ -68,7 +68,7 @@ public class AppointmentService {
             }
 
             if (daysBetween < 14) {
-                System.out.println("⚠️ Cảnh báo: Người dùng đặt lịch khi chưa đủ 14 ngày kể từ lần hiến máu trước.");
+                System.out.println("Cảnh báo: Người dùng đặt lịch khi chưa đủ 14 ngày kể từ lần hiến máu trước.");
             }
         }
 
@@ -279,4 +279,25 @@ public class AppointmentService {
         dto.setTimeRange(app.getSlot().getStart() + " - " + app.getSlot().getEnd());
         return dto;
     }
+    /**
+     * Member hủy lịch hẹn
+     */
+    public AppointmentDTO cancelAppointment(Long appointmentId, Long userId) {
+        Appointment appointment = appointmentRepository.findById(appointmentId)
+                .orElseThrow(() -> new BadRequestException("Appointment not found"));
+
+        if (appointment.getUser().getUserID() != userId) {
+            throw new BadRequestException("Bạn không có quyền hủy lịch hẹn này.");
+        }
+
+        if (appointment.getStatus() == Status.FULFILLED) {
+            throw new BadRequestException("Không thể hủy lịch đã hoàn tất.");
+        }
+
+        appointment.setStatus(Status.CANCELLED);
+        appointmentRepository.save(appointment);
+
+        return mapToDTO(appointment);
+    }
+
 }
