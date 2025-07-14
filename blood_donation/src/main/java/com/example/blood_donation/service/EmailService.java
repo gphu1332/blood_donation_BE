@@ -37,33 +37,29 @@ public class EmailService {
                     StandardCharsets.UTF_8.name()
             );
 
-            // 1. Gắn biến vào template
+            // Gắn biến vào template
             Context context = new Context();
             context.setVariable("name", toEmail);
             context.setVariable("otp", otp);
             context.setVariable("button", "Xác minh ngay");
             context.setVariable("link", "https://your-domain.com/verify?email=" + toEmail + "&otp=" + otp);
 
-            // 2. Load nội dung email từ HTML
+            // Load nội dung HTML
             String html = templateEngine.process("emailtemplate.html", context);
 
-            // 3. Thiết lập nội dung email
             helper.setTo(toEmail);
-            helper.setSubject("🔐 Mã OTP xác thực tài khoản - Blood Donation");
-            helper.setText(html, true); // true = HTML
+            helper.setSubject("Mã OTP xác thực tài khoản - Blood Donation");
+            helper.setText(html, true);
 
-            // Thêm ảnh nội tuyến (logo)
-            File logoFile = new ClassPathResource("static/assets/img.png").getFile();
-            helper.addInline("logoImage", logoFile);
-;
 
-            // 5. Gửi mail
+
             mailSender.send(message);
 
-        } catch (MessagingException | IOException e) {
+        } catch (MessagingException e) {
             throw new RuntimeException("Lỗi khi gửi email OTP", e);
         }
     }
+
 
     public void sendAppointmentReminderEmail(String toEmail, String name, LocalDateTime appointmentTime) {
         try {
@@ -80,7 +76,7 @@ public class EmailService {
                 <p>Hãy đảm bảo sức khỏe và đến đúng giờ nhé!</p>
                 <p style="margin-top: 20px;">Trân trọng,<br>Blood Donation System</p>
             </div>
-        """.formatted(name, appointmentTime.toLocalDate().toString());
+        """.formatted(name, appointmentTime.toLocalDate());
 
             helper.setText(html, true);
             mailSender.send(message);
@@ -88,6 +84,7 @@ public class EmailService {
             throw new RuntimeException("Không gửi được email nhắc lịch", e);
         }
     }
+
 
 
 }

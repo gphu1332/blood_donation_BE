@@ -21,8 +21,7 @@ public class ResetPasswordAPI {
     ResetPasswordService resetPasswordService;
 
     @PostMapping("/generate-otp")
-    public ResponseEntity generateOTP(
-            @RequestParam String email) {
+    public ResponseEntity<String> generateOTP(@RequestParam String email) {
         return ResponseEntity.ok(resetPasswordService.generateOtp(email));
     }
 
@@ -33,10 +32,8 @@ public class ResetPasswordAPI {
             @ApiResponse(responseCode = "200", description = "OTP hợp lệ"),
             @ApiResponse(responseCode = "400", description = "OTP không hợp lệ hoặc đã hết hạn")
     })
-    public ResponseEntity verifyOtp(
-            @RequestParam String email,
-            @RequestParam String otp) {
-      return ResponseEntity.ok(resetPasswordService.verifyOtp(email, otp));
+    public ResponseEntity<String> verifyOtp(@RequestParam String email, @RequestParam String otp) {
+        return ResponseEntity.ok(resetPasswordService.verifyOtp(email, otp));
     }
 
     @PostMapping("reset-password")
@@ -45,8 +42,8 @@ public class ResetPasswordAPI {
             @ApiResponse(responseCode = "200", description = "Đặt lại mật khẩu thành công"),
             @ApiResponse(responseCode = "400", description = "Mật khẩu không khớp hoặc OTP chưa xác minh")
     })
-    public ResponseEntity<?> resetPassword(@Valid @RequestBody ResetPasswordRequest request) {
+    public ResponseEntity<String> resetPassword(@Valid @RequestBody ResetPasswordRequest request) {
         resetPasswordService.resetPassword(request);
-        return ResponseEntity.ok("Đặt lại mật khẩu thành công");
+        return ResponseEntity.ok("Đặt lại mật khẩu thành công.");
     }
 }
