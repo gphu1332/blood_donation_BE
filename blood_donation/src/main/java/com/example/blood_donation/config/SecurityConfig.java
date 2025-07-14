@@ -51,6 +51,8 @@ public class SecurityConfig {
                                 "/api/login",
                                 "/api/register",
                                 "/swagger-ui/**",
+                                "/api/generate-otp",
+                                "/api/verify-otp",
                                 "/v3/api-docs/**"
                         ).permitAll()
                         .anyRequest().authenticated()
@@ -66,6 +68,7 @@ public class SecurityConfig {
         CorsConfiguration config = new CorsConfiguration();
         config.setAllowedOrigins(Arrays.asList("http://localhost:5173"));
         config.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+        config.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
         config.setAllowedHeaders(Arrays.asList("*"));
         config.setAllowCredentials(true);
 

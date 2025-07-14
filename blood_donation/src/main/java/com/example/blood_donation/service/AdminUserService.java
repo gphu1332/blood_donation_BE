@@ -1,9 +1,7 @@
 package com.example.blood_donation.service;
 
-import com.example.blood_donation.dto.AdminUserDTO;
-import com.example.blood_donation.dto.AdminUserResponseDTO;
-import com.example.blood_donation.dto.CreateAdminUserDTO;
-import com.example.blood_donation.dto.UserDTO;
+import com.example.blood_donation.dto.*;
+import com.example.blood_donation.entity.Adress;
 import com.example.blood_donation.entity.Hospital;
 import com.example.blood_donation.entity.MedicalStaff;
 import com.example.blood_donation.entity.User;
@@ -85,7 +83,16 @@ public class AdminUserService {
         user.setFullName(adminDTO.getFullName());
         user.setEmail(adminDTO.getEmail());
         user.setPhone(adminDTO.getPhone());
-        user.setAddress(adminDTO.getAddress());
+
+        if (adminDTO.getAddress() != null) {
+            AdressDTO addressDTO = adminDTO.getAddress();
+            Adress address = new Adress();
+            address.setName(addressDTO.getName());
+            address.setLatitude(addressDTO.getLatitude());
+            address.setLongitude(addressDTO.getLongitude());
+            user.setAddress(address);
+        }
+
         user.setCccd(adminDTO.getCccd());
         user.setGender(adminDTO.getGender());
         user.setTypeBlood(adminDTO.getTypeBlood());

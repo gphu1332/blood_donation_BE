@@ -136,9 +136,9 @@ public class AppointmentService {
                 || user.getBirthdate() == null
                 || user.getGender() == null
                 || user.getTypeBlood() == null
-                || user.getAddress() == null || user.getAddress().isBlank()
+                || user.getAddress() == null || user.getAddress().getName() == null || user.getAddress().getName().isBlank()
                 || user.getPhone() == null || user.getPhone().isBlank()) {
-            throw new BadRequestException("Vui lòng cập nhật thông tin cá nhân để đặt lịch");
+            throw new BadRequestException("Vui lòng cập nhật thông tin cá nhân đầy đủ trước khi đặt lịch.");
         }
     }
 

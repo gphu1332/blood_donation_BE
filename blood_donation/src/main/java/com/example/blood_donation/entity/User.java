@@ -36,14 +36,13 @@ public class User implements UserDetails {
 
     //    @Pattern(regexp = "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)[A-Za-z\\d]{8,}$", message = "Password invalid!")
     private String password;
-
     private String fullName;
 
     @Email
     @Column(unique = true)
     private String email;
 
-    @Pattern(regexp = "^0(3[2-9]|5[2689]|7[06-9]|8[1-5]|9[0-4 6-9])\\d{7}$\n", message = "Phone invalid!")
+    @Pattern(regexp = "^0(3[2-9]|5[2689]|7[06-9]|8[1-5]|9[0-4 6-9])\\d{7}$", message = "Phone invalid!")
 //  03x: 032–039 (Viettel)
 //  05x: 052, 056, 058, 059 (Vietnamobile/Gmobile)
 //  07x: 070, 076–079 (MobiFone)
@@ -51,9 +50,13 @@ public class User implements UserDetails {
 //  09x: 090–094, 096–099 (các mạng khác)
     public String phone;
 
-    private String address;
 
-    @Pattern(regexp = "^0\\d{11}$\n", message = "CCCD invalid!")
+    @OneToOne(cascade = CascadeType.ALL)
+    @JoinColumn(name = "address_id")
+    private Adress address;
+
+
+    @Pattern(regexp = "^\\d{12}$", message = "CCCD invalid!")
     @Column(unique = true)
     private String cccd;
 
@@ -73,9 +76,18 @@ public class User implements UserDetails {
     private List<Appointment> appointments = new ArrayList<>();
 
 
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
+    List<Notification> notifications;
+
+
+
 
     @Override
+    @JsonIgnore
     public Collection<? extends GrantedAuthority> getAuthorities() {
+        if (this.role == null) {
+            return List.of();
+        }
         return List.of(new SimpleGrantedAuthority("ROLE_" + this.role.name()));
     }
 

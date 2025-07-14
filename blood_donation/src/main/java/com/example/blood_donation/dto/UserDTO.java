@@ -22,7 +22,7 @@ public class UserDTO {
     public String email;
     public String phone;
     private LocalDate birthdate;
-    public String address;
+    public AdressDTO address;
     public String cccd;
     public TypeBlood typeBlood;
     public Role role;
