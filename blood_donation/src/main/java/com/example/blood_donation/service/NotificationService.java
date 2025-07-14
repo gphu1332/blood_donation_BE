@@ -128,7 +128,7 @@ public class NotificationService {
             emailService.sendAppointmentReminderEmail(
                     user.getEmail(),
                     user.getFullName(),
-                    program.getStartDate().atStartOfDay() 
+                    program.getStartDate().atStartOfDay()
             );
         }
     }

@@ -8,6 +8,7 @@ import lombok.Data;
 @Data
 @Schema(description = "Yêu cầu đặt lại mật khẩu bằng OTP")
 public class ResetPasswordRequest {
+    private String email;
 
     @Schema(description = "Mật khẩu mới", example = "NewPassword123!")
     @NotBlank
