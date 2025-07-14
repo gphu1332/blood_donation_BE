@@ -128,13 +128,13 @@ public class NotificationService {
             emailService.sendAppointmentReminderEmail(
                     user.getEmail(),
                     user.getFullName(),
-                    program.getStartDate().atStartOfDay() // convert to LocalDateTime
+                    program.getStartDate().atStartOfDay() 
             );
         }
     }
 
     @Scheduled(cron = "0 0 8 * * *") // 8:00 sáng hàng ngày
     public void autoSendAppointmentReminderEmails() {
-        notifyUpcomingAppointments(); // gọi method đã viết
+        notifyUpcomingAppointments();
     }
 }
