@@ -18,7 +18,6 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/city")
 @SecurityRequirement(name = "api")
-@PreAuthorize("hasRole('ADMIN')")
 @Tag(name = "City Management API", description = "API dành cho Admin quản lý địa điểm tổ chức hiến máu")
 public class CityAPI {
 
@@ -43,6 +42,7 @@ public class CityAPI {
         return ResponseEntity.ok(cityService.getLocationById(id));
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping
     @Operation(summary = "Tạo địa điểm mới")
     @ApiResponses({
@@ -54,6 +54,7 @@ public class CityAPI {
         return ResponseEntity.ok(cityService.createLocation(dto));
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @PutMapping("/{id}")
     @Operation(summary = "Cập nhật địa điểm theo ID")
     @ApiResponses({
@@ -66,6 +67,7 @@ public class CityAPI {
         return ResponseEntity.ok(cityService.updateLocation(id, dto));
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @DeleteMapping("/{id}")
     @Operation(summary = "Xóa địa điểm theo ID")
     @ApiResponses({
