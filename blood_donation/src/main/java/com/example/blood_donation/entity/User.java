@@ -73,10 +73,12 @@ public class User implements UserDetails {
     private String token;
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
+    @JsonIgnore
     private List<Appointment> appointments = new ArrayList<>();
 
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
+    @JsonIgnore
     List<Notification> notifications;
 
 

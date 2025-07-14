@@ -29,6 +29,9 @@ public class ResetPasswordService {
     @Autowired
     private PasswordEncoder passwordEncoder;
 
+    @Autowired
+    private EmailService emailService;
+
     // Lưu OTP tạm thời
     private final Map<String, String> otpStorage = new ConcurrentHashMap<>();
 
@@ -47,6 +50,8 @@ public class ResetPasswordService {
 
         // Sau 1 phút sẽ tự động xóa OTP
         scheduler.schedule(() -> otpStorage.remove(email), 1, TimeUnit.MINUTES);
+
+        emailService.sendOtpEmail(email, otp);
 
         return otp;
     }

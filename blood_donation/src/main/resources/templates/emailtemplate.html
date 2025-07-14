@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Xác minh tài khoản</title>
+</head>
+<body style="font-family: Arial, sans-serif; background-color: #f4f4f4; margin: 0; padding: 0;">
+<div style="max-width: 600px; margin: auto; background-color: #ffffff; border-radius: 10px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+
+    <!-- Header -->
+    <div style="background-color: #d62828; padding: 20px; text-align: center;">
+        <img src="cid:logoImage" alt="Blood Donation Logo" style="max-height: 60px;" />
+        <h2 style="color: white; margin: 10px 0 0;">Blood Donation System</h2>
+    </div>
+
+    <!-- Body -->
+    <div style="padding: 30px;">
+        <p style="font-size: 16px;">Xin chào <strong th:text="${name}">Người dùng</strong>,</p>
+
+        <p style="font-size: 16px; margin-top: 10px;">
+            Chúng tôi đã nhận được yêu cầu xác minh tài khoản của bạn.
+        </p>
+
+        <p style="font-size: 18px; font-weight: bold; color: #1d3557; margin-top: 30px;">Mã OTP của bạn là:</p>
+        <div style="font-size: 28px; font-weight: bold; color: #2a9d8f; margin: 10px 0 30px;">
+            [[${otp}]]
+        </div>
+
+        <div style="text-align: center; margin: 20px 0;">
+            <a th:href="${link}" style="padding: 12px 24px; background-color: #d62828; color: white; text-decoration: none; border-radius: 6px; font-size: 16px; font-weight: bold;">
+                [[${button}]]
+            </a>
+        </div>
+
+        <p style="font-size: 14px; color: #888;">
+            Mã OTP có hiệu lực trong vòng 1 phút. Nếu bạn không thực hiện yêu cầu này, vui lòng bỏ qua email.
+        </p>
+    </div>
+
+    <!-- Footer -->
+    <div style="text-align: center; background-color: #f0f0f0; padding: 15px; font-size: 12px; color: #999;">
+        © 2025 Blood Donation System. All rights reserved.
+    </div>
+
+</div>
+</body>
+</html>

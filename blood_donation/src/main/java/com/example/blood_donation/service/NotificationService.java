@@ -1,19 +1,20 @@
 package com.example.blood_donation.service;
 
 import com.example.blood_donation.dto.NotificationRequest;
-import com.example.blood_donation.entity.Adress;
-import com.example.blood_donation.entity.Notification;
-import com.example.blood_donation.entity.User;
+import com.example.blood_donation.entity.*;
 import com.example.blood_donation.exception.exceptons.BadRequestException;
 import com.example.blood_donation.repositoty.AdressRepository;
+import com.example.blood_donation.repositoty.AppointmentRepository;
 import com.example.blood_donation.repositoty.NotificationRepository;
 import com.example.blood_donation.repositoty.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -29,6 +30,12 @@ public class NotificationService {
 
     @Autowired
     AdressRepository adressRepository;
+
+    @Autowired
+    private AppointmentRepository appointmentRepository;
+
+    @Autowired
+    private EmailService emailService;
 
     public Notification createNotification(NotificationRequest request) {
         User user = userRepository.findById(request.getUserId())
@@ -109,4 +116,25 @@ public class NotificationService {
         }
     }
 
+    public void notifyUpcomingAppointments() {
+        LocalDate targetDate = LocalDate.now().plusDays(1);
+
+        List<Appointment> appointments = appointmentRepository.findAppointmentsForProgramDate(targetDate);
+
+        for (Appointment appointment : appointments) {
+            User user = appointment.getUser();
+            DonationProgram program = appointment.getProgram();
+
+            emailService.sendAppointmentReminderEmail(
+                    user.getEmail(),
+                    user.getFullName(),
+                    program.getStartDate().atStartOfDay() // convert to LocalDateTime
+            );
+        }
+    }
+
+    @Scheduled(cron = "0 0 8 * * *") // 8:00 sáng hàng ngày
+    public void autoSendAppointmentReminderEmails() {
+        notifyUpcomingAppointments(); // gọi method đã viết
+    }
 }
