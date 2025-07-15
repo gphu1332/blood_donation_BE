@@ -76,6 +76,7 @@ public class MemberService {
         user.setEmail(dto.getEmail());
         user.setPhone(dto.getPhone());
         user.setCccd(dto.getCccd());
+        user.setBirthdate(dto.getBirthdate());
         user.setTypeBlood(dto.getTypeBlood());
         user.setGender(dto.getGender());
 
