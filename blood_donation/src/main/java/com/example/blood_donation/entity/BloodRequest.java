@@ -23,6 +23,8 @@ public class BloodRequest {
     @Enumerated(EnumType.STRING)
     public Status status;
 
+    private boolean isDeleted = false;
+
     //Mỗi MedicalStaff có thể tạo nhiều đơn BloodRequest
     @ManyToOne
     @JoinColumn(name = "MedID")
