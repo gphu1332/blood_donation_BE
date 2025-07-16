@@ -29,8 +29,7 @@ public class DonationDetailService {
         DonationDetail donation = new DonationDetail();
         donation.setDonAmount(dto.getDonAmount());
         donation.setDonDate(dto.getDonDate());
-        donation.setBloodType(bloodTypeRepository.findById(dto.getBloodType())
-                .orElseThrow(() -> new EntityNotFoundException("Blood type not found")));
+        donation.setTypeBlood(dto.getBloodType());
         donation.setAppointment(appointmentRepository.findById(dto.getAppointmentId())
                 .orElseThrow(() -> new EntityNotFoundException("Appointment not found")));
         donation.setMember((Member) memberRepository.findById(dto.getMemberId())
@@ -54,8 +53,7 @@ public class DonationDetailService {
                 .orElseThrow(() -> new EntityNotFoundException("Donation not found"));
         donation.setDonAmount(dto.getDonAmount());
         donation.setDonDate(dto.getDonDate());
-        donation.setBloodType(bloodTypeRepository.findById(dto.getBloodType())
-                .orElseThrow(() -> new EntityNotFoundException("Blood type not found")));
+        donation.setTypeBlood(dto.getBloodType());
         donation.setAppointment(appointmentRepository.findById(dto.getAppointmentId())
                 .orElseThrow(() -> new EntityNotFoundException("Appointment not found")));
         donation.setMember((Member) memberRepository.findById(dto.getMemberId())
@@ -74,7 +72,7 @@ public class DonationDetailService {
         dto.setDonID(detail.getDonID());
         dto.setDonAmount(detail.getDonAmount());
         dto.setDonDate(detail.getDonDate());
-        dto.setBloodType(Long.valueOf(detail.getBloodType().getBloodType()));
+        dto.setBloodType(detail.getTypeBlood());
         dto.setAppointmentId(detail.getAppointment().getId());
         dto.setMemberId(detail.getMember().getUserID());
         dto.setStaffId(detail.getStaff().getUserID());

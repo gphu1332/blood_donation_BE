@@ -42,7 +42,7 @@ public class BloodRequestService {
         for(BloodRequestDetailDTO d : dto.getDetails()) {
             BloodRequestDetail detail = new BloodRequestDetail();
             detail.setReqID(saved.getReqID());
-            detail.setBloodType(d.getBloodType());
+            detail.setTypeBlood(d.getTypeBlood());
             detail.setPackVolume(d.getPackVolume());
             detail.setPackCount(d.getPackCount());
             detailRepo.save(detail);
@@ -66,7 +66,7 @@ public class BloodRequestService {
         for (BloodRequestDetailDTO d : dto.getDetails()) {
             BloodRequestDetail detail = new BloodRequestDetail();
             detail.setReqID(req.getReqID());
-            detail.setBloodType(d.getBloodType());
+            detail.setTypeBlood(d.getTypeBlood());
             detail.setPackVolume(d.getPackVolume());
             detail.setPackCount(d.getPackCount());
             detailRepo.save(detail);
@@ -156,7 +156,7 @@ public class BloodRequestService {
 
             List<BloodRequestDetailDTO> detailDTOs = req.getDetails().stream().map(detail -> {
                 BloodRequestDetailDTO d = new BloodRequestDetailDTO();
-                d.setBloodType(detail.getBloodType());
+                d.setTypeBlood(detail.getTypeBlood());
                 d.setPackCount(detail.getPackCount());
                 d.setPackVolume(detail.getPackVolume());
                 return d;
@@ -178,7 +178,7 @@ public class BloodRequestService {
 
             List<BloodRequestDetailDTO> detailDTOs = req.getDetails().stream().map(d -> {
                 BloodRequestDetailDTO dDTO = new BloodRequestDetailDTO();
-                dDTO.setBloodType(d.getBloodType());
+                dDTO.setTypeBlood(d.getTypeBlood());
                 dDTO.setPackVolume(d.getPackVolume());
                 dDTO.setPackCount(d.getPackCount());
                 return dDTO;
