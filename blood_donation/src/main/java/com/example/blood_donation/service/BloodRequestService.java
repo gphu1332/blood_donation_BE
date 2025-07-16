@@ -55,7 +55,7 @@ public class BloodRequestService {
         BloodRequest req = reqRepo.findById(id)
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy yêu cầu"));
 
-        if (req.getStatus() != Status.PENDING) {
+        if (!req.getStatus().equals("PENDING")) {
             throw new IllegalStateException("Chỉ được cập nhập khi trạng thái là PENDING");
         }
 
