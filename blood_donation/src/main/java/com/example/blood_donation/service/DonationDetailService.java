@@ -22,8 +22,6 @@ public class DonationDetailService {
     MemberRepository memberRepository;
     @Autowired
     StaffRepository staffRepository;
-    @Autowired
-    BloodTypeRepository bloodTypeRepository;
 
     public DonationDetailDTO create(CreateDonationDetailDTO dto) {
         DonationDetail donation = new DonationDetail();
