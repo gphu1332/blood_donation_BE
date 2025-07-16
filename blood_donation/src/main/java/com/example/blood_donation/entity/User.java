@@ -29,7 +29,7 @@ public class User implements UserDetails {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private long userID;
+    private long id;
 
     @Column(unique = true)
     private String username;
@@ -69,6 +69,10 @@ public class User implements UserDetails {
 
     @JsonFormat(pattern = "yyyy-MM-dd")
     private LocalDate birthdate;
+
+    @Column(nullable = false)
+    private boolean isDeleted = false;
+
 
     private String token;
 

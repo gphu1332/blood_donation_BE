@@ -22,21 +22,21 @@ public class UserService {
     private ModelMapper modelMapper;
 
     public UserDTO updateUser(Long id, UserDTO userDTO) {
-        Optional<User> optionalUser = userRepository.findById(id);
+        Optional<User> optionalUser = userRepository.findByIdAndIsDeletedFalse(id);
         if (optionalUser.isEmpty()) {
-            throw new BadRequestException("User not found");
+            throw new BadRequestException("User not found or has been deleted");
         }
 
         User existingUser = optionalUser.get();
 
-        // Kiểm tra username đã tồn tại cho user khác chưa
-        if (userRepository.existsByUsernameAndUserIDNot(userDTO.getUsername(), id)) {
+        // Kiểm tra username, email, CCCD trùng (không tính user đang sửa)
+        if (userRepository.existsByUsernameAndIdNotAndIsDeletedFalse(userDTO.getUsername(), id)) {
             throw new BadRequestException("Username already exists");
         }
-        if (userRepository.existsByEmailAndUserIDNot(userDTO.getEmail(), id)) {
+        if (userRepository.existsByEmailAndIdNotAndIsDeletedFalse(userDTO.getEmail(), id)) {
             throw new BadRequestException("Email already exists");
         }
-        if (userRepository.existsByCccdAndUserIDNot(userDTO.getCccd(), id)) {
+        if (userRepository.existsByCccdAndIdNotAndIsDeletedFalse(userDTO.getCccd(), id)) {
             throw new BadRequestException("CCCD already exists");
         }
 
@@ -45,7 +45,7 @@ public class UserService {
         existingUser.setEmail(userDTO.getEmail());
         existingUser.setPhone(userDTO.getPhone());
 
-        // ✅ Chuyển AddressDTO → Adress entity
+        // ✅ Địa chỉ
         AdressDTO addressDTO = userDTO.getAddress();
         if (addressDTO != null) {
             Adress address = new Adress();

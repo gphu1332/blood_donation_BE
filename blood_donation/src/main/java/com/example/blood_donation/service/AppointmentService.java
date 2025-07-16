@@ -185,7 +185,7 @@ public class AppointmentService {
             throw new BadRequestException("Cannot delete a fulfilled appointment.");
         }
 
-        User requester = userRepository.findByUserID(requesterUserID)
+        User requester = userRepository.findById(requesterUserID)
                 .orElseThrow(() -> new BadRequestException("Requester not found"));
 
         User owner = appointment.getUser();
@@ -289,7 +289,7 @@ public class AppointmentService {
         Appointment appointment = appointmentRepository.findById(appointmentId)
                 .orElseThrow(() -> new BadRequestException("Appointment not found"));
 
-        if (appointment.getUser().getUserID() != userId) {
+        if (appointment.getUser().getId() != userId) {
             throw new BadRequestException("Bạn không có quyền hủy lịch hẹn này.");
         }
 
