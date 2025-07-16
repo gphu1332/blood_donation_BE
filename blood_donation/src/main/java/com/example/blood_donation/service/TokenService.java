@@ -1,12 +1,10 @@
 package com.example.blood_donation.service;
 
 import com.example.blood_donation.entity.User;
-import com.example.blood_donation.repositoty.AuthenticationRepository;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.crypto.SecretKey;
@@ -16,60 +14,63 @@ import java.util.function.Function;
 @Service
 public class TokenService {
 
-    @Autowired
-    AuthenticationRepository authenticationRepository;
-
     private final String SECRET_KEY = "4bb6d1dfbafb64a681139d1586b6f1160d18159afd57c8c79136d7490630407c";
 
-    private SecretKey getSigninKey(){
+    private SecretKey getSigninKey() {
         byte[] keyBytes = Decoders.BASE64.decode(SECRET_KEY);
         return Keys.hmacShaKeyFor(keyBytes);
     }
 
+    /**
+     * Sinh JWT Token cho user
+     */
     public String generateToken(User user) {
-        String token =
-                // create object of JWT
-                Jwts.builder().
-                        //subject of token
-                                subject(user.getUsername()).
-                        // time Create Token
-                                issuedAt(new Date(System.currentTimeMillis()))
-                        // Time exprire of Token
-                        .expiration(new Date(System.currentTimeMillis()+24*60*60*1000))
-                        //
-                        .signWith(getSigninKey())
-                        .compact();
-        return token;
+        return Jwts.builder()
+                .subject(user.getUsername())
+                .claim("authorities", user.getRole().name())
+                .issuedAt(new Date(System.currentTimeMillis()))
+                .expiration(new Date(System.currentTimeMillis() + 24 * 60 * 60 * 1000)) // 24h
+                .signWith(getSigninKey())
+                .compact();
     }
 
-    // form token to Claim Object
+    /**
+     * Trích xuất tất cả claims từ JWT token
+     */
     public Claims extractAllClaims(String token) {
-        return  Jwts.parser().
-                verifyWith(getSigninKey())
+        return Jwts.parser()
+                .verifyWith(getSigninKey())
                 .build()
                 .parseSignedClaims(token)
                 .getPayload();
     }
 
-    // get userName form CLAIM
-    public User extractAccount (String token){
-        String username = extractClaim(token,Claims::getSubject);
-        return authenticationRepository.findByUsername(username);
+    /**
+     * Trích xuất một claim bất kỳ
+     */
+    public <T> T extractClaim(String token, Function<Claims, T> resolver) {
+        Claims claims = extractAllClaims(token);
+        return resolver.apply(claims);
     }
 
+    /**
+     * Trích xuất username (subject) từ token
+     */
+    public String extractUsername(String token) {
+        return extractClaim(token, Claims::getSubject);
+    }
 
-    public boolean isTokenExpired(String token){
+    /**
+     * Trích xuất thời điểm hết hạn
+     */
+    public Date extractExpiration(String token) {
+        return extractClaim(token, Claims::getExpiration);
+    }
+
+    /**
+     * Kiểm tra token hết hạn hay chưa
+     */
+    public boolean isTokenExpired(String token) {
         return extractExpiration(token).before(new Date());
     }
-    // get Expiration form CLAIM
-    public Date extractExpiration(String token){
-        return extractClaim(token,Claims::getExpiration);
-    }
-
-    // from claim and extract specific data type.
-    public <T> T extractClaim(String token, Function<Claims,T> resolver){
-        Claims claims = extractAllClaims(token);
-        return  resolver.apply(claims);
-    }
-
 }

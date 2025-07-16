@@ -6,11 +6,14 @@ import com.example.blood_donation.dto.UserDTO;
 import com.example.blood_donation.entity.User;
 import com.example.blood_donation.enums.Role;
 import com.example.blood_donation.exception.exceptons.AuthenticationException;
+import com.example.blood_donation.exception.exceptons.BadRequestException;
 import com.example.blood_donation.repositoty.AuthenticationRepository;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -35,16 +38,15 @@ public class AuthenticationService implements UserDetailsService {
     private TokenService tokenService;
 
     public UserDTO register(RegisterRequest request) {
+        if (!request.getPassword().equals(request.getConfirmPassword())) {
+            throw new BadRequestException("Mật khẩu xác nhận không khớp");
+        }
+
         User user = new User();
         user.setFullName(request.getFullName());
         user.setEmail(request.getEmail());
         user.setUsername(request.getUsername());
         user.setPassword(passwordEncoder.encode(request.getPassword()));
-//        user.setPhone(request.getPhone());
-//        user.setAddress(request.getAddress());
-//        user.setCccd(request.getCccd());
-//        user.setGender(request.getGender());
-//        user.setTypeBlood(request.getTypeBlood());
         user.setRole(Role.MEMBER);
 
         User savedUser = authenticationRepository.save(user);
@@ -56,6 +58,7 @@ public class AuthenticationService implements UserDetailsService {
 
         return dto;
     }
+
 
     public UserDTO login(LoginRequest loginRequest) {
        try {
@@ -71,6 +74,11 @@ public class AuthenticationService implements UserDetailsService {
        String token = tokenService.generateToken(user);
        userDTO.setToken(token);
        return userDTO;
+    }
+
+    public User getCurrentUser() {
+        String username = SecurityContextHolder.getContext().getAuthentication().getName();
+        return authenticationRepository.findByUsername(username);
     }
 
 

@@ -1,70 +1,40 @@
 package com.example.blood_donation.controller;
 
 import com.example.blood_donation.dto.UserDTO;
-import com.example.blood_donation.entity.User;
-import com.example.blood_donation.repositoty.UserRepository;
 import com.example.blood_donation.service.UserService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
-import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
-import java.util.Optional;
-
 @RestController
 @RequestMapping("/api/users")
-@SecurityRequirement(name = "api")
+@SecurityRequirement(name = "api") // yêu cầu bearer token
 public class UserAPI {
+
     @Autowired
     private UserService userService;
 
-    @Autowired
-    private ModelMapper modelMapper;
-
-    @Autowired
-    private UserRepository userRepository;
-
-    @GetMapping
-    public List<User> getAllUsers() {
-        return userService.getAllUsers();
-    }
-
-    @GetMapping("/{id}")
-    public ResponseEntity<User> getUserById(@PathVariable Long id) {
-        return userService.getUserById(id)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
-    }
-
-    @PostMapping
-    public ResponseEntity<UserDTO> createUser(@RequestBody UserDTO userDTO) {
-        User user = modelMapper.map(userDTO, User.class);
-        User savedUser = userService.createUser(user);
-        UserDTO responseDTO = modelMapper.map(savedUser, UserDTO.class);
-        return ResponseEntity.status(HttpStatus.CREATED).body(responseDTO);
-    }
-
-
     @PutMapping("/{id}")
-    public ResponseEntity<UserDTO> updateUser(@PathVariable Long id, @RequestBody UserDTO userDTO) {
-        Optional<User> optionalUser = userService.getUserById(id);
-        if (optionalUser.isEmpty()) {
-            return ResponseEntity.notFound().build();
-        }
-        User existingUser = optionalUser.get();
-        modelMapper.map(userDTO, existingUser);
-        User updatedUser = userRepository.save(existingUser);
-        UserDTO responseDTO = modelMapper.map(updatedUser, UserDTO.class);
-        return ResponseEntity.ok(responseDTO);
-    }
+    @Operation(
+        summary = "Cập nhật thông tin người dùng",
+        description = "Cập nhật thông tin người dùng có role là MEMBER sau khi đăng nhập"
+    )
+    @ApiResponses({
+        @ApiResponse(responseCode = "200", description = "Cập nhật thông tin thành công"),
+        @ApiResponse(responseCode = "400", description = "Dữ liệu không hợp lệ"),
+        @ApiResponse(responseCode = "401", description = "Không có quyền truy cập"),
+        @ApiResponse(responseCode = "404", description = "Không tìm thấy người dùng")
+    })
+    public ResponseEntity<UserDTO> updateUser(
+            @Parameter(description = "ID của người dùng cần cập nhật") @PathVariable Long id,
+            @RequestBody UserDTO userDTO) {
 
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteUser(@PathVariable Long id) {
-        userService.deleteUser(id);
-        return ResponseEntity.ok().build();
+        UserDTO updated = userService.updateUser(id, userDTO);
+        return ResponseEntity.ok(updated);
     }
 }
-

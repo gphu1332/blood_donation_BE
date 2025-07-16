@@ -1,0 +1,99 @@
+package com.example.blood_donation.service;
+
+import com.example.blood_donation.dto.BloodUnitResponseDTO;
+import com.example.blood_donation.dto.CreateBloodUnitDTO;
+import com.example.blood_donation.dto.UpdateBloodUnitDTO;
+import com.example.blood_donation.entity.BloodUnit;
+import com.example.blood_donation.repositoty.BloodRequestRepository;
+import com.example.blood_donation.repositoty.BloodUnitRepository;
+import com.example.blood_donation.repositoty.DonationDetailRepository;
+import com.example.blood_donation.repositoty.StaffRepository;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.util.List;
+@Service
+public class BloodUnitService {
+    @Autowired
+    private BloodUnitRepository repository;
+
+    @Autowired
+    private DonationDetailRepository donationDetailRepository;
+
+    @Autowired
+    private StaffRepository staffRepository;
+
+    @Autowired
+    private BloodRequestRepository bloodRequestRepository;
+
+    private String generateSerialCode() {
+        String datePart = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyyMMdd"));
+        long count = repository.count();
+        String serialNumber = String.format("%04d", count + 1);
+        return "BLD-" + datePart + "-" + serialNumber;
+    }
+    public BloodUnitResponseDTO toResponseDTO(BloodUnit unit) {
+        BloodUnitResponseDTO dto = new BloodUnitResponseDTO();
+        dto.setId(unit.getBloodUnitID());
+        dto.setVolume(dto.getVolume());
+        dto.setDateImport(dto.getDateImport());
+        dto.setExpiryDate(dto.getExpiryDate());
+        dto.setBloodSerialCode(dto.getBloodSerialCode());
+        dto.setTypeBlood(dto.getTypeBlood());
+        dto.setDonationDetailId(unit.getDonationDetail().getDonID());
+        dto.setStaffId(unit.getStaff().getUserID());
+        dto.setBloodRequestId(
+                unit.getRequest() != null ? unit.getRequest().getReqID() : null);
+        return dto;
+
+    }
+    public BloodUnit create(CreateBloodUnitDTO dto) {
+       BloodUnit unit = new BloodUnit();
+       unit.setVolume(dto.getVolume());
+       unit.setDateImport(dto.getDateImport());
+       unit.setExpiryDate(dto.getExpiryDate());
+       unit.setBloodSerialCode(dto.getBloodSerialCode());
+       unit.setTypeBlood(dto.getTypeBlood());
+       unit.setDonationDetail(donationDetailRepository.findById(dto.getDonationDetailId())
+               .orElseThrow(() -> new RuntimeException("Không tìm thấy DonnationDetail")));
+       unit.setStaff(staffRepository.findById(dto.getStaffId())
+               .orElseThrow(() -> new RuntimeException("Không tìm thấy Staff")));
+       if (dto.getBloodRequestId() != null) {
+           unit.setRequest(bloodRequestRepository.findById(dto.getBloodRequestId())
+                   .orElseThrow(() -> new RuntimeException("Không tìm thấy BloodRequest")));
+       }
+       return repository.save(unit);
+    }
+    public List<BloodUnit> getAll() {
+        return repository.findAll();
+    }
+    public BloodUnit getById(Long id) {
+        return repository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy túi máu có ID: " + id));
+    }
+    public BloodUnit update(Long id, UpdateBloodUnitDTO dto) {
+        BloodUnit existing = getById(id);
+
+        existing.setBloodSerialCode(dto.getBloodSerialCode());
+        existing.setVolume(dto.getVolume());
+        existing.setDateImport(dto.getDateImport());
+        existing.setExpiryDate(dto.getExpiryDate());
+        existing.setTypeBlood(dto.getTypeBlood());
+        existing.setDonationDetail(donationDetailRepository.findById(dto.getDonationDetailId())
+                        .orElseThrow(() -> new RuntimeException("Không tìm thấy DonationDetail")));
+        existing.setStaff(staffRepository.findById(dto.getStaffId())
+                        .orElseThrow(() -> new RuntimeException("Không tìm thấy Staff")));
+        if (dto.getBloodRequestId() != null) {
+            existing.setRequest(bloodRequestRepository.findById(dto.getBloodRequestId())
+                    .orElseThrow(() -> new RuntimeException("Không tìm thấy BloodRrequest")));
+        } else {
+            existing.setRequest(null);
+        }
+        return repository.save(existing);
+    }
+    public void delete(Long id) {
+        repository.deleteById(id);
+    }
+}
