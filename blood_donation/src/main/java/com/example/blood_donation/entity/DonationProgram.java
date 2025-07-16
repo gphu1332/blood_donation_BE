@@ -59,6 +59,9 @@ public class DonationProgram {
     @JoinColumn(name = "healthCheck_id")
     HealthCheck healthCheck;
 
+    @Column(nullable = false)
+    private boolean deleted = false;
+
     @Transient
     private ProgramStatus status;
 

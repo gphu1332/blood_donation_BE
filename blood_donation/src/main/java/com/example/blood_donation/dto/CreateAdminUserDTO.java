@@ -14,7 +14,7 @@ public class CreateAdminUserDTO {
     private String fullName;
     private String email;
     private String phone;
-    private String address;
+    private AdressDTO address;
     private String cccd;
     private LocalDate birthdate;
     private Gender gender;

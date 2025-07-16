@@ -17,15 +17,15 @@ public interface UserRepository extends JpaRepository<User, Long> {
     Optional<User> findByEmail(String email);
 
     // ✅ Sửa lại field thành "id" thay vì "userID"
-    boolean existsByUsernameAndIdNotAndIsDeletedFalse(String username, Long id);
+    boolean existsByUsernameAndIdNotAndDeletedFalse(String username, Long id);
 
-    boolean existsByEmailAndIdNotAndIsDeletedFalse(String email, Long id);
+    boolean existsByEmailAndIdNotAndDeletedFalse(String email, Long id);
 
-    boolean existsByCccdAndIdNotAndIsDeletedFalse(String cccd, Long id);
+    boolean existsByCccdAndIdNotAndDeletedFalse(String cccd, Long id);
 
     // ✅ Lấy danh sách user chưa bị xóa
-    List<User> findAllByIsDeletedFalse();
+    List<User> findAllByDeletedFalse();
 
     // ✅ Tìm user chưa bị xóa theo ID
-    Optional<User> findByIdAndIsDeletedFalse(Long id);
+    Optional<User> findByIdAndDeletedFalse(Long id);
 }

@@ -22,7 +22,7 @@ public class UserService {
     private ModelMapper modelMapper;
 
     public UserDTO updateUser(Long id, UserDTO userDTO) {
-        Optional<User> optionalUser = userRepository.findByIdAndIsDeletedFalse(id);
+        Optional<User> optionalUser = userRepository.findByIdAndDeletedFalse(id);
         if (optionalUser.isEmpty()) {
             throw new BadRequestException("User not found or has been deleted");
         }
@@ -30,13 +30,13 @@ public class UserService {
         User existingUser = optionalUser.get();
 
         // Kiểm tra username, email, CCCD trùng (không tính user đang sửa)
-        if (userRepository.existsByUsernameAndIdNotAndIsDeletedFalse(userDTO.getUsername(), id)) {
+        if (userRepository.existsByUsernameAndIdNotAndDeletedFalse(userDTO.getUsername(), id)) {
             throw new BadRequestException("Username already exists");
         }
-        if (userRepository.existsByEmailAndIdNotAndIsDeletedFalse(userDTO.getEmail(), id)) {
+        if (userRepository.existsByEmailAndIdNotAndDeletedFalse(userDTO.getEmail(), id)) {
             throw new BadRequestException("Email already exists");
         }
-        if (userRepository.existsByCccdAndIdNotAndIsDeletedFalse(userDTO.getCccd(), id)) {
+        if (userRepository.existsByCccdAndIdNotAndDeletedFalse(userDTO.getCccd(), id)) {
             throw new BadRequestException("CCCD already exists");
         }
 

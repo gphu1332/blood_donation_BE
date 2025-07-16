@@ -13,8 +13,11 @@ public class City {
 
     private String name;
 
+    @Column(nullable = false)
+    private boolean deleted = false;
+
     // Một Location tổ chức nhiều Program
-    @OneToMany(mappedBy = "city", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "city")
     private List<DonationProgram> programs;
 }
 

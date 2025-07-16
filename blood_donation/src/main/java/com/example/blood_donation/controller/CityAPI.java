@@ -27,8 +27,8 @@ public class CityAPI {
     @GetMapping
     @Operation(summary = "Lấy danh sách tất cả địa điểm (city)")
     @ApiResponse(responseCode = "200", description = "Lấy danh sách thành công")
-    public List<CityDTO> getAllLocations() {
-        return cityService.getAllLocations();
+    public List<CityDTO> getAllCitys() {
+        return cityService.getAllCitys();
     }
 
     @GetMapping("/{id}")
@@ -37,9 +37,9 @@ public class CityAPI {
             @ApiResponse(responseCode = "200", description = "Tìm thấy địa điểm"),
             @ApiResponse(responseCode = "404", description = "Không tìm thấy địa điểm")
     })
-    public ResponseEntity<CityDTO> getLocation(
+    public ResponseEntity<CityDTO> getCity(
             @Parameter(description = "ID của địa điểm cần lấy") @PathVariable Long id) {
-        return ResponseEntity.ok(cityService.getLocationById(id));
+        return ResponseEntity.ok(cityService.getCityById(id));
     }
 
     @PreAuthorize("hasRole('ADMIN')")
@@ -49,9 +49,9 @@ public class CityAPI {
             @ApiResponse(responseCode = "200", description = "Tạo địa điểm thành công"),
             @ApiResponse(responseCode = "400", description = "Dữ liệu không hợp lệ")
     })
-    public ResponseEntity<CityDTO> createLocation(
+    public ResponseEntity<CityDTO> createCity(
             @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "Thông tin địa điểm cần tạo") @RequestBody CityDTO dto) {
-        return ResponseEntity.ok(cityService.createLocation(dto));
+        return ResponseEntity.ok(cityService.createCity(dto));
     }
 
     @PreAuthorize("hasRole('ADMIN')")
@@ -61,10 +61,10 @@ public class CityAPI {
             @ApiResponse(responseCode = "200", description = "Cập nhật thành công"),
             @ApiResponse(responseCode = "404", description = "Không tìm thấy địa điểm")
     })
-    public ResponseEntity<CityDTO> updateLocation(
+    public ResponseEntity<CityDTO> updateCity(
             @Parameter(description = "ID địa điểm cần cập nhật") @PathVariable Long id,
             @RequestBody CityDTO dto) {
-        return ResponseEntity.ok(cityService.updateLocation(id, dto));
+        return ResponseEntity.ok(cityService.updateCity(id, dto));
     }
 
     @PreAuthorize("hasRole('ADMIN')")
@@ -74,9 +74,9 @@ public class CityAPI {
             @ApiResponse(responseCode = "204", description = "Xóa thành công"),
             @ApiResponse(responseCode = "404", description = "Không tìm thấy địa điểm")
     })
-    public ResponseEntity<?> deleteLocation(
+    public ResponseEntity<?> deleteCity(
             @Parameter(description = "ID địa điểm cần xóa") @PathVariable Long id) {
-        cityService.deleteLocation(id);
+        cityService.delete(id);
         return ResponseEntity.noContent().build();
     }
 }
