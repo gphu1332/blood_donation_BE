@@ -6,6 +6,5 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface AuthenticationRepository extends JpaRepository<User, Long> {
 
-    boolean existsByUsername(String username);
     User findByUsername(String username);
 }

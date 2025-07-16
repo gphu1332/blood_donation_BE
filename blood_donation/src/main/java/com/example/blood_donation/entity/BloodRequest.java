@@ -1,8 +1,6 @@
 package com.example.blood_donation.entity;
 
-import com.example.blood_donation.enums.RequestType;
-import com.example.blood_donation.enums.RequestStatus;
-import com.example.blood_donation.enums.TypeBlood;
+import com.example.blood_donation.enums.Status;
 import jakarta.persistence.*;
 import lombok.Data;
 
@@ -11,28 +9,31 @@ import java.util.List;
 
 @Entity
 @Data
-@Table(name = "blood_request")
+@Table(name = "BloodRequest")
 public class BloodRequest {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer resId;
-    private LocalDate resDateCreated;
-    private Integer quantityML;
+    private Long ReqID;
+
+    private LocalDate ReqCreateDate;
+
+    private String isEmergency;
+
     @Enumerated(EnumType.STRING)
-    private TypeBlood resBloodType;
-    @Enumerated(EnumType.STRING)
-    private RequestType  resType;
-    @Enumerated(EnumType.STRING)
-    private RequestStatus resStatus;
-    @ManyToOne
-    @JoinColumn(name = "StaID")
-    private Staff staff;
+    public Status status;
+
+    //Mỗi MedicalStaff có thể tạo nhiều đơn BloodRequest
     @ManyToOne
     @JoinColumn(name = "MedID")
     private MedicalStaff medicalStaff;
-    @OneToMany(mappedBy = "bloodRequest", cascade = CascadeType.ALL)
-    private List<BloodRequestPriority> priorityList;
 
+    // Mỗi staff có thể xử lý nhiều đơn yêu cầu máu
+    @ManyToOne
+    @JoinColumn(name = "StaID")
+    private Staff staff;
 
-
+    // 1 đơn yêu cầu máu có thể yêu cầu nhiều túi máu với thể tích và số lượng khác nhau
+    @OneToMany(mappedBy = "reqID", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<BloodRequestDetail> details;
 }

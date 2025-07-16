@@ -21,6 +21,11 @@ public class Blog {
 
     private LocalDate conPubDate;
 
+    private String contTitle;
+    private String contType;
+    @Column(columnDefinition = "TEXT")
+    private String contBody;
+    private LocalDate conPubDate;
     // Mỗi nhân viên có the quản lý nhiều blogs
     @ManyToOne
     @JoinColumn(name = "StaID")
