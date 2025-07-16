@@ -29,19 +29,28 @@ public class MemberService {
 
     // Lấy tất cả MEMBER
     public List<User> getAllMemberUsers() {
-        return memberRepository.findByRole(Role.MEMBER);
+        return memberRepository.findByRoleAndDeletedFalse(Role.MEMBER);
     }
 
     // Lấy 1 MEMBER
     public Optional<User> getMemberUserById(Long id) {
-        return memberRepository.findById(id)
-                .filter(user -> user.getRole() == Role.MEMBER);
+        return memberRepository.findByIdAndRoleAndDeletedFalse(id, Role.MEMBER);
     }
+
 
     // Xóa MEMBER
     public void deleteUser(Long id) {
-        memberRepository.deleteById(id);
+        Optional<User> optionalUser = getMemberUserById(id);
+        User user = optionalUser.orElseThrow(() -> new BadRequestException("User not found or not MEMBER"));
+
+        if (user.isDeleted()) {
+            throw new BadRequestException("User is already deleted");
+        }
+
+        user.setDeleted(true);
+        memberRepository.save(user);
     }
+
 
     // Tạo mới MEMBER
     public User createMember(CreateUpdateMemberRequest dto) {

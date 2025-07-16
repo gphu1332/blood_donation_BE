@@ -34,45 +34,46 @@ public class DonationProgramService {
     @Autowired
     private ModelMapper modelMapper;
 
-    /**
-     * Lấy danh sách tất cả chương trình hiến máu.
-     */
+    // Lấy danh sách tất cả chương trình hiến máu.
     public List<DonationProgramResponse> getAll() {
         return donationProgramRepository.findAll().stream()
+                .filter(program -> !program.isDeleted())
                 .map(this::mapToResponseDTO)
                 .toList();
     }
 
-    /**
-     * Lấy thông tin chương trình theo ID.
-     */
+    // Lấy thông tin chương trình theo ID.
     public DonationProgramResponse getById(Long id) {
         DonationProgram program = donationProgramRepository.findById(id)
+                .filter(p -> !p.isDeleted())
                 .orElseThrow(() -> new EntityNotFoundException("Donation program not found"));
         return mapToResponseDTO(program);
     }
 
-    /**
-     * Tìm kiếm các chương trình có ngày diễn ra nằm trong khoảng startDate - endDate
-     * và thuộc City chỉ định.
-     */
+    // Tìm kiếm chương trình theo ngày và cityId.
     public List<DonationProgramResponse> searchByDateInRangeAndCityID(LocalDate date, Long cityId) {
-        List<DonationProgram> programs = donationProgramRepository
-                .findByStartDateLessThanEqualAndEndDateGreaterThanEqualAndCity_Id(date, date, cityId);
-        return programs.stream()
+        City city = cityRepository.findById(cityId)
+                .filter(c -> !c.isDeleted())
+                .orElseThrow(() -> new EntityNotFoundException("City not found or has been deleted"));
+
+        return donationProgramRepository
+                .findByStartDateLessThanEqualAndEndDateGreaterThanEqualAndCity_Id(date, date, city.getId())
+                .stream()
+                .filter(p -> !p.isDeleted())
                 .map(this::mapToResponseDTO)
                 .toList();
     }
 
-    /**
-     * Tạo mới một chương trình hiến máu và gán người tạo là Admin hiện tại.
-     */
+
+    // Tạo chương trình mới
     @Transactional
     public DonationProgramResponse create(DonationProgramDTO dto, String adminUsername) {
-        // 1. Validate trùng chương trình tại địa chỉ
         if (dto.getAddressId() != null) {
             List<DonationProgram> conflicts = donationProgramRepository
-                    .findConflictingPrograms(dto.getAddressId(), dto.getStartDate(), dto.getEndDate());
+                    .findConflictingPrograms(dto.getAddressId(), dto.getStartDate(), dto.getEndDate())
+                    .stream()
+                    .filter(p -> !p.isDeleted())
+                    .toList();
 
             if (!conflicts.isEmpty()) {
                 throw new IllegalStateException("Đã có chương trình tại địa chỉ này trong khoảng thời gian đã chọn.");
@@ -88,23 +89,30 @@ public class DonationProgramService {
         program.setDescription(dto.getDescription());
         program.setContact(dto.getContact());
         program.setImageUrl(dto.getImageUrl());
+        program.setDeleted(false);
 
+        // Liên kết City
         if (dto.getCityId() != null) {
             City city = cityRepository.findById(dto.getCityId())
-                    .orElseThrow(() -> new EntityNotFoundException("City not found"));
+                    .filter(c -> !c.isDeleted())
+                    .orElseThrow(() -> new EntityNotFoundException("City not found or has been deleted"));
             program.setCity(city);
         }
 
+
+        // Liên kết Adress
         if (dto.getAddressId() != null) {
             Adress address = adressRepository.findById(dto.getAddressId())
                     .orElseThrow(() -> new EntityNotFoundException("Address not found"));
             program.setAddress(address);
         }
 
+        // Liên kết Admin
         User admin = userRepository.findByUsername(adminUsername)
                 .orElseThrow(() -> new EntityNotFoundException("Admin user not found"));
         program.setAdmin(admin);
 
+        // Liên kết các Slot
         if (dto.getSlotIds() != null && !dto.getSlotIds().isEmpty()) {
             List<Slot> slots = slotRepository.findAllById(dto.getSlotIds());
             program.setSlots(slots);
@@ -114,18 +122,19 @@ public class DonationProgramService {
         return mapToResponseDTO(saved);
     }
 
-    /**
-     * Cập nhật thông tin chương trình đã có.
-     */
+    // Cập nhật chương trình
     @Transactional
     public DonationProgramResponse update(Long id, DonationProgramDTO dto) {
         DonationProgram existing = donationProgramRepository.findById(id)
+                .filter(p -> !p.isDeleted())
                 .orElseThrow(() -> new EntityNotFoundException("Donation program not found"));
 
-        // Validate trùng chương trình tại địa chỉ (loại trừ chính mình)
         if (dto.getAddressId() != null) {
             List<DonationProgram> conflicts = donationProgramRepository
-                    .findConflictingProgramsExcludingSelf(dto.getAddressId(), dto.getStartDate(), dto.getEndDate(), id);
+                    .findConflictingProgramsExcludingSelf(dto.getAddressId(), dto.getStartDate(), dto.getEndDate(), id)
+                    .stream()
+                    .filter(p -> !p.isDeleted())
+                    .toList();
 
             if (!conflicts.isEmpty()) {
                 throw new IllegalStateException("Đã có chương trình tại địa chỉ này trong khoảng thời gian đã chọn.");
@@ -140,11 +149,13 @@ public class DonationProgramService {
         existing.setContact(dto.getContact());
         existing.setImageUrl(dto.getImageUrl());
 
-        if (dto.getAddressId() != null) {
-            Adress address = adressRepository.findById(dto.getAddressId())
-                    .orElseThrow(() -> new EntityNotFoundException("Address not found"));
-            existing.setAddress(address);
+        if (dto.getCityId() != null) {
+            City city = cityRepository.findById(dto.getCityId())
+                    .filter(c -> !c.isDeleted())
+                    .orElseThrow(() -> new EntityNotFoundException("City not found or has been deleted"));
+            existing.setCity(city);
         }
+
 
         if (dto.getCityId() != null) {
             City city = cityRepository.findById(dto.getCityId())
@@ -161,31 +172,29 @@ public class DonationProgramService {
         return mapToResponseDTO(updated);
     }
 
-
-    /**
-     * Xoá một chương trình theo ID.
-     */
+    // Xoá mềm chương trình
     public void delete(Long id) {
-        donationProgramRepository.deleteById(id);
+        DonationProgram program = donationProgramRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Donation program not found"));
+        program.setDeleted(true);
+        donationProgramRepository.save(program);
     }
 
-    /**
-     * Tìm kiếm chương trình có ngày trong khoảng chỉ định.
-     */
+    // Tìm kiếm theo ngày
     public List<DonationProgramResponse> searchByDateRange(LocalDate startDate, LocalDate endDate) {
         if (endDate == null) {
             endDate = startDate;
         }
-        List<DonationProgram> programs = donationProgramRepository
-                .findByStartDateLessThanEqualAndEndDateGreaterThanEqual(endDate, startDate);
-        return programs.stream()
+
+        return donationProgramRepository
+                .findByStartDateLessThanEqualAndEndDateGreaterThanEqual(endDate, startDate)
+                .stream()
+                .filter(p -> !p.isDeleted())
                 .map(this::mapToResponseDTO)
                 .toList();
     }
 
-    /**
-     * Chuyển từ entity DonationProgram sang DTO để hiển thị.
-     */
+    // Ánh xạ sang Response DTO
     private DonationProgramResponse mapToResponseDTO(DonationProgram program) {
         DonationProgramResponse dto = new DonationProgramResponse();
         dto.setId(program.getId());
@@ -202,13 +211,14 @@ public class DonationProgramService {
         dto.setDescription(program.getDescription());
         dto.setImageUrl(program.getImageUrl());
         dto.setContact(program.getContact());
-
-        // ✅ Gán danh sách typeBloods
         dto.setTypeBloods(program.getTypeBloods());
 
-        if (program.getCity() != null) {
+        if (program.getCity() != null && !program.getCity().isDeleted()) {
             dto.setCityId(program.getCity().getId());
+        } else {
+            dto.setCityId(null);
         }
+
 
         if (program.getAdmin() != null) {
             dto.setAdminId(program.getAdmin().getId());

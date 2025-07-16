@@ -3,11 +3,16 @@ package com.example.blood_donation.repositoty;
 import com.example.blood_donation.entity.User;
 import com.example.blood_donation.enums.Role;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 
+@Repository
 public interface AdminUserRepository extends JpaRepository<User, Long> {
-    List<User> findByRoleIn(List<Role> roles);
+    Optional<User> findByIdAndDeletedFalse(Long id);
+    List<User> findByRoleInAndDeletedFalse(List<Role> roles);
+    long countByRoleAndDeletedFalse(Role role);
 
-    long countByRole(Role role);
 }
+

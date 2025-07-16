@@ -71,7 +71,7 @@ public class User implements UserDetails {
     private LocalDate birthdate;
 
     @Column(nullable = false)
-    private boolean isDeleted = false;
+    private boolean deleted = false;
 
 
     private String token;
