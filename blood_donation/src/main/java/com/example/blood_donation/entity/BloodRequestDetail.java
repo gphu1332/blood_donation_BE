@@ -1,5 +1,6 @@
 package com.example.blood_donation.entity;
 
+import com.example.blood_donation.enums.TypeBlood;
 import jakarta.persistence.*;
 import lombok.Data;
 
@@ -12,8 +13,8 @@ public class BloodRequestDetail {
     @Column(name = "ReqID")
     private Long reqID;
 
-    @Id
-    private String bloodType;
+    @Enumerated(EnumType.STRING)
+    private TypeBlood typeBlood;
 
     private int packVolume;
     private int packCount;

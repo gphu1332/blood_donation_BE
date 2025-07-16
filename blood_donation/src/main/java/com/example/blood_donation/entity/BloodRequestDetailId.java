@@ -1,5 +1,6 @@
 package com.example.blood_donation.entity;
 
+import com.example.blood_donation.enums.TypeBlood;
 import jakarta.persistence.Embeddable;
 import lombok.Data;
 
@@ -9,13 +10,13 @@ import java.util.Objects;
 @Data
 public class BloodRequestDetailId  implements Serializable {
     private Long reqID;
-    private String bloodType;
+    private TypeBlood typeBlood;
 
     public BloodRequestDetailId() {}
 
-    public BloodRequestDetailId(Long reqID, String bloodType) {
+    public BloodRequestDetailId(Long reqID, TypeBlood typeBlood) {
         this.reqID = reqID;
-        this.bloodType = bloodType;
+        this.typeBlood = typeBlood;
     }
     @Override
     public boolean equals(Object o) {
@@ -24,11 +25,11 @@ public class BloodRequestDetailId  implements Serializable {
         if(!(o instanceof BloodRequestDetailId))
             return false;
         BloodRequestDetailId that = (BloodRequestDetailId) o;
-        return Objects.equals(reqID, that.reqID) && Objects.equals(bloodType, that.bloodType);
+        return Objects.equals(reqID, that.reqID) && Objects.equals(typeBlood, that.typeBlood);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(reqID, bloodType);
+        return Objects.hash(reqID, typeBlood);
     }
 }

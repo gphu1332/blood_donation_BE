@@ -1,5 +1,6 @@
 package com.example.blood_donation.entity;
 
+import com.example.blood_donation.enums.TypeBlood;
 import jakarta.persistence.*;
 import lombok.Data;
 
@@ -16,10 +17,8 @@ public class DonationDetail {
     private Integer donAmount;
     private LocalDate donDate;
 
-    // Mỗi lần hiến máu chỉ hiến một loại máu
-    @OneToOne
-    @JoinColumn(name = "blood_type_id")
-    private BloodType bloodType;
+    @Enumerated(EnumType.STRING)
+    private TypeBlood typeBlood;
 
     // Mỗi lần đặt lịch chỉ dẫn đến một lần hiến máu
     @OneToOne
