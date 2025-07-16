@@ -1,5 +1,6 @@
 package com.example.blood_donation.entity;
 
+import com.example.blood_donation.enums.TypeBlood;
 import jakarta.persistence.*;
 import lombok.Data;
 
@@ -17,9 +18,8 @@ import java.time.LocalDate;
         private LocalDate expiryDate;
         @Column(unique = true)
         private String bloodSerialCode;
-        @ManyToOne
-        @JoinColumn(name = "BloodType")
-        private BloodType bloodType;
+        @Enumerated(EnumType.STRING)
+        private TypeBlood typeBlood;
         // 1 người hiến máu có thể có nhiều túi máu trong kho máu
         @ManyToOne
         @JoinColumn(name = "DonID")

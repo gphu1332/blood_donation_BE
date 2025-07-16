@@ -1,5 +1,8 @@
 package com.example.blood_donation.controller;
 
+import com.example.blood_donation.dto.BloodUnitResponseDTO;
+import com.example.blood_donation.dto.CreateBloodUnitDTO;
+import com.example.blood_donation.dto.UpdateBloodUnitDTO;
 import com.example.blood_donation.entity.BloodUnit;
 import com.example.blood_donation.service.BloodUnitService;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
@@ -16,21 +19,28 @@ import java.util.List;
 public class BloodUnitController {
     @Autowired
     private BloodUnitService service;
+
     @GetMapping
-    public List<BloodUnit> getAll() {
-        return service.getAll();
+    public ResponseEntity<List<BloodUnitResponseDTO>> getAll() {
+        List <BloodUnitResponseDTO> list = service.getAll().stream()
+                .map(service::toResponseDTO)
+                .toList();
+        return ResponseEntity.ok(list);
     }
     @GetMapping("/{id}")
-    public ResponseEntity<BloodUnit> getById(@PathVariable Long id) {
-        return ResponseEntity.ok(service.getById(id));
+    public ResponseEntity<BloodUnitResponseDTO> getById(@PathVariable Long id) {
+        BloodUnit unit = service.getById(id);
+        return ResponseEntity.ok(service.toResponseDTO(unit));
     }
     @PostMapping
-    public ResponseEntity<BloodUnit> create(@RequestBody BloodUnit unit) {
-        return new ResponseEntity<>(service.create(unit), HttpStatus.CREATED);
+    public ResponseEntity<BloodUnitResponseDTO> create(@RequestBody CreateBloodUnitDTO dto) {
+        BloodUnit unit = service.create(dto);
+        return new ResponseEntity<>(service.toResponseDTO(unit), HttpStatus.CREATED);
     }
     @PutMapping("/{id}")
-    public ResponseEntity<BloodUnit> update(@PathVariable Long id, @RequestBody BloodUnit unit) {
-        return ResponseEntity.ok(service.update(id, unit));
+    public ResponseEntity<BloodUnitResponseDTO> update(@PathVariable Long id, @RequestBody UpdateBloodUnitDTO dto) {
+        BloodUnit updated = service.update(id, dto);
+        return ResponseEntity.ok(service.toResponseDTO(updated));
     }
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> delete(@PathVariable Long id) {

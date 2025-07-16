@@ -6,11 +6,12 @@ import lombok.Data;
 import java.time.LocalDate;
 
 @Data
-public class CreateBloodUnitDTO {
+public class BloodUnitResponseDTO {
+    private Long id;
     private int volume;
     private LocalDate dateImport;
     private LocalDate expiryDate;
-    private String bloodSerialCode;;
+    private String bloodSerialCode;
     private TypeBlood typeBlood;
     private Long donationDetailId;
     private Long staffId;
