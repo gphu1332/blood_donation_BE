@@ -20,51 +20,53 @@ public class BloodRequestAPI{
     private BloodRequestService service;
 
     @PostMapping("/hospital")
-    public ResponseEntity<?> create(@RequestBody BloodRequestDTO dto) {
-        return new ResponseEntity<>(service.createRequest(dto), HttpStatus.CREATED);
+    public ResponseEntity<BloodRequestResponseDTO> create(@RequestBody BloodRequestDTO dto) {
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(convertToResponse(service.createRequestFromDTO(dto)));
     }
 
     @PutMapping("/hospital/{id}")
-    public ResponseEntity<?> update(@PathVariable Long id, @RequestBody BloodRequestDTO dto) {
-        return ResponseEntity.ok(service.updateRequest(id, dto));
+    public ResponseEntity<BloodRequestResponseDTO> update(@PathVariable Long id, @RequestBody BloodRequestDTO dto) {
+        return ResponseEntity.ok(convertToResponse(service.updateRequestByMedical(id, dto)));
     }
 
     @PutMapping("/hospital/{id}/cancel")
-    public ResponseEntity<?> cancel(@PathVariable Long id) {
-        service.cancelRequest(id);
-        return ResponseEntity.noContent().build();
+    public ResponseEntity<String> cancel(@PathVariable Long id) {
+        try {
+            service.cancelRequestByMedical(id);
+            return ResponseEntity.ok("Yêu cầu đã được hủy thành công.");
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+        }
+    }
+    @GetMapping("/hospital/{medId}")
+    public ResponseEntity<List<BloodRequestResponseDTO>> getByHospital(@PathVariable Long medId) {
+        return ResponseEntity.ok(service.getRequestDTOByMedical(medId));
     }
 
     @PutMapping("/staff/{id}/respond")
-    public ResponseEntity<?> respond(
+    public ResponseEntity<BloodRequestResponseDTO> respond(
             @PathVariable Long id,
             @RequestParam String action,
             @RequestParam Long staffId
     ) {
-        return ResponseEntity.ok(service.respondToRequest(id, action, staffId));
+        return ResponseEntity.ok(convertToResponse(service.respondToRequest(id, action, staffId)));
     }
 
     @PutMapping("/staff/{id}/process")
-    public ResponseEntity<?> process(
+    public ResponseEntity<BloodRequestResponseDTO> process(
             @PathVariable Long id,
             @RequestParam Status status
     ) {
-        return ResponseEntity.ok(service.updateProcessingStatus(id, status));
+        return ResponseEntity.ok(convertToResponse(service.updateProcessingStatus(id, status)));
     }
 
-    @GetMapping("/hospital/{medId}")
-    public List<BloodRequest> getByHospital(@PathVariable Long medId) {
-        return service.getRequestByMedical(medId);
-    }
 
     @GetMapping("/staff/{staId}")
-    public List<BloodRequest> getByStaff(@PathVariable Long staId) {
-        return service.getRequestsByStaff(staId);
-    }
-
-    @GetMapping
-    public List<BloodRequest> getAll() {
-        return service.getAllRequests();
+    public ResponseEntity<List<BloodRequestResponseDTO>> getByStaff(@PathVariable Long staId) {
+        return ResponseEntity.ok(
+                service.getRequestsByStaff(staId).stream().map(this::convertToResponse).toList()
+        );
     }
 
     //Kim API test
@@ -73,27 +75,22 @@ public class BloodRequestAPI{
         return ResponseEntity.ok(service.getAllRequestDTOs());
     }
 
-    @GetMapping("/kimrequests/{medId}")
+    /*@GetMapping("/kimrequests/{medId}")
     public ResponseEntity<List<BloodRequestResponseDTO>> getCleanRequestsByHospital(@PathVariable Long medId) {
         return ResponseEntity.ok(service.getRequestsByMedicalDTO(medId));
-    }
+    }*/
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<?> deleteRequest(@PathVariable Long id) {
-        service.deleteRequest(id);
+    public ResponseEntity<Void> deleteRequest(@PathVariable Long id) {
+        service.delete(id);
         return ResponseEntity.noContent().build();
     }
 
-    @PutMapping("/cancel/{id}")
-    public ResponseEntity<?> cancelRequest(@PathVariable Long id) {
-        try {
-            service.cancelRequest(id);
-            return ResponseEntity.ok("Yêu cầu đã được hủy");
-        } catch (RuntimeException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
-        }
+    private BloodRequestResponseDTO convertToResponse(BloodRequest req) {
+        return service.getAllRequestDTOs().stream()
+                .filter(r -> r.getReqID().equals(req.getReqID()))
+                .findFirst()
+                .orElseThrow(() -> new RuntimeException("Không thể chuyển đổi sang DTO"));
     }
-
-
 }
 

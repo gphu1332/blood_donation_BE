@@ -19,6 +19,8 @@ public class BloodRequestDetail {
     private int packVolume;
     private int packCount;
 
+    private boolean isDeleted = false;
+
     @ManyToOne
     @JoinColumn(name = "ReqID", insertable = false, updatable = false)
     private BloodRequest bloodRequest;

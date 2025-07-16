@@ -10,6 +10,7 @@ import com.example.blood_donation.enums.Status;
 import com.example.blood_donation.repositoty.BloodRequestDetailRepository;
 import com.example.blood_donation.dto.BloodRequestResponseDTO;
 import com.example.blood_donation.repositoty.BloodRequestRepository;
+import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -27,7 +28,8 @@ public class BloodRequestService {
     private BloodRequestDetailRepository detailRepo;
 
     // Tạo yêu cầu mới - Medical Staff
-    public BloodRequest createRequest(BloodRequestDTO dto) {
+    @Transactional
+    public BloodRequest createRequestFromDTO(BloodRequestDTO dto) {
         BloodRequest req = new BloodRequest();
         req.setReqCreateDate(LocalDate.now());
         req.setIsEmergency(dto.getIsEmergency());
@@ -51,7 +53,8 @@ public class BloodRequestService {
     }
 
     // Cập nhập yêu cầu - Medical Staff
-    public BloodRequest updateRequest(Long id, BloodRequestDTO dto) {
+    @Transactional
+    public BloodRequest updateRequestByMedical(Long id, BloodRequestDTO dto) {
         BloodRequest req = reqRepo.findById(id)
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy yêu cầu"));
 
@@ -73,45 +76,28 @@ public class BloodRequestService {
         }
         return req;
     }
-    private BloodRequestRepository bloodRequestRepository;
-    public List<BloodRequest> getAll() {
-        return bloodRequestRepository.findAll();
-    }
-    public BloodRequest getById(Long id) {
-        return bloodRequestRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Không tìm thấy yêu cầu máu"));
-    }
-    public BloodRequest create(BloodRequest request) {
-        return bloodRequestRepository.save(request);
-    }
-    public BloodRequest update(Long id, BloodRequest req) {
-        BloodRequest existing = getById(id);
-        existing.setReqCreateDate(req.getReqCreateDate());
-        existing.setIsEmergency(req.getIsEmergency());
-        existing.setStatus(req.getStatus());
-        existing.setStaff(req.getStaff());
-        existing.setMedicalStaff(req.getMedicalStaff());
-        return bloodRequestRepository.save(existing);
-    }
-    public void delete(Long id) {
-        bloodRequestRepository.deleteById(id);
-    }
-
     // Hủy yêu cầu - Medical Staff
-    public void cancelRequest(Long id) {
+    public void cancelRequestByMedical(Long id) {
         BloodRequest req = reqRepo.findById(id)
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy yêu cầu"));
         req.setStatus(Status.CANCELLED);
         reqRepo.save(req);
     }
+    public List<BloodRequest> getRequestByMedical(Long medId) {
+        return reqRepo.findByMedicalStaff_Id(medId);
+    }
 
+    public List<BloodRequestResponseDTO> getRequestDTOByMedical(Long medId) {
+        List<BloodRequest> requests = reqRepo.findByMedicalStaff_IdAndIsDeletedFalse(medId);
+        return requests.stream().map(this::mapToResponseDTO).toList();
+    }
     // Duyệt/ Từ chối yêu cầu - Staff
     public BloodRequest respondToRequest(Long id, String action, Long staffId) {
         BloodRequest req = reqRepo.findById(id)
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy yêu cầu"));
-        if(action.equalsIgnoreCase("accept")) {
+        if("accept".equalsIgnoreCase(action)) {
             req.setStatus(Status.APPROVED);
-        } else if (action.equalsIgnoreCase("reject")) {
+        } else if ("reject".equalsIgnoreCase(action)) {
             req.setStatus(Status.REJECTED);
         } else {
             throw new IllegalArgumentException("Hành động không hợp lệ");
@@ -132,74 +118,44 @@ public class BloodRequestService {
         return reqRepo.save(req);
     }
 
-    public List<BloodRequest> getRequestByMedical(Long medId) {
-        return reqRepo.findByMedicalStaff_Id(medId);
-    }
-
     public List<BloodRequest> getRequestsByStaff(Long staId) {
         return reqRepo.findByStaff_Id(staId);
     }
 
+    public BloodRequest getById(Long id) {
+        return reqRepo.findById(id)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy yêu cầu máu"));
+    }
     public List<BloodRequest> getAllRequests() {
-        return reqRepo.findAll();
+        return reqRepo.findByIsDeletedFalse();
     }
 // Phan Kim code test BE
     public List<BloodRequestResponseDTO> getAllRequestDTOs() {
-        List<BloodRequest> all = reqRepo.findAll();
-
-        return all.stream().map(req -> {
-            BloodRequestResponseDTO dto = new BloodRequestResponseDTO();
-            dto.setReqID(req.getReqID());
-            dto.setIsEmergency(req.getIsEmergency());
-            dto.setStatus(req.getStatus().toString());
-            dto.setReqCreateDate(req.getReqCreateDate());
-
-            List<BloodRequestDetailDTO> detailDTOs = req.getDetails().stream().map(detail -> {
-                BloodRequestDetailDTO d = new BloodRequestDetailDTO();
-                d.setTypeBlood(detail.getTypeBlood());
-                d.setPackCount(detail.getPackCount());
-                d.setPackVolume(detail.getPackVolume());
-                return d;
-            }).toList();
-
-            dto.setDetails(detailDTOs);
-            return dto;
-        }).toList();
+        return reqRepo.findByIsDeletedFalse()
+                .stream().map(this::mapToResponseDTO)
+                .toList();
     }
-
-    public List<BloodRequestResponseDTO> getRequestsByMedicalDTO(Long medId) {
-        List<BloodRequest> requests = reqRepo.findByMedicalStaff_Id(medId);
-        return requests.stream().map(req -> {
-            BloodRequestResponseDTO dto = new BloodRequestResponseDTO();
-            dto.setReqID(req.getReqID());
-            dto.setIsEmergency(req.getIsEmergency());
-            dto.setStatus(req.getStatus().name());
-            dto.setReqCreateDate(req.getReqCreateDate());
-
-            List<BloodRequestDetailDTO> detailDTOs = req.getDetails().stream().map(d -> {
-                BloodRequestDetailDTO dDTO = new BloodRequestDetailDTO();
-                dDTO.setTypeBlood(d.getTypeBlood());
-                dDTO.setPackVolume(d.getPackVolume());
-                dDTO.setPackCount(d.getPackCount());
-                return dDTO;
-            }).toList();
-
-            dto.setDetails(detailDTOs);
-            return dto;
-        }).toList();
-    }
-
-    public void deleteRequest(Long id) {
+    @Transactional
+    public void delete(Long id) {
         BloodRequest request = reqRepo.findById(id)
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy yêu cầu"));
-
-        // Delete all details first
-        detailRepo.deleteAll(detailRepo.findByReqID(id));
-
-        // Then delete the request
-        reqRepo.deleteById(id);
+        request.setDeleted(true);
+        reqRepo.save(request);
     }
-
-
-
+    private BloodRequestResponseDTO mapToResponseDTO(BloodRequest req) {
+        BloodRequestResponseDTO dto = new BloodRequestResponseDTO();
+        dto.setReqID(req.getReqID());
+        dto.setIsEmergency(req.getIsEmergency());
+        dto.setStatus(req.getStatus().name());
+        dto.setReqCreateDate(req.getReqCreateDate());
+        List<BloodRequestDetailDTO> detailDTOs = req.getDetails().stream().map(detail -> {
+            BloodRequestDetailDTO d = new BloodRequestDetailDTO();
+            d.setTypeBlood(detail.getTypeBlood());
+            d.setPackCount(detail.getPackCount());
+            d.setPackVolume(detail.getPackVolume());
+            return d;
+        }).toList();
+        dto.setDetails(detailDTOs);
+        return dto;
+    }
 }
