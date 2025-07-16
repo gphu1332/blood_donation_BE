@@ -12,11 +12,15 @@ public class Blog {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long contId;
+
     private String contTitle;
     private String contType;
+
     @Column(columnDefinition = "TEXT")
     private String contBody;
+
     private LocalDate conPubDate;
+
     // Mỗi nhân viên có the quản lý nhiều blogs
     @ManyToOne
     @JoinColumn(name = "StaID")
