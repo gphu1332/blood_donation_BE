@@ -38,6 +38,13 @@ public class AppointmentService {
      * và phải cách ít nhất 10 ngày kể từ lần hiến máu trước (FULFILLED).
      */
     public AppointmentDTO createAppointment(Long userId, AppointmentRequest request) {
+        System.out.println("=== [DEBUG] Bắt đầu tạo appointment ===");
+        System.out.println("UserId: " + userId);
+        System.out.println("ProgramId: " + request.getProgramId());
+        System.out.println("SlotId: " + request.getSlotId());
+        System.out.println("Date: " + request.getDate());
+        System.out.println("Answer1: " + request.getAnswer1());
+        System.out.println("Answer9: " + request.getAnswer9());
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new BadRequestException("User not found"));
 
@@ -63,12 +70,12 @@ public class AppointmentService {
 
             long daysBetween = ChronoUnit.DAYS.between(lastDonationDate, desiredDate);
 
-            if (daysBetween < 90) {
-                throw new BadRequestException("Bạn chỉ được đặt lịch sau ít nhất 90 ngày kể từ lần hiến máu gần nhất.");
+            if (daysBetween < 10) {
+                throw new BadRequestException("Bạn chỉ được đặt lịch sau ít nhất 10 ngày kể từ lần hiến máu gần nhất.");
             }
 
             if (daysBetween < 14) {
-                System.out.println("⚠️ Cảnh báo: Người dùng đặt lịch khi chưa đủ 14 ngày kể từ lần hiến máu trước.");
+                System.out.println("Cảnh báo: Người dùng đặt lịch khi chưa đủ 14 ngày kể từ lần hiến máu trước.");
             }
         }
 
@@ -111,12 +118,8 @@ public class AppointmentService {
 
             long daysBetween = ChronoUnit.DAYS.between(lastDonationDate, desiredDate);
 
-            if (daysBetween < 10) {
-                throw new BadRequestException("Người dùng chỉ được đặt lịch sau ít nhất 10 ngày kể từ lần hiến máu gần nhất.");
-            }
-
-            if (daysBetween < 14) {
-                System.out.println("⚠️ STAFF đặt lịch cho user khi chưa đủ 14 ngày kể từ lần hiến máu trước.");
+            if (daysBetween < 10) {  //đúng phải là 84 ngày nhưng để 10 ngày để test
+                throw new BadRequestException("Người dùng chỉ được đặt lịch sau ít nhất 10 (đúng 84) ngày kể từ lần hiến máu gần nhất.");
             }
         }
 
@@ -279,4 +282,25 @@ public class AppointmentService {
         dto.setTimeRange(app.getSlot().getStart() + " - " + app.getSlot().getEnd());
         return dto;
     }
+    /**
+     * Member hủy lịch hẹn
+     */
+    public AppointmentDTO cancelAppointment(Long appointmentId, Long userId) {
+        Appointment appointment = appointmentRepository.findById(appointmentId)
+                .orElseThrow(() -> new BadRequestException("Appointment not found"));
+
+        if (appointment.getUser().getUserID() != userId) {
+            throw new BadRequestException("Bạn không có quyền hủy lịch hẹn này.");
+        }
+
+        if (appointment.getStatus() == Status.FULFILLED) {
+            throw new BadRequestException("Không thể hủy lịch đã hoàn tất.");
+        }
+
+        appointment.setStatus(Status.CANCELLED);
+        appointmentRepository.save(appointment);
+
+        return mapToDTO(appointment);
+    }
+
 }

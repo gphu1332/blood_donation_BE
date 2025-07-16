@@ -141,4 +141,18 @@ public class AppointmentAPI {
             @Parameter(description = "ID người dùng") @RequestParam Long userId) {
         return ResponseEntity.ok(appointmentService.getFullHistoryByUser(userId));
     }
+
+    @PatchMapping("/{id}/cancel")
+    @PreAuthorize("hasRole('MEMBER')")
+    @Operation(summary = "Thành viên hủy lịch hẹn hiến máu")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Hủy thành công"),
+            @ApiResponse(responseCode = "400", description = "Không có quyền hủy")
+    })
+    public ResponseEntity<AppointmentDTO> cancelAppointment(
+            @Parameter(description = "ID lịch hẹn") @PathVariable Long id,
+            @Parameter(description = "ID thành viên muốn hủy") @RequestParam Long userId) {
+        AppointmentDTO dto = appointmentService.cancelAppointment(id, userId);
+        return ResponseEntity.ok(dto);
+    }
 }

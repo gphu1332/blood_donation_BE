@@ -1,6 +1,7 @@
 package com.example.blood_donation.controller;
 
 import com.example.blood_donation.dto.BloodRequestDTO;
+import com.example.blood_donation.dto.BloodRequestResponseDTO;
 import com.example.blood_donation.entity.BloodRequest;
 import com.example.blood_donation.enums.Status;
 import com.example.blood_donation.service.BloodRequestService;
@@ -65,5 +66,34 @@ public class BloodRequestAPI{
     public List<BloodRequest> getAll() {
         return service.getAllRequests();
     }
+
+    //Kim API test
+    @GetMapping("/kimrequests")
+    public ResponseEntity<List<BloodRequestResponseDTO>> getAllRequests() {
+        return ResponseEntity.ok(service.getAllRequestDTOs());
+    }
+
+    @GetMapping("/kimrequests/{medId}")
+    public ResponseEntity<List<BloodRequestResponseDTO>> getCleanRequestsByHospital(@PathVariable Long medId) {
+        return ResponseEntity.ok(service.getRequestsByMedicalDTO(medId));
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<?> deleteRequest(@PathVariable Long id) {
+        service.deleteRequest(id);
+        return ResponseEntity.noContent().build();
+    }
+
+    @PutMapping("/cancel/{id}")
+    public ResponseEntity<?> cancelRequest(@PathVariable Long id) {
+        try {
+            service.cancelRequest(id);
+            return ResponseEntity.ok("Yêu cầu đã được hủy");
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+        }
+    }
+
+
 }
 
