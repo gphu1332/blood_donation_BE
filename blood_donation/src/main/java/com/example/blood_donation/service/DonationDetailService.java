@@ -72,8 +72,8 @@ public class DonationDetailService {
         dto.setDonDate(detail.getDonDate());
         dto.setBloodType(detail.getTypeBlood());
         dto.setAppointmentId(detail.getAppointment().getId());
-        dto.setMemberId(detail.getMember().getUserID());
-        dto.setStaffId(detail.getStaff().getUserID());
+        dto.setMemberId(detail.getMember().getId());
+        dto.setStaffId(detail.getStaff().getId());
         return dto;
     }
 }

@@ -28,4 +28,5 @@ public class UserDTO {
     public Role role;
     public Gender gender;
     public String token;
+    private boolean isDeleted;
 }

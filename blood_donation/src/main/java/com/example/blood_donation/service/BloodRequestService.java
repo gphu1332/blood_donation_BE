@@ -34,7 +34,7 @@ public class BloodRequestService {
         req.setStatus(Status.PENDING);
 
         MedicalStaff medicalStaff = new MedicalStaff();
-        medicalStaff.setUserID(dto.getMedId());
+        medicalStaff.setId(dto.getMedId());
         req.setMedicalStaff(medicalStaff);
 
         BloodRequest saved = reqRepo.save(req);
@@ -118,7 +118,7 @@ public class BloodRequestService {
         }
 
         Staff staff = new Staff();
-        staff.setUserID(staffId);
+        staff.setId(staffId);
         req.setStaff(staff);
 
         return reqRepo.save(req);
@@ -133,11 +133,11 @@ public class BloodRequestService {
     }
 
     public List<BloodRequest> getRequestByMedical(Long medId) {
-        return reqRepo.findByMedicalStaff_UserID(medId);
+        return reqRepo.findByMedicalStaff_Id(medId);
     }
 
     public List<BloodRequest> getRequestsByStaff(Long staId) {
-        return reqRepo.findByStaff_UserID(staId);
+        return reqRepo.findByStaff_Id(staId);
     }
 
     public List<BloodRequest> getAllRequests() {
@@ -168,7 +168,7 @@ public class BloodRequestService {
     }
 
     public List<BloodRequestResponseDTO> getRequestsByMedicalDTO(Long medId) {
-        List<BloodRequest> requests = reqRepo.findByMedicalStaff_UserID(medId);
+        List<BloodRequest> requests = reqRepo.findByMedicalStaff_Id(medId);
         return requests.stream().map(req -> {
             BloodRequestResponseDTO dto = new BloodRequestResponseDTO();
             dto.setReqID(req.getReqID());

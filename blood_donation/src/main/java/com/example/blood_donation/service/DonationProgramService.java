@@ -211,7 +211,7 @@ public class DonationProgramService {
         }
 
         if (program.getAdmin() != null) {
-            dto.setAdminId(program.getAdmin().getUserID());
+            dto.setAdminId(program.getAdmin().getId());
         }
 
         if (program.getSlots() != null) {

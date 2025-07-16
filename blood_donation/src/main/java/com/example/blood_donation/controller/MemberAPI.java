@@ -90,7 +90,7 @@ public class MemberAPI {
             @Parameter(description = "ID thành viên cần xóa") @PathVariable Long id) {
         User user = memberService.getMemberUserById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found or not MEMBER"));
-        memberService.deleteUser(user.getUserID());
+        memberService.deleteUser(user.getId());
         return ResponseEntity.noContent().build();
     }
 }

@@ -47,7 +47,7 @@ public class AdminUserService {
     public Long findUserIdByPhone(String phone) {
         return userRepository.findByPhone(phone)
                 .orElseThrow(() -> new BadRequestException("User not found"))
-                .getUserID();
+                .getId();
     }
 
 
