@@ -51,9 +51,11 @@ public class User implements UserDetails {
     public String phone;
 
 
-    @OneToOne(cascade = CascadeType.ALL)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "address_id")
     private Adress address;
+
+
 
 
     @Pattern(regexp = "^\\d{12}$", message = "CCCD invalid!")
