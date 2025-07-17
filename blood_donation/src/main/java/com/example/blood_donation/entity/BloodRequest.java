@@ -22,7 +22,7 @@ public class BloodRequest {
 
     @Enumerated(EnumType.STRING)
     public Status status;
-
+    @Column(name = "is_deleted", nullable = false)
     private boolean isDeleted = false;
 
     //Mỗi MedicalStaff có thể tạo nhiều đơn BloodRequest
