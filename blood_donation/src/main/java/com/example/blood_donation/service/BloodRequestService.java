@@ -39,17 +39,16 @@ public class BloodRequestService {
         medicalStaff.setId(dto.getMedId());
         req.setMedicalStaff(medicalStaff);
 
-        BloodRequest saved = reqRepo.save(req);
-
-        for(BloodRequestDetailDTO d : dto.getDetails()) {
+        List<BloodRequestDetail> details = dto.getDetails().stream().map(d -> {
             BloodRequestDetail detail = new BloodRequestDetail();
-            detail.setReqID(saved.getReqID());
             detail.setTypeBlood(d.getTypeBlood());
             detail.setPackVolume(d.getPackVolume());
             detail.setPackCount(d.getPackCount());
-            detailRepo.save(detail);
-        }
-        return saved;
+            detail.setBloodRequest(req);
+            return detail;
+        }).toList();
+        req.setDetails(details);
+        return reqRepo.save(req);
     }
 
     // Cập nhập yêu cầu - Medical Staff
@@ -63,18 +62,17 @@ public class BloodRequestService {
         }
 
         req.setIsEmergency(dto.getIsEmergency());
-        reqRepo.save(req);
-
         detailRepo.deleteAll(detailRepo.findByReqID(id));
-        for (BloodRequestDetailDTO d : dto.getDetails()) {
+        List<BloodRequestDetail> details = dto.getDetails().stream().map(d -> {
             BloodRequestDetail detail = new BloodRequestDetail();
-            detail.setReqID(req.getReqID());
             detail.setTypeBlood(d.getTypeBlood());
             detail.setPackVolume(d.getPackVolume());
             detail.setPackCount(d.getPackCount());
-            detailRepo.save(detail);
-        }
-        return req;
+            detail.setBloodRequest(req);
+            return detail;
+        }).toList();
+        req.setDetails(details);
+        return reqRepo.save(req);
     }
     // Hủy yêu cầu - Medical Staff
     public void cancelRequestByMedical(Long id) {
