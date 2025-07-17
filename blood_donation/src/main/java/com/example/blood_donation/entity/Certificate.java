@@ -19,12 +19,9 @@ public class Certificate {
     @OneToOne
     @JoinColumn(name = "donation_id")
     private DonationDetail donation;
-
-    // Mỗi member có thể có nhiều chứng chỉ
     @ManyToOne
     @JoinColumn(name = "member_id")
-    private Member member;
-
+    private User member;
     // Một Admin có thể tạo/duyệt nhiều Certificate
     @ManyToOne
     @JoinColumn(name = "admin_id")
