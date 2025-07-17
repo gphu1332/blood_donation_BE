@@ -3,7 +3,8 @@ package com.example.blood_donation.service;
 import com.example.blood_donation.dto.CreateDonationDetailDTO;
 import com.example.blood_donation.dto.DonationDetailDTO;
 import com.example.blood_donation.entity.DonationDetail;
-import com.example.blood_donation.entity.Member;
+import com.example.blood_donation.entity.User;
+import com.example.blood_donation.enums.Role;
 import com.example.blood_donation.repositoty.*;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,8 +31,12 @@ public class DonationDetailService {
         donation.setTypeBlood(dto.getBloodType());
         donation.setAppointment(appointmentRepository.findById(dto.getAppointmentId())
                 .orElseThrow(() -> new EntityNotFoundException("Appointment not found")));
-        donation.setMember((Member) memberRepository.findById(dto.getMemberId())
-                .orElseThrow(() -> new RuntimeException("Member not found")));
+        User member = memberRepository.findById(dto.getMemberId())
+                        .orElseThrow(() -> new EntityNotFoundException("Member not found"));
+        if (member.getRole() != Role.MEMBER) {
+            throw  new IllegalArgumentException("User is not a member");
+        }
+        donation.setMember(member);
         donation.setStaff(staffRepository.findById(dto.getStaffId())
                 .orElseThrow(() -> new EntityNotFoundException("Staff not found")));
         return mapToDTO(donationDetailRepository.save(donation));
@@ -54,8 +59,12 @@ public class DonationDetailService {
         donation.setTypeBlood(dto.getBloodType());
         donation.setAppointment(appointmentRepository.findById(dto.getAppointmentId())
                 .orElseThrow(() -> new EntityNotFoundException("Appointment not found")));
-        donation.setMember((Member) memberRepository.findById(dto.getMemberId())
-                .orElseThrow(() -> new EntityNotFoundException("Member not found")));
+        User member = memberRepository.findById(dto.getMemberId())
+                .orElseThrow(() -> new EntityNotFoundException("Member not found"));
+        if (member.getRole() != Role.MEMBER) {
+            throw  new IllegalArgumentException("User is not a member");
+        }
+        donation.setMember(member);
         donation.setStaff(staffRepository.findById(dto.getStaffId())
                 .orElseThrow(() -> new EntityNotFoundException("Staff not found")));
         return mapToDTO(donationDetailRepository.save(donation));

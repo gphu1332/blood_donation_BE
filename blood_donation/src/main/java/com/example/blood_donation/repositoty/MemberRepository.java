@@ -9,8 +9,6 @@ import java.util.Optional;
 
 public interface MemberRepository extends JpaRepository<User, Long> {
     List<User> findByRole(Role role);
-
     List<User> findByRoleAndDeletedFalse(Role role);
     Optional<User> findByIdAndRoleAndDeletedFalse(Long id, Role role);
-
 }
