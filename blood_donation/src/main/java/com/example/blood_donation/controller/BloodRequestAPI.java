@@ -6,6 +6,7 @@ import com.example.blood_donation.entity.BloodRequest;
 import com.example.blood_donation.enums.Status;
 import com.example.blood_donation.service.BloodRequestService;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -22,7 +23,7 @@ public class BloodRequestAPI{
     private BloodRequestService service;
 
     @PostMapping("/hospital")
-    public ResponseEntity<BloodRequestResponseDTO> create(@RequestBody BloodRequestDTO dto) {
+    public ResponseEntity<BloodRequestResponseDTO> create(@Valid @RequestBody BloodRequestDTO dto) {
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(convertToResponse(service.createRequestFromDTO(dto)));
     }
