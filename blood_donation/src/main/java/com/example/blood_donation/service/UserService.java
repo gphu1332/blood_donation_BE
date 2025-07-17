@@ -5,31 +5,32 @@ import com.example.blood_donation.dto.UserDTO;
 import com.example.blood_donation.entity.Adress;
 import com.example.blood_donation.entity.User;
 import com.example.blood_donation.exception.exceptons.BadRequestException;
+import com.example.blood_donation.repositoty.AdressRepository;
 import com.example.blood_donation.repositoty.UserRepository;
+import jakarta.transaction.Transactional;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
 import java.util.Optional;
 
 @Service
 public class UserService {
     @Autowired
     private UserRepository userRepository;
+
+    @Autowired
+    private AdressRepository adressRepository;
+
     @Autowired
     private ModelMapper modelMapper;
 
+    @Transactional
     public UserDTO updateUser(Long id, UserDTO userDTO) {
-        Optional<User> optionalUser = userRepository.findByIdAndDeletedFalse(id);
-        if (optionalUser.isEmpty()) {
-            throw new BadRequestException("User not found or has been deleted");
-        }
+        User user = userRepository.findByIdAndDeletedFalse(id)
+                .orElseThrow(() -> new BadRequestException("User not found or has been deleted"));
 
-        User existingUser = optionalUser.get();
-
-        // Kiểm tra username, email, CCCD trùng (không tính user đang sửa)
+        // Kiểm tra trùng lặp
         if (userRepository.existsByUsernameAndIdNotAndDeletedFalse(userDTO.getUsername(), id)) {
             throw new BadRequestException("Username already exists");
         }
@@ -40,27 +41,42 @@ public class UserService {
             throw new BadRequestException("CCCD already exists");
         }
 
-        existingUser.setUsername(userDTO.getUsername());
-        existingUser.setFullName(userDTO.getFullName());
-        existingUser.setEmail(userDTO.getEmail());
-        existingUser.setPhone(userDTO.getPhone());
+        // Cập nhật thông tin
+        user.setUsername(userDTO.getUsername());
+        user.setFullName(userDTO.getFullName());
+        user.setEmail(userDTO.getEmail());
+        user.setPhone(userDTO.getPhone());
+        user.setBirthdate(userDTO.getBirthdate());
+        user.setCccd(userDTO.getCccd());
+        user.setGender(userDTO.getGender());
+        user.setTypeBlood(userDTO.getTypeBlood());
 
-        // ✅ Địa chỉ
+        // Xử lý địa chỉ
         AdressDTO addressDTO = userDTO.getAddress();
         if (addressDTO != null) {
-            Adress address = new Adress();
-            address.setName(addressDTO.getName());
-            address.setLatitude(addressDTO.getLatitude());
-            address.setLongitude(addressDTO.getLongitude());
-            existingUser.setAddress(address);
+            Adress address;
+
+            if (addressDTO.getId() != null) {
+                // Nếu có id -> tìm theo id
+                address = adressRepository.findById(addressDTO.getId())
+                        .orElseThrow(() -> new BadRequestException("Address not found"));
+            } else {
+                // Nếu không có id → tìm theo name để tái sử dụng
+                address = adressRepository.findByName(addressDTO.getName())
+                        .orElseGet(() -> {
+                            Adress newAddress = new Adress();
+                            newAddress.setName(addressDTO.getName());
+                            newAddress.setLatitude(addressDTO.getLatitude());
+                            newAddress.setLongitude(addressDTO.getLongitude());
+                            return adressRepository.save(newAddress);
+                        });
+            }
+
+            user.setAddress(address);
         }
 
-        existingUser.setBirthdate(userDTO.getBirthdate());
-        existingUser.setCccd(userDTO.getCccd());
-        existingUser.setGender(userDTO.getGender());
-        existingUser.setTypeBlood(userDTO.getTypeBlood());
-
-        User updatedUser = userRepository.save(existingUser);
-        return modelMapper.map(updatedUser, UserDTO.class);
+        User savedUser = userRepository.save(user);
+        return modelMapper.map(savedUser, UserDTO.class);
     }
+
 }
