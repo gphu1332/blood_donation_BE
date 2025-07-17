@@ -23,13 +23,13 @@ public class BloodRequestAPI{
     private BloodRequestService service;
 
     @PostMapping("/hospital")
-    public ResponseEntity<BloodRequestResponseDTO> create(@RequestBody BloodRequestDTO dto) {
+    public ResponseEntity<BloodRequestResponseDTO> create(@Valid @RequestBody BloodRequestDTO dto) {
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(convertToResponse(service.createRequestFromDTO(dto)));
     }
 
     @PutMapping("/hospital/{id}")
-    public ResponseEntity<BloodRequestResponseDTO> update(@Valid @PathVariable Long id, @RequestBody BloodRequestDTO dto) {
+    public ResponseEntity<BloodRequestResponseDTO> update(@PathVariable Long id, @RequestBody BloodRequestDTO dto) {
         return ResponseEntity.ok(convertToResponse(service.updateRequestByMedical(id, dto)));
     }
 
