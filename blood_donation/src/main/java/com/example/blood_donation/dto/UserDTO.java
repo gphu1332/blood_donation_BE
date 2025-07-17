@@ -15,7 +15,7 @@ import java.time.LocalDate;
 @NoArgsConstructor
 @JsonFormat(pattern = "yyyy-MM-dd")
 public class UserDTO {
-    public Long userID;
+    public Long id;
     public String username;
     public String password;
     public String fullName;
