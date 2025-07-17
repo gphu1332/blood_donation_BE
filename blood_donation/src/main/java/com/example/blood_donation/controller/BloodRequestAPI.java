@@ -6,6 +6,7 @@ import com.example.blood_donation.entity.BloodRequest;
 import com.example.blood_donation.enums.Status;
 import com.example.blood_donation.service.BloodRequestService;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -28,7 +29,7 @@ public class BloodRequestAPI{
     }
 
     @PutMapping("/hospital/{id}")
-    public ResponseEntity<BloodRequestResponseDTO> update(@PathVariable Long id, @RequestBody BloodRequestDTO dto) {
+    public ResponseEntity<BloodRequestResponseDTO> update(@Valid @PathVariable Long id, @RequestBody BloodRequestDTO dto) {
         return ResponseEntity.ok(convertToResponse(service.updateRequestByMedical(id, dto)));
     }
 
