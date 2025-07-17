@@ -40,8 +40,8 @@ public class MemberService {
 
     // Xóa MEMBER
     public void deleteUser(Long id) {
-        Optional<User> optionalUser = getMemberUserById(id);
-        User user = optionalUser.orElseThrow(() -> new BadRequestException("User not found or not MEMBER"));
+        User user = getMemberUserById(id)
+                .orElseThrow(() -> new BadRequestException("User not found or not MEMBER"));
 
         if (user.isDeleted()) {
             throw new BadRequestException("User is already deleted");

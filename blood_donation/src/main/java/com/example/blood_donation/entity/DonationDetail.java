@@ -24,14 +24,13 @@ public class DonationDetail {
     @OneToOne
     @JoinColumn(name = "appointment_id")
     private Appointment appointment;
-
-    // Mỗi Member có thể hiến máu nhiều lần
-    @ManyToOne
-    @JoinColumn(name = "member_id")
-    private Member member;
     @ManyToOne
     @JoinColumn(name = "staff_id")
     private Staff staff;
+
+    @ManyToOne
+    @JoinColumn(name = "member_id")
+    private User member;
 
 
 }

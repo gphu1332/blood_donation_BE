@@ -26,6 +26,6 @@ public class Blog {
     @JoinColumn(name = "StaID")
     private Staff staff;
 
-    @Column(name = "is_deleted")
+    @Column(name = "is_deleted", nullable = false)
     private Boolean isDeleted = false;
 }

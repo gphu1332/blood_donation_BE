@@ -22,6 +22,8 @@ public class BloodRequest {
 
     @Enumerated(EnumType.STRING)
     public Status status;
+    @Column(name = "is_deleted", nullable = false)
+    private boolean isDeleted = false;
 
     //Mỗi MedicalStaff có thể tạo nhiều đơn BloodRequest
     @ManyToOne
@@ -34,6 +36,6 @@ public class BloodRequest {
     private Staff staff;
 
     // 1 đơn yêu cầu máu có thể yêu cầu nhiều túi máu với thể tích và số lượng khác nhau
-    @OneToMany(mappedBy = "reqID", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "bloodRequest", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<BloodRequestDetail> details;
 }
