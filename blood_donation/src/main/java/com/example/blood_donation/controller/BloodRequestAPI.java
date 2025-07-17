@@ -5,6 +5,7 @@ import com.example.blood_donation.dto.BloodRequestResponseDTO;
 import com.example.blood_donation.entity.BloodRequest;
 import com.example.blood_donation.enums.Status;
 import com.example.blood_donation.service.BloodRequestService;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -14,6 +15,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/requests")
+@SecurityRequirement(name = "api")
 public class BloodRequestAPI{
 
     @Autowired
