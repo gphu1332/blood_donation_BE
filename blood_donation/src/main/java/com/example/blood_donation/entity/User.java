@@ -10,6 +10,7 @@ import jakarta.validation.constraints.Pattern;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.ColumnDefault;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -72,6 +73,7 @@ public class User implements UserDetails {
     private LocalDate birthdate;
 
     @Column(nullable = false)
+    @ColumnDefault("0")
     private boolean deleted = false;
 
 
