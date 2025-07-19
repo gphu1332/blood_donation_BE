@@ -5,7 +5,7 @@ import com.example.blood_donation.dto.AppointmentRequest;
 import com.example.blood_donation.entity.*;
 import com.example.blood_donation.enums.Status;
 import com.example.blood_donation.exception.exceptons.BadRequestException;
-import com.example.blood_donation.repositoty.*;
+import com.example.blood_donation.repository.*;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;

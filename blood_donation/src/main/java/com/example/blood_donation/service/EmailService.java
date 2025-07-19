@@ -13,6 +13,7 @@ import org.thymeleaf.context.Context;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 
@@ -82,6 +83,37 @@ public class EmailService {
             mailSender.send(message);
         } catch (MessagingException e) {
             throw new RuntimeException("Không gửi được email nhắc lịch", e);
+        }
+    }
+
+    public void sendContactMessageToAdmin(String fullName, String fromEmail, String content) {
+        try {
+            MimeMessage message = mailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
+
+            helper.setTo("contact.bloodvn@gmail.com"); // Email admin nhận lời nhắn
+            helper.setSubject("📨 Lời nhắn mới từ biểu mẫu liên hệ");
+
+            try {
+                helper.setFrom("giaphu123123123@gmail.com", "USER CONTACT!!!");
+            } catch (UnsupportedEncodingException e) {
+                throw new RuntimeException("Không thể thiết lập tên người gửi", e);
+            }
+            helper.setReplyTo(fromEmail); // ⚠️ Khi admin bấm "Trả lời" sẽ gửi về đúng người
+
+            // Template với Thymeleaf (nếu bạn đã có template engine)
+            Context context = new Context();
+            context.setVariable("fullName", fullName);
+            context.setVariable("email", fromEmail);
+            context.setVariable("message", content);
+
+            String html = templateEngine.process("contact-message.html", context);
+            helper.setText(html, true);
+
+            mailSender.send(message);
+
+        } catch (MessagingException e) {
+            throw new RuntimeException("Không gửi được email liên hệ", e);
         }
     }
 

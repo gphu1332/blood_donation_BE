@@ -2,7 +2,7 @@ package com.example.blood_donation.service;
 
 import com.example.blood_donation.dto.CityDTO;
 import com.example.blood_donation.entity.City;
-import com.example.blood_donation.repositoty.CityRepository;
+import com.example.blood_donation.repository.CityRepository;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import org.modelmapper.ModelMapper;
@@ -10,7 +10,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 public class CityService {

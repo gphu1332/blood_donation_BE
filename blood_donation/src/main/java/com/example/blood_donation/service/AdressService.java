@@ -2,7 +2,7 @@ package com.example.blood_donation.service;
 
 import com.example.blood_donation.dto.AdressDTO;
 import com.example.blood_donation.entity.Adress;
-import com.example.blood_donation.repositoty.AdressRepository;
+import com.example.blood_donation.repository.AdressRepository;
 import jakarta.persistence.EntityNotFoundException;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;

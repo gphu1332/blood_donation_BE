@@ -45,6 +45,7 @@ public class JwtFilter extends OncePerRequestFilter {
             "POST:/api/login",
             "POST:/api/generate-otp",
             "POST:/api/verify-otp",
+            "POST:/api/contact",
             "GET:/v3/api-docs/**",
             "GET:/swagger-ui/**"
     );

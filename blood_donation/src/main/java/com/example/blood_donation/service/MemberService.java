@@ -6,7 +6,7 @@ import com.example.blood_donation.entity.Adress;
 import com.example.blood_donation.entity.User;
 import com.example.blood_donation.enums.Role;
 import com.example.blood_donation.exception.exceptons.BadRequestException;
-import com.example.blood_donation.repositoty.MemberRepository;
+import com.example.blood_donation.repository.MemberRepository;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;

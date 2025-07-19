@@ -2,8 +2,8 @@ package com.example.blood_donation.service;
 
 import com.example.blood_donation.dto.*;
 import com.example.blood_donation.enums.Status;
-import com.example.blood_donation.repositoty.AppointmentRepository;
-import com.example.blood_donation.repositoty.DonationProgramRepository;
+import com.example.blood_donation.repository.AppointmentRepository;
+import com.example.blood_donation.repository.DonationProgramRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 

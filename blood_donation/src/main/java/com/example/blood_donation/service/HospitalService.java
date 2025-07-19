@@ -3,8 +3,8 @@ package com.example.blood_donation.service;
 import com.example.blood_donation.dto.HospitalDTO;
 import com.example.blood_donation.entity.Adress;
 import com.example.blood_donation.entity.Hospital;
-import com.example.blood_donation.repositoty.AdressRepository;
-import com.example.blood_donation.repositoty.HospitalRepository;
+import com.example.blood_donation.repository.AdressRepository;
+import com.example.blood_donation.repository.HospitalRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 

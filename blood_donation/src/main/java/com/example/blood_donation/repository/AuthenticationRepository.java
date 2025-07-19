@@ -1,4 +1,4 @@
-package com.example.blood_donation.repositoty;
+package com.example.blood_donation.repository;
 
 
 import com.example.blood_donation.entity.User;

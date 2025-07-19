@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8" />
+    <title>Thông tin liên hệ mới</title>
+</head>
+<body style="margin: 0; padding: 0; background-color: #f4f4f4;">
+<table width="100%" cellpadding="0" cellspacing="0" style="background-color: #f4f4f4; padding: 20px 0;">
+    <tr>
+        <td align="center">
+            <table width="600" cellpadding="0" cellspacing="0" style="background-color: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 10px rgba(0,0,0,0.1); font-family: Arial, sans-serif;">
+                <tr>
+                    <td style="background-color: #007BFF; color: white; padding: 20px;">
+                        <h2 style="margin: 0; font-size: 20px;">📨 Bạn vừa nhận được một lời nhắn liên hệ</h2>
+                    </td>
+                </tr>
+                <tr>
+                    <td style="padding: 20px;">
+                        <p><strong>👤 Họ và tên:</strong> <span th:text="${fullName}">Người dùng</span></p>
+                        <p><strong>📧 Email:</strong> <a th:href="'mailto:' + ${email}" th:text="${email}">email@example.com</a></p>
+                        <p><strong>📝 Nội dung lời nhắn:</strong></p>
+                        <div style="background-color: #f8f9fa; padding: 15px; border-left: 4px solid #007BFF; border-radius: 5px; color: #333;">
+                            <p style="margin: 0;" th:text="${message}">Nội dung lời nhắn...</p>
+                        </div>
+                    </td>
+                </tr>
+                <tr>
+                    <td style="padding: 15px 20px; font-size: 12px; color: #888; text-align: center;">
+                        <p>Đây là email tự động từ hệ thống <strong>Blood Donation</strong>.</p>
+                        <p style="color: #007BFF; font-weight: bold;">Vui lòng không trả lời email này.</p>
+                    </td>
+                </tr>
+            </table>
+        </td>
+    </tr>
+</table>
+</body>
+</html>
