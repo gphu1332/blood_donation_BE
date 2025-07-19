@@ -43,6 +43,9 @@ public interface AppointmentRepository extends JpaRepository<Appointment, Long> 
             """)
     List<Object[]> findTop10Users();
 
+    @Query("SELECT COUNT(a) FROM Appointment a WHERE YEAR(a.date) = :year")
+    long countByYear(@Param("year") int year);
+
 
     long count();
 
