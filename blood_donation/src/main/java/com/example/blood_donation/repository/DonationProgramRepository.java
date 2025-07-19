@@ -51,4 +51,10 @@ public interface DonationProgramRepository extends JpaRepository<DonationProgram
                                         @Param("endDate") LocalDate endDate);
 
 
+    @Query("SELECT COUNT(dp) FROM DonationProgram dp WHERE YEAR(dp.startDate) = :year AND dp.deleted = false")
+    long countByYear(@Param("year") int year);
+
+    @Query("SELECT DISTINCT YEAR(dp.startDate) FROM DonationProgram dp ORDER BY YEAR(dp.startDate) DESC")
+    List<Integer> findAvailableYears();
+
 }

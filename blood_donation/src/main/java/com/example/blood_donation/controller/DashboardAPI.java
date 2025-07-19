@@ -64,6 +64,17 @@ public class DashboardAPI {
         return ResponseEntity.ok(result);
     }
 
+    @PostMapping("/summary-by-year")
+    @Operation(summary = "Thống kê tổng số chương trình và đơn hiến máu theo năm")
+    public ResponseEntity<YearSummaryDTO> getYearSummary(@RequestBody YearRequest request) {
+        return ResponseEntity.ok(dashboardService.getSummaryByYear(request.getYear()));
+    }
+
+    @GetMapping("/available-years")
+    @Operation(summary = "Lấy danh sách các năm có chương trình hiến máu")
+    public ResponseEntity<List<Integer>> getAvailableYears() {
+        return ResponseEntity.ok(dashboardService.getAvailableYears());
+    }
 
 
 }

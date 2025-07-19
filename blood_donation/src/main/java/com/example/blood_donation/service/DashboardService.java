@@ -94,4 +94,15 @@ public class DashboardService {
                 .toList();
     }
 
+
+    public YearSummaryDTO getSummaryByYear(int year) {
+        long totalPrograms = donationProgramRepository.countByYear(year);
+        long totalAppointments = appointmentRepository.countByYear(year);
+        return new YearSummaryDTO(year, totalPrograms, totalAppointments);
+    }
+
+    public List<Integer> getAvailableYears() {
+        return donationProgramRepository.findAvailableYears();
+    }
+
 }
