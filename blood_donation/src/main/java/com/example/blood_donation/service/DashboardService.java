@@ -81,11 +81,19 @@ public class DashboardService {
                 .toList();
     }
 
-    public List<ProgramMonthlyStatsDTO> getProgramStatsByMonth(int year, int month) {
-        LocalDate startDate = LocalDate.of(year, month, 1);
-        LocalDate endDate = startDate.withDayOfMonth(startDate.lengthOfMonth());
-        return getProgramStatsByDateRange(startDate, endDate); // ✅ Gọi đúng hàm gốc
+    public List<ProgramMonthlyStatsDTO> getProgramStatsByMonth(LocalDate start, LocalDate end) {
+        List<Object[]> results = donationProgramRepository.countProgramsByMonth(start, end);
+
+        return results.stream()
+                .map(row -> {
+                    String monthStr = (String) row[0]; // "2025-07"
+                    LocalDate monthDate = LocalDate.parse(monthStr + "-01"); // "2025-07-01"
+                    long count = (Long) row[1];
+                    return new ProgramMonthlyStatsDTO(monthDate, count);
+                })
+                .toList();
     }
+
 
     public YearSummaryDTO getSummaryByYear(int year) {
         long totalPrograms = donationProgramRepository.countByYear(year);
