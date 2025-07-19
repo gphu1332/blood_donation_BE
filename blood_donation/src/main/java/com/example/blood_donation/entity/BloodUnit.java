@@ -27,7 +27,7 @@ import java.time.LocalDate;
         //1 người staff có thể quản lý nhiều túi máu trong kho máu
         @ManyToOne
         @JoinColumn(name = "StaID")
-        private Staff staff;
+        private User staff;
         // Mỗi đơn yêu cầu máu có thể yêu cầu nhiều túi máu trong kho máu
         @ManyToOne
         @JoinColumn(name = "reqID")

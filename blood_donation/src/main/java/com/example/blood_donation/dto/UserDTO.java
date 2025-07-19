@@ -13,7 +13,6 @@ import java.time.LocalDate;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-@JsonFormat(pattern = "yyyy-MM-dd")
 public class UserDTO {
     public Long id;
     public String username;
@@ -21,7 +20,10 @@ public class UserDTO {
     public String fullName;
     public String email;
     public String phone;
+
+    @JsonFormat(pattern = "yyyy-MM-dd")
     private LocalDate birthdate;
+
     public AdressDTO address;
     public String cccd;
     public TypeBlood typeBlood;
