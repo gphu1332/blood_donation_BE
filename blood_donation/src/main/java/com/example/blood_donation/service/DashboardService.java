@@ -20,13 +20,19 @@ public class DashboardService {
     public Map<String, Object> getAppointmentSummary() {
         long total = appointmentRepository.count();
         long fulfilled = appointmentRepository.countByStatus(Status.FULFILLED);
+        long cancelled = appointmentRepository.countByStatus(Status.CANCELLED);
+
         double percent = total == 0 ? 0 : (fulfilled * 100.0 / total);
 
         Map<String, Object> map = new HashMap<>();
         map.put("totalAppointments", total);
+        map.put("fulfilled", fulfilled);
+        map.put("cancelled", cancelled);
         map.put("completedPercentage", percent);
+
         return map;
     }
+
 
     public Map<String, Object> getProgramSummary() {
         long total = donationProgramRepository.count();
@@ -62,5 +68,22 @@ public class DashboardService {
         return appointmentRepository.findTop10Programs().stream()
                 .map(row -> new TopProgramDTO((String) row[0], (Long) row[1]))
                 .toList();
+    }
+    public List<ProgramMonthlyStatsDTO> getProgramStatsByDateRange(LocalDate startDate, LocalDate endDate) {
+        List<Object[]> results = donationProgramRepository.countProgramsByMonth(startDate, endDate);
+        return results.stream()
+                .map(row -> {
+                    String monthStr = (String) row[0];
+                    LocalDate date = LocalDate.parse(monthStr + "-01");
+                    long count = (Long) row[1];
+                    return new ProgramMonthlyStatsDTO(date, count);
+                })
+                .toList();
+    }
+
+    public List<ProgramMonthlyStatsDTO> getProgramStatsByMonth(int year, int month) {
+        LocalDate startDate = LocalDate.of(year, month, 1);
+        LocalDate endDate = startDate.withDayOfMonth(startDate.lengthOfMonth());
+        return getProgramStatsByDateRange(startDate, endDate); // ✅ Gọi đúng hàm gốc
     }
 }

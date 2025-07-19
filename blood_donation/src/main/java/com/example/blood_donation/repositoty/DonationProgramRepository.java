@@ -16,6 +16,7 @@ public interface DonationProgramRepository extends JpaRepository<DonationProgram
             LocalDate date2,
             Long locationId
     );
+
     List<DonationProgram> findByStartDateLessThanEqualAndEndDateGreaterThanEqual(
             LocalDate endDate,
             LocalDate startDate
@@ -36,6 +37,18 @@ public interface DonationProgramRepository extends JpaRepository<DonationProgram
                                                                @Param("startDate") LocalDate startDate,
                                                                @Param("endDate") LocalDate endDate,
                                                                @Param("programId") Long programId);
+
+    @Query("""
+                SELECT FUNCTION('DATE_FORMAT', dp.startDate, '%Y-%m'),
+                       COUNT(dp)
+                FROM DonationProgram dp
+                WHERE dp.startDate BETWEEN :startDate AND :endDate
+                  AND dp.deleted = false
+                GROUP BY FUNCTION('DATE_FORMAT', dp.startDate, '%Y-%m')
+                ORDER BY FUNCTION('DATE_FORMAT', dp.startDate, '%Y-%m') ASC
+            """)
+    List<Object[]> countProgramsByMonth(@Param("startDate") LocalDate startDate,
+                                        @Param("endDate") LocalDate endDate);
 
 
 }
