@@ -85,4 +85,11 @@ public class DonationDetailService {
         dto.setStaffId(detail.getStaff().getId());
         return dto;
     }
+
+    //Kim
+    public DonationDetailDTO getByAppointmentId(Long appointmentId) {
+        DonationDetail detail = donationDetailRepository.findByAppointment_Id(appointmentId)
+                .orElseThrow(() -> new EntityNotFoundException("Donation detail not found for appointment ID: " + appointmentId));
+        return mapToDTO(detail);
+    }
 }

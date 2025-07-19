@@ -37,4 +37,10 @@ public class DonationDetailAPI {
         detailService.delete(id);
         return ResponseEntity.noContent().build();
     }
+
+    @GetMapping("/by-appointment/{appointmentId}")
+    public ResponseEntity<DonationDetailDTO> getByAppointmentId(@PathVariable Long appointmentId) {
+        return ResponseEntity.ok(detailService.getByAppointmentId(appointmentId));
+    }
+
 }
