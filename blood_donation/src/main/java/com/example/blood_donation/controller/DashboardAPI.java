@@ -23,7 +23,7 @@ public class DashboardAPI {
 
     private final DashboardService dashboardService;
 
-    @PostMapping("/appointments/summary")
+    @GetMapping("/appointments/summary")
     @Operation(summary = "Tổng số đơn hiến máu và tỷ lệ hoàn thành")
     public ResponseEntity<Map<String, Object>> getAppointmentSummary() {
         return ResponseEntity.ok(dashboardService.getAppointmentSummary());
@@ -53,5 +53,18 @@ public class DashboardAPI {
     public ResponseEntity<List<TopProgramDTO>> getTopPrograms() {
         return ResponseEntity.ok(dashboardService.getTopPrograms());
     }
+
+    @PostMapping("/programs/monthly")
+    @Operation(summary = "Thống kê số chương trình theo tháng và năm")
+    public ResponseEntity<List<ProgramMonthlyStatsDTO>> getProgramStatsByMonthSimple(
+            @RequestBody MonthlyFilterRequest request) {
+
+        List<ProgramMonthlyStatsDTO> result = dashboardService.getProgramStatsByMonth(
+                request.getYear(), request.getMonth()
+        );
+        return ResponseEntity.ok(result);
+    }
+
+
 }
 
