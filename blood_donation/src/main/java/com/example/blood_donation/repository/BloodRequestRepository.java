@@ -1,7 +1,6 @@
-package com.example.blood_donation.repositoty;
+package com.example.blood_donation.repository;
 
 import com.example.blood_donation.entity.BloodRequest;
-import com.example.blood_donation.entity.BloodRequestDetail;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;

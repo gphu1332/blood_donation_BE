@@ -7,7 +7,7 @@ import com.example.blood_donation.entity.User;
 import com.example.blood_donation.enums.Role;
 import com.example.blood_donation.exception.exceptons.AuthenticationException;
 import com.example.blood_donation.exception.exceptons.BadRequestException;
-import com.example.blood_donation.repositoty.AuthenticationRepository;
+import com.example.blood_donation.repository.AuthenticationRepository;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;

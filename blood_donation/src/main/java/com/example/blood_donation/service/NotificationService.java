@@ -3,14 +3,11 @@ package com.example.blood_donation.service;
 import com.example.blood_donation.dto.NotificationRequest;
 import com.example.blood_donation.entity.*;
 import com.example.blood_donation.exception.exceptons.BadRequestException;
-import com.example.blood_donation.repositoty.AdressRepository;
-import com.example.blood_donation.repositoty.AppointmentRepository;
-import com.example.blood_donation.repositoty.NotificationRepository;
-import com.example.blood_donation.repositoty.UserRepository;
-import lombok.RequiredArgsConstructor;
+import com.example.blood_donation.repository.AdressRepository;
+import com.example.blood_donation.repository.AppointmentRepository;
+import com.example.blood_donation.repository.NotificationRepository;
+import com.example.blood_donation.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 

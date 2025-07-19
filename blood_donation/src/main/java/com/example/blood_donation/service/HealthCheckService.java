@@ -1,11 +1,10 @@
 package com.example.blood_donation.service;
 
 import com.example.blood_donation.dto.HealthCheckRequest;
-import com.example.blood_donation.entity.DonationDetail;
 import com.example.blood_donation.entity.DonationProgram;
 import com.example.blood_donation.entity.HealthCheck;
-import com.example.blood_donation.repositoty.DonationProgramRepository;
-import com.example.blood_donation.repositoty.HealthCheckRepository;
+import com.example.blood_donation.repository.DonationProgramRepository;
+import com.example.blood_donation.repository.HealthCheckRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
