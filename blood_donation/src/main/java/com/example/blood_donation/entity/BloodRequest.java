@@ -33,7 +33,7 @@ public class BloodRequest {
     // Mỗi staff có thể xử lý nhiều đơn yêu cầu máu
     @ManyToOne
     @JoinColumn(name = "StaID")
-    private Staff staff;
+    private User staff;
 
     // 1 đơn yêu cầu máu có thể yêu cầu nhiều túi máu với thể tích và số lượng khác nhau
     @OneToMany(mappedBy = "bloodRequest", cascade = CascadeType.ALL, orphanRemoval = true)

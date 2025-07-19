@@ -4,6 +4,7 @@ import com.example.blood_donation.enums.ProgramStatus;
 import com.example.blood_donation.enums.TypeBlood;
 import jakarta.persistence.*;
 import lombok.Data;
+import org.hibernate.annotations.ColumnDefault;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -60,6 +61,7 @@ public class DonationProgram {
     HealthCheck healthCheck;
 
     @Column(nullable = false)
+    @ColumnDefault("0")
     private boolean deleted = false;
 
     @Transient

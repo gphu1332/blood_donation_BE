@@ -24,7 +24,7 @@ public class Blog {
     // Mỗi nhân viên có the quản lý nhiều blogs
     @ManyToOne
     @JoinColumn(name = "StaID")
-    private Staff staff;
+    private User staff;
 
     @Column(name = "is_deleted", nullable = false)
     private Boolean isDeleted = false;

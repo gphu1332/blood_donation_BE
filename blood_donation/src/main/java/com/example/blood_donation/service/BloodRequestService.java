@@ -5,7 +5,7 @@ import com.example.blood_donation.dto.BloodRequestDetailDTO;
 import com.example.blood_donation.entity.BloodRequest;
 import com.example.blood_donation.entity.BloodRequestDetail;
 import com.example.blood_donation.entity.MedicalStaff;
-import com.example.blood_donation.entity.Staff;
+import com.example.blood_donation.entity.User;
 import com.example.blood_donation.enums.Status;
 import com.example.blood_donation.repository.BloodRequestDetailRepository;
 import com.example.blood_donation.dto.BloodRequestResponseDTO;
@@ -101,7 +101,7 @@ public class BloodRequestService {
             throw new IllegalArgumentException("Hành động không hợp lệ");
         }
 
-        Staff staff = new Staff();
+        User staff = new User();
         staff.setId(staffId);
         req.setStaff(staff);
 

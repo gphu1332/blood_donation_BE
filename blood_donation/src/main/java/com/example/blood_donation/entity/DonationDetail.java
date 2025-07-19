@@ -8,8 +8,9 @@ import java.time.LocalDate;
 
 @Entity
 @Data
-@Table(name = "Donation_Details")
+@Table(name = "donation_details")
 public class DonationDetail {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long donID;
@@ -24,13 +25,12 @@ public class DonationDetail {
     @OneToOne
     @JoinColumn(name = "appointment_id")
     private Appointment appointment;
+
     @ManyToOne
     @JoinColumn(name = "staff_id")
-    private Staff staff;
+    private User staff;
 
     @ManyToOne
     @JoinColumn(name = "member_id")
     private User member;
-
-
 }
