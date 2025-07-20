@@ -1,9 +1,11 @@
 package com.example.blood_donation.controller;
 
 import com.example.blood_donation.dto.BloodUnitResponseDTO;
+import com.example.blood_donation.dto.BloodUnitSearchDTO;
 import com.example.blood_donation.dto.CreateBloodUnitDTO;
 import com.example.blood_donation.dto.UpdateBloodUnitDTO;
 import com.example.blood_donation.entity.BloodUnit;
+import com.example.blood_donation.enums.TypeBlood;
 import com.example.blood_donation.service.BloodUnitService;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -47,4 +49,23 @@ public class BloodUnitController {
         service.delete(id);
         return ResponseEntity.noContent().build();
     }
+    //Kim
+    @GetMapping("/search")
+    public ResponseEntity<List<BloodUnitResponseDTO>> searchBloodUnits(
+            @RequestParam(required = false) String bloodSerialCode,
+            @RequestParam(required = false) TypeBlood typeBlood
+    ) {
+        BloodUnitSearchDTO searchDTO = new BloodUnitSearchDTO();
+        searchDTO.setBloodSerialCode(bloodSerialCode);
+        searchDTO.setTypeBlood(typeBlood);
+
+        List<BloodUnit> result = service.searchBloodUnits(searchDTO);
+        List<BloodUnitResponseDTO> response = result.stream()
+                .map(service::toResponseDTO)
+                .toList();
+
+        return ResponseEntity.ok(response);
+    }
 }
+
+
