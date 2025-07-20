@@ -76,6 +76,16 @@ public class DashboardAPI {
         return ResponseEntity.ok(dashboardService.getAvailableYears());
     }
 
+    @GetMapping("/top-programs/{year}")
+    @Operation(summary = "Top 10 chương trình có nhiều người hiến máu nhất trong 1 năm")
+    public ResponseEntity<List<TopProgramDTO>> getTopProgramsByYear(@PathVariable int year) {
+        return ResponseEntity.ok(dashboardService.getTopProgramsByYear(year));
+    }
 
+    @GetMapping("/top-users/{year}")
+    @Operation(summary = "Top 10 người hiến máu nhiều nhất trong 1 năm")
+    public ResponseEntity<List<TopUserDTO>> getTopUsersByYear(@PathVariable int year) {
+        return ResponseEntity.ok(dashboardService.getTopUsersByYear(year));
+    }
 }
 

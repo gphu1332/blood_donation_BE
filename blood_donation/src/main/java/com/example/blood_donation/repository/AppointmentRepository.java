@@ -2,6 +2,7 @@ package com.example.blood_donation.repository;
 
 import com.example.blood_donation.entity.Appointment;
 import com.example.blood_donation.enums.Status;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -45,6 +46,26 @@ public interface AppointmentRepository extends JpaRepository<Appointment, Long> 
 
     @Query("SELECT COUNT(a) FROM Appointment a WHERE YEAR(a.date) = :year")
     long countByYear(@Param("year") int year);
+
+    @Query("""
+    SELECT a.program.proName, COUNT(a.id)
+    FROM Appointment a
+    WHERE a.status = com.example.blood_donation.enums.Status.FULFILLED
+      AND YEAR(a.date) = :year
+    GROUP BY a.program.id, a.program.proName
+    ORDER BY COUNT(a.id) DESC
+""")
+    List<Object[]> findTop10ProgramsByYear(@Param("year") int year, Pageable pageable);
+
+    @Query("""
+    SELECT a.user.fullName, COUNT(a.id)
+    FROM Appointment a
+    WHERE a.status = com.example.blood_donation.enums.Status.FULFILLED
+      AND YEAR(a.date) = :year
+    GROUP BY a.user.id, a.user.fullName
+    ORDER BY COUNT(a.id) DESC
+""")
+    List<Object[]> findTop10UsersByYear(@Param("year") int year, Pageable pageable);
 
 
     long count();
