@@ -70,12 +70,8 @@ public class AppointmentService {
 
             long daysBetween = ChronoUnit.DAYS.between(lastDonationDate, desiredDate);
 
-            if (daysBetween < 10) {
-                throw new BadRequestException("Bạn chỉ được đặt lịch sau ít nhất 10 ngày kể từ lần hiến máu gần nhất.");
-            }
-
-            if (daysBetween < 14) {
-                System.out.println("Cảnh báo: Người dùng đặt lịch khi chưa đủ 14 ngày kể từ lần hiến máu trước.");
+            if (daysBetween < 84) {
+                throw new BadRequestException("Bạn chỉ được đặt lịch sau ít nhất 84 ngày kể từ lần hiến máu gần nhất.");
             }
         }
 
