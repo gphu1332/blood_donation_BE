@@ -71,18 +71,6 @@ public class DashboardService {
                 .toList();
     }
 
-    public List<ProgramMonthlyStatsDTO> getProgramStatsByDateRange(LocalDate startDate, LocalDate endDate) {
-        List<Object[]> results = donationProgramRepository.countProgramsByMonth(startDate, endDate);
-        return results.stream()
-                .map(row -> {
-                    String monthStr = (String) row[0];
-                    LocalDate date = LocalDate.parse(monthStr + "-01");
-                    long count = (Long) row[1];
-                    return new ProgramMonthlyStatsDTO(date, count);
-                })
-                .toList();
-    }
-
     public List<ProgramMonthlyStatsDTO> getProgramStatsByMonth(LocalDate start, LocalDate end) {
         List<Object[]> results = donationProgramRepository.countProgramsByMonth(start, end);
 
