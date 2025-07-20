@@ -58,17 +58,19 @@ public class DashboardService {
         return new ArrayList<>(result.values());
     }
 
-    public List<TopUserDTO> getTopUsers() {
+    public List<TopUserDTO> getTop10Users() {
         return appointmentRepository.findTop10Users().stream()
+                .limit(10)
                 .map(row -> new TopUserDTO((String) row[0], (Long) row[1]))
                 .toList();
     }
-
-    public List<TopProgramDTO> getTopPrograms() {
+    public List<TopProgramDTO> getTop10Programs() {
         return appointmentRepository.findTop10Programs().stream()
+                .limit(10)
                 .map(row -> new TopProgramDTO((String) row[0], (Long) row[1]))
                 .toList();
     }
+
     public List<ProgramMonthlyStatsDTO> getProgramStatsByDateRange(LocalDate startDate, LocalDate endDate) {
         List<Object[]> results = donationProgramRepository.countProgramsByMonth(startDate, endDate);
         return results.stream()
