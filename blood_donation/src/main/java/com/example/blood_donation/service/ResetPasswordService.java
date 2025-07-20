@@ -6,8 +6,6 @@ import com.example.blood_donation.exception.exceptons.BadRequestException;
 import com.example.blood_donation.repository.UserRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -89,24 +87,21 @@ public class ResetPasswordService {
      * B3: Đặt lại mật khẩu
      */
     public void resetPassword(ResetPasswordRequest request) {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        String username = authentication.getName(); // sẽ là 'member'
+        log.info("Yêu cầu reset mật khẩu cho email: {}", request.getEmail());
 
-        log.info("Yêu cầu reset mật khẩu cho username: {}", username);
-
-        // Tìm user theo username
-        User user = userRepository.findByUsername(username)
+        // Tìm user theo email
+        User user = userRepository.findByEmail(request.getEmail())
                 .orElseThrow(() -> new BadRequestException("Người dùng không tồn tại"));
 
         // So khớp mật khẩu xác nhận
         if (!request.getNewPassword().equals(request.getConfirmPassword())) {
-            log.warn("Mật khẩu xác nhận không khớp cho user: {}", username);
+            log.warn("Mật khẩu xác nhận không khớp cho email: {}", request.getEmail());
             throw new BadRequestException("Mật khẩu xác nhận không khớp");
         }
 
         // Kiểm tra xác minh OTP bằng email của user
-        if (!verifiedEmails.getOrDefault(user.getEmail(), false)) {
-            log.warn("Chưa xác minh OTP cho email: {}", user.getEmail());
+        if (!verifiedEmails.getOrDefault(request.getEmail(), false)) {
+            log.warn("Chưa xác minh OTP cho email: {}", request.getEmail());
             throw new BadRequestException("Bạn chưa xác minh OTP");
         }
 
@@ -115,8 +110,8 @@ public class ResetPasswordService {
         userRepository.save(user);
 
         // Dọn dẹp
-        verifiedEmails.remove(user.getEmail());
+        verifiedEmails.remove(request.getEmail());
 
-        log.info("Đặt lại mật khẩu thành công cho user: {}", username);
+        log.info("Đặt lại mật khẩu thành công cho email: {}", request.getEmail());
     }
 }
