@@ -33,38 +33,47 @@ public class ResetPasswordService {
      * B1: Gửi mã OTP đến email
      */
     public String generateOtp(String email) {
-        System.out.println("Bắt đầu xử lý gửi OTP cho email: " + email);
-
-        // 1. Tìm user theo email
-        User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> {
-                    System.err.println("Email không tồn tại trong hệ thống: " + email);
-                    return new BadRequestException("Email không tồn tại");
-                });
-
-        // 2. Sinh mã OTP
-        String otp = String.valueOf(new Random().nextInt(900000) + 100000);
-        otpStorage.put(email, otp);
-        System.out.println("Mã OTP tạo ra: " + otp + " cho email: " + email);
-
-        // 3. Đặt lịch xoá sau 5 phút
-        scheduler.schedule(() -> {
-            otpStorage.remove(email);
-            System.out.println("🕒 OTP của email " + email + " đã bị xoá sau 5 phút.");
-        }, 5, TimeUnit.MINUTES);
-
-        // 4. Gửi email
         try {
-            System.out.println("Đang gửi email tới: " + email);
-            emailService.sendOtpEmail(email, otp);
-            System.out.println("Gửi email OTP thành công cho: " + email);
-        } catch (Exception e) {
-            System.err.println("Lỗi khi gửi OTP cho: " + email);
-            e.printStackTrace();
-            throw new RuntimeException("Không thể gửi OTP. Chi tiết: " + e.getMessage());
-        }
+            System.out.println("Bắt đầu xử lý gửi OTP cho email: " + email);
 
-        return "Đã gửi mã OTP đến email.";
+            // 1. Tìm user theo email
+            User user = userRepository.findByEmail(email)
+                    .orElseThrow(() -> {
+                        System.err.println("Email không tồn tại trong hệ thống: " + email);
+                        return new BadRequestException("Email không tồn tại");
+                    });
+
+            // 2. Sinh mã OTP
+            String otp = String.valueOf(new Random().nextInt(900000) + 100000);
+            otpStorage.put(email, otp);
+            System.out.println("Mã OTP tạo ra: " + otp + " cho email: " + email);
+
+            // 3. Đặt lịch xoá sau 5 phút
+            scheduler.schedule(() -> {
+                otpStorage.remove(email);
+                System.out.println("🕒 OTP của email " + email + " đã bị xoá sau 5 phút.");
+            }, 5, TimeUnit.MINUTES);
+
+            // 4. Gửi email
+            try {
+                System.out.println("Đang gửi email tới: " + email);
+                emailService.sendOtpEmail(email, otp);
+                System.out.println("Gửi email OTP thành công cho: " + email);
+            } catch (Exception e) {
+                System.err.println("Lỗi khi gửi OTP cho: " + email + ": " + e.getMessage());
+                e.printStackTrace();
+                throw new BadRequestException("Không thể gửi OTP: " + e.getMessage());
+            }
+
+            return "Đã gửi mã OTP đến email.";
+        } catch (Exception e) {
+            System.err.println("Lỗi không mong đợi khi xử lý OTP cho " + email + ": " + e.getMessage());
+            e.printStackTrace();
+            if (e instanceof BadRequestException) {
+                throw e;
+            }
+            throw new BadRequestException("Lỗi khi xử lý yêu cầu: " + e.getMessage());
+        }
     }
 
 
