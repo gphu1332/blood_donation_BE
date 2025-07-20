@@ -45,13 +45,13 @@ public class DashboardAPI {
     @GetMapping("/appointments/top-users")
     @Operation(summary = "Top 10 người hiến máu nhiều nhất")
     public ResponseEntity<List<TopUserDTO>> getTopUsers() {
-        return ResponseEntity.ok(dashboardService.getTopUsers());
+        return ResponseEntity.ok(dashboardService.getTop10Users());
     }
 
     @GetMapping("/appointments/top-programs")
     @Operation(summary = "Top 10 chương trình có nhiều người hiến máu nhất")
     public ResponseEntity<List<TopProgramDTO>> getTopPrograms() {
-        return ResponseEntity.ok(dashboardService.getTopPrograms());
+        return ResponseEntity.ok(dashboardService.getTop10Programs());
     }
 
     @PostMapping("/programs/monthly")
