@@ -10,10 +10,12 @@ import com.example.blood_donation.exception.exceptons.BadRequestException;
 import com.example.blood_donation.repository.AdminUserRepository;
 import com.example.blood_donation.repository.HospitalRepository;
 import com.example.blood_donation.repository.UserRepository;
+import com.example.blood_donation.repository.AdressRepository;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
@@ -36,6 +38,9 @@ public class AdminUserService {
     @Autowired
     private ModelMapper modelMapper;
 
+    @Autowired
+    private AdressRepository adressRepository;
+
     // ✅ Lấy danh sách user chưa bị xóa
     public List<User> getAllUsers() {
         List<Role> allowedRoles = List.of(Role.ADMIN, Role.STAFF, Role.HOSPITAL_STAFF);
@@ -56,16 +61,28 @@ public class AdminUserService {
     }
 
     // ✅ Tạo user mới (ADMIN / STAFF / HOSPITAL_STAFF)
+    @Transactional
     public AdminUserResponseDTO createUserByAdmin(CreateAdminUserDTO dto) {
+        // Check for duplicates among non-deleted users
+        if (userRepository.existsByUsernameAndDeletedFalse(dto.getUsername())) {
+            throw new BadRequestException("Username already exists");
+        }
+        if (dto.getEmail() != null && userRepository.existsByEmailAndDeletedFalse(dto.getEmail())) {
+            throw new BadRequestException("Email already exists");
+        }
+        if (dto.getCccd() != null && userRepository.existsByCccdAndDeletedFalse(dto.getCccd())) {
+            throw new BadRequestException("CCCD already exists");
+        }
+
         User user = modelMapper.map(dto, User.class);
 
-        // Map địa chỉ
-        if (dto.getAddress() != null) {
-            AdressDTO addressDTO = dto.getAddress();
+        // Create and save address first
+        if (dto.getAddressName() != null) {
             Adress address = new Adress();
-            address.setName(addressDTO.getName());
-            address.setLatitude(addressDTO.getLatitude());
-            address.setLongitude(addressDTO.getLongitude());
+            address.setName(dto.getAddressName());
+            address.setLatitude(dto.getLatitude());
+            address.setLongitude(dto.getLongitude());
+            address = adressRepository.save(address); // Save the address first
             user.setAddress(address);
         }
 
@@ -90,6 +107,7 @@ public class AdminUserService {
     }
 
     // ✅ Cập nhật thông tin user (admin chỉnh sửa)
+    @Transactional
     public UserDTO updateUserByAdmin(Long id, AdminUserDTO adminDTO) {
         Optional<User> userOpt = adminUserRepository.findById(id);
         if (userOpt.isEmpty()) {
@@ -100,19 +118,21 @@ public class AdminUserService {
             throw new BadRequestException("User is already deleted");
         }
 
-
         user.setUsername(adminDTO.getUsername());
         user.setFullName(adminDTO.getFullName());
         user.setEmail(adminDTO.getEmail());
         user.setPhone(adminDTO.getPhone());
 
-        // Map địa chỉ nếu có
-        if (adminDTO.getAddress() != null) {
-            AdressDTO addressDTO = adminDTO.getAddress();
-            Adress address = new Adress();
-            address.setName(addressDTO.getName());
-            address.setLatitude(addressDTO.getLatitude());
-            address.setLongitude(addressDTO.getLongitude());
+        // Handle address fields individually
+        if (adminDTO.getAddressName() != null) {
+            Adress address = user.getAddress();
+            if (address == null) {
+                address = new Adress();
+            }
+            address.setName(adminDTO.getAddressName());
+            address.setLatitude(adminDTO.getLatitude());
+            address.setLongitude(adminDTO.getLongitude());
+            address = adressRepository.save(address);
             user.setAddress(address);
         }
 
