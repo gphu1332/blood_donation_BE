@@ -14,7 +14,10 @@ public class AdminUserDTO {
     private String fullName;
     private String email;
     private String phone;
-    private AdressDTO address;
+    // Replace AdressDTO with individual fields
+    private String addressName;
+    private Double latitude;
+    private Double longitude;
     private String cccd;
     private LocalDate birthdate;
     private Gender gender;

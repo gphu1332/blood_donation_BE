@@ -26,13 +26,18 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 @Inheritance(strategy = InheritanceType.JOINED)
 @NoArgsConstructor
 @AllArgsConstructor
+// Thêm ràng buộc duy nhất cho username, email và cccd, loại trừ các record đã xóa (được set là deleted) ra khỏi kiểm tra tính duy nhất
+@Table(uniqueConstraints = {
+    @UniqueConstraint(name = "uk_user_username", columnNames = {"username", "deleted"}),
+    @UniqueConstraint(name = "uk_user_email", columnNames = {"email", "deleted"}),
+    @UniqueConstraint(name = "uk_user_cccd", columnNames = {"cccd", "deleted"})
+})
 public class User implements UserDetails {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
 
-    @Column(unique = true)
     private String username;
 
     //    @Pattern(regexp = "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)[A-Za-z\\d]{8,}$", message = "Password invalid!")
@@ -40,7 +45,6 @@ public class User implements UserDetails {
     private String fullName;
 
     @Email
-    @Column(unique = true)
     private String email;
 
     @Pattern(regexp = "^0(3[2-9]|5[2689]|7[06-9]|8[1-6]|9[0-4 6-9])\\d{7}$", message = "Phone invalid!")
@@ -53,13 +57,12 @@ public class User implements UserDetails {
 
 
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "address_id")
     private Adress address;
 
 
     @Pattern(regexp = "^\\d{12}$", message = "CCCD invalid!")
-    @Column(unique = true)
     private String cccd;
 
     @Enumerated(EnumType.STRING)
