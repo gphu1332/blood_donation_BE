@@ -5,6 +5,7 @@ import com.example.blood_donation.enums.Status;
 import com.example.blood_donation.repository.AppointmentRepository;
 import com.example.blood_donation.repository.DonationProgramRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
@@ -89,6 +90,20 @@ public class DashboardService {
         long totalPrograms = donationProgramRepository.countByYear(year);
         long totalAppointments = appointmentRepository.countByYear(year);
         return new YearSummaryDTO(year, totalPrograms, totalAppointments);
+    }
+
+    public List<TopProgramDTO> getTopProgramsByYear(int year) {
+        return appointmentRepository.findTop10ProgramsByYear(year, PageRequest.of(0, 10))
+                .stream()
+                .map(row -> new TopProgramDTO((String) row[0], (Long) row[1]))
+                .toList();
+    }
+
+    public List<TopUserDTO> getTopUsersByYear(int year) {
+        return appointmentRepository.findTop10UsersByYear(year, PageRequest.of(0, 10))
+                .stream()
+                .map(row -> new TopUserDTO((String) row[0], (Long) row[1]))
+                .toList();
     }
 
     public List<Integer> getAvailableYears() {
