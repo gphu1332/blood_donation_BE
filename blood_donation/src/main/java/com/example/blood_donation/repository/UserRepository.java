@@ -22,4 +22,16 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
 
     Optional<User> findByIdAndDeletedFalse(Long id);
+
+    boolean existsByUsernameAndDeletedFalse(String username);
+
+    boolean existsByEmailAndDeletedFalse(String email);
+
+    boolean existsByCccdAndDeletedFalse(String cccd);
+
+    Optional<User> findByUsernameAndDeletedFalse(String username);
+
+    Optional<User> findByEmailAndDeletedFalse(String email);
+
+    Optional<User> findByCccdAndDeletedFalse(String cccd);
 }

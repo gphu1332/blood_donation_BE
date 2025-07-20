@@ -14,12 +14,14 @@ public class CreateAdminUserDTO {
     private String fullName;
     private String email;
     private String phone;
-    private AdressDTO address;
+    // Remove AdressDTO and replace with individual fields
+    private String addressName;
+    private Double latitude;
+    private Double longitude;
     private String cccd;
     private LocalDate birthdate;
     private Gender gender;
     private TypeBlood typeBlood;
     private Role role;
     private Long hospitalId;
-
 }
