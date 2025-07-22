@@ -41,6 +41,18 @@ public class MemberAPI {
         return ResponseEntity.ok(dtos);
     }
 
+    @GetMapping(path = "/public/usernames")
+    @Operation(summary = "Lấy danh sách tên đăng nhập của tất cả MEMBER", description = "API công khai, không yêu cầu xác thực")
+    @ApiResponse(responseCode = "200", description = "Lấy danh sách thành công")
+    @PreAuthorize("permitAll()")
+    public ResponseEntity<List<String>> getAllMemberUsernames() {
+        List<String> usernames = memberService.getAllMemberUsers()
+                .stream()
+                .map(User::getUsername)
+                .collect(Collectors.toList());
+        return ResponseEntity.ok(usernames);
+    }
+
     @GetMapping("/{id}")
     @Operation(summary = "Lấy chi tiết MEMBER theo ID")
     @ApiResponses({
