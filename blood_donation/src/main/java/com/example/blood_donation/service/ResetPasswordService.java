@@ -89,18 +89,18 @@ public class ResetPasswordService {
      * B3: Đặt lại mật khẩu
      */
     public void resetPassword(ResetPasswordRequest request) {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        String username = authentication.getName(); // sẽ là 'member'
+        String email = request.getEmail();
 
-        log.info("Yêu cầu reset mật khẩu cho username: {}", username);
-
-        // Tìm user theo username
-        User user = userRepository.findByUsername(username)
+        // Tìm user theo email
+        User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new BadRequestException("Người dùng không tồn tại"));
+
+        log.info("Yêu cầu reset mật khẩu cho username: {}", user.getUsername());
+
 
         // So khớp mật khẩu xác nhận
         if (!request.getNewPassword().equals(request.getConfirmPassword())) {
-            log.warn("Mật khẩu xác nhận không khớp cho user: {}", username);
+            log.warn("Mật khẩu xác nhận không khớp cho user: {}", user.getUsername());
             throw new BadRequestException("Mật khẩu xác nhận không khớp");
         }
 
@@ -117,6 +117,6 @@ public class ResetPasswordService {
         // Dọn dẹp
         verifiedEmails.remove(user.getEmail());
 
-        log.info("Đặt lại mật khẩu thành công cho user: {}", username);
+        log.info("Đặt lại mật khẩu thành công cho user: {}", user.getUsername());
     }
 }
