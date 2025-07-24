@@ -8,6 +8,6 @@ import java.util.List;
 public interface BloodRequestRepository extends JpaRepository<BloodRequest, Long> {
     List<BloodRequest> findByMedicalStaff_Id(Long id);
     List<BloodRequest> findByStaff_Id(Long id);
-    List<BloodRequest> findByIsDeletedFalse();
-    List<BloodRequest> findByMedicalStaff_IdAndIsDeletedFalse(Long id);
+    List<BloodRequest> findByDeletedFalse();
+    List<BloodRequest> findByMedicalStaff_IdAndDeletedFalse(Long id);
 }

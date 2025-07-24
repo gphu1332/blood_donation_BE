@@ -5,6 +5,10 @@ import com.example.blood_donation.dto.BloodRequestResponseDTO;
 import com.example.blood_donation.entity.BloodRequest;
 import com.example.blood_donation.enums.Status;
 import com.example.blood_donation.service.BloodRequestService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,23 +20,42 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/requests")
-@SecurityRequirement(name = "api")
-public class BloodRequestAPI{
+@SecurityRequirement(name = "api") // Áp dụng bảo mật cho toàn bộ controller
+public class BloodRequestAPI {
 
     @Autowired
     private BloodRequestService service;
 
+    @Operation(summary = "Tạo yêu cầu truyền máu", description = "Medical Staff tạo mới yêu cầu máu, bao gồm danh sách túi máu cần thiết")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "201", description = "Tạo yêu cầu thành công"),
+            @ApiResponse(responseCode = "400", description = "Yêu cầu không hợp lệ")
+    })
     @PostMapping("/hospital")
-    public ResponseEntity<BloodRequestResponseDTO> create(@Valid @RequestBody BloodRequestDTO dto) {
+    public ResponseEntity<BloodRequestResponseDTO> create(
+            @Parameter(description = "Thông tin yêu cầu máu")
+            @Valid @RequestBody BloodRequestDTO dto) {
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(convertToResponse(service.createRequestFromDTO(dto)));
     }
 
+    @Operation(summary = "Cập nhật yêu cầu truyền máu", description = "Medical Staff cập nhật nội dung yêu cầu khi trạng thái là PENDING")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Cập nhật thành công"),
+            @ApiResponse(responseCode = "404", description = "Không tìm thấy yêu cầu")
+    })
     @PutMapping("/hospital/{id}")
-    public ResponseEntity<BloodRequestResponseDTO> update(@PathVariable Long id, @RequestBody BloodRequestDTO dto) {
+    public ResponseEntity<BloodRequestResponseDTO> update(
+            @Parameter(description = "ID của yêu cầu") @PathVariable Long id,
+            @RequestBody BloodRequestDTO dto) {
         return ResponseEntity.ok(convertToResponse(service.updateRequestByMedical(id, dto)));
     }
 
+    @Operation(summary = "Hủy yêu cầu truyền máu", description = "Medical Staff hủy yêu cầu nếu không còn cần thiết")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Hủy thành công"),
+            @ApiResponse(responseCode = "404", description = "Không tìm thấy yêu cầu")
+    })
     @PutMapping("/hospital/{id}/cancel")
     public ResponseEntity<String> cancel(@PathVariable Long id) {
         try {
@@ -42,53 +65,60 @@ public class BloodRequestAPI{
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
         }
     }
+
+    @Operation(summary = "Lấy danh sách yêu cầu của bệnh viện", description = "Trả về tất cả yêu cầu do Medical Staff thuộc bệnh viện đã tạo")
+    @ApiResponse(responseCode = "200", description = "Danh sách yêu cầu")
     @GetMapping("/hospital/{medId}")
-    public ResponseEntity<List<BloodRequestResponseDTO>> getByHospital(@PathVariable Long medId) {
+    public ResponseEntity<List<BloodRequestResponseDTO>> getByHospital(
+            @Parameter(description = "ID của Medical Staff") @PathVariable Long medId) {
         return ResponseEntity.ok(service.getRequestDTOByMedical(medId));
     }
 
+    @Operation(summary = "Duyệt hoặc từ chối yêu cầu", description = "Staff thực hiện hành động 'accept' hoặc 'reject'")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Cập nhật trạng thái thành công"),
+            @ApiResponse(responseCode = "400", description = "Hành động không hợp lệ")
+    })
     @PutMapping("/staff/{id}/respond")
     public ResponseEntity<BloodRequestResponseDTO> respond(
-            @PathVariable Long id,
-            @RequestParam String action,
-            @RequestParam Long staffId
-    ) {
+            @Parameter(description = "ID yêu cầu") @PathVariable Long id,
+            @Parameter(description = "Hành động: accept hoặc reject") @RequestParam String action,
+            @Parameter(description = "ID của Staff thực hiện") @RequestParam Long staffId) {
         return ResponseEntity.ok(convertToResponse(service.respondToRequest(id, action, staffId)));
     }
 
+    @Operation(summary = "Cập nhật trạng thái xử lý yêu cầu", description = "Staff cập nhật trạng thái sang PROCESSING, DONE, CANCELLED...")
     @PutMapping("/staff/{id}/process")
     public ResponseEntity<BloodRequestResponseDTO> process(
-            @PathVariable Long id,
-            @RequestParam Status status
-    ) {
+            @Parameter(description = "ID yêu cầu") @PathVariable Long id,
+            @Parameter(description = "Trạng thái mới") @RequestParam Status status) {
         return ResponseEntity.ok(convertToResponse(service.updateProcessingStatus(id, status)));
     }
 
-
+    @Operation(summary = "Lấy danh sách yêu cầu đã xử lý", description = "Trả về tất cả yêu cầu được Staff xử lý")
     @GetMapping("/staff/{staId}")
-    public ResponseEntity<List<BloodRequestResponseDTO>> getByStaff(@PathVariable Long staId) {
+    public ResponseEntity<List<BloodRequestResponseDTO>> getByStaff(
+            @Parameter(description = "ID Staff xử lý") @PathVariable Long staId) {
         return ResponseEntity.ok(
                 service.getRequestsByStaff(staId).stream().map(this::convertToResponse).toList()
         );
     }
 
-    //Kim API test
+    @Operation(summary = "Lấy tất cả yêu cầu máu (API kiểm thử)")
     @GetMapping("/kimrequests")
     public ResponseEntity<List<BloodRequestResponseDTO>> getAllRequests() {
         return ResponseEntity.ok(service.getAllRequestDTOs());
     }
 
-    /*@GetMapping("/kimrequests/{medId}")
-    public ResponseEntity<List<BloodRequestResponseDTO>> getCleanRequestsByHospital(@PathVariable Long medId) {
-        return ResponseEntity.ok(service.getRequestsByMedicalDTO(medId));
-    }*/
-
+    @Operation(summary = "Xóa mềm yêu cầu truyền máu", description = "Đánh dấu yêu cầu là đã xóa (deleted = true)")
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteRequest(@PathVariable Long id) {
+    public ResponseEntity<Void> deleteRequest(
+            @Parameter(description = "ID yêu cầu cần xóa") @PathVariable Long id) {
         service.delete(id);
         return ResponseEntity.noContent().build();
     }
 
+    // Private helper method (không cần annotation Swagger)
     private BloodRequestResponseDTO convertToResponse(BloodRequest req) {
         return service.getAllRequestDTOs().stream()
                 .filter(r -> r.getReqID().equals(req.getReqID()))
@@ -96,4 +126,3 @@ public class BloodRequestAPI{
                 .orElseThrow(() -> new RuntimeException("Không thể chuyển đổi sang DTO"));
     }
 }
-

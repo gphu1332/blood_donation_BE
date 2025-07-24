@@ -57,12 +57,16 @@ public class BloodRequestService {
         BloodRequest req = reqRepo.findById(id)
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy yêu cầu"));
 
-        if (!req.getStatus().equals("PENDING")) {
-            throw new IllegalStateException("Chỉ được cập nhập khi trạng thái là PENDING");
+        if (!req.getStatus().equals(Status.PENDING)) {
+            throw new IllegalStateException("Chỉ được cập nhật khi trạng thái là PENDING");
         }
 
         req.setIsEmergency(dto.getIsEmergency());
+
+        // Xóa chi tiết cũ
         detailRepo.deleteAll(detailRepo.findByReqID(id));
+
+        // Tạo chi tiết mới
         List<BloodRequestDetail> details = dto.getDetails().stream().map(d -> {
             BloodRequestDetail detail = new BloodRequestDetail();
             detail.setTypeBlood(d.getTypeBlood());
@@ -71,9 +75,12 @@ public class BloodRequestService {
             detail.setBloodRequest(req);
             return detail;
         }).toList();
+
         req.setDetails(details);
+
         return reqRepo.save(req);
     }
+
     // Hủy yêu cầu - Medical Staff
     public void cancelRequestByMedical(Long id) {
         BloodRequest req = reqRepo.findById(id)
@@ -86,7 +93,7 @@ public class BloodRequestService {
     }
 
     public List<BloodRequestResponseDTO> getRequestDTOByMedical(Long medId) {
-        List<BloodRequest> requests = reqRepo.findByMedicalStaff_IdAndIsDeletedFalse(medId);
+        List<BloodRequest> requests = reqRepo.findByMedicalStaff_IdAndDeletedFalse(medId);
         return requests.stream().map(this::mapToResponseDTO).toList();
     }
     // Duyệt/ Từ chối yêu cầu - Staff
@@ -125,11 +132,11 @@ public class BloodRequestService {
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy yêu cầu máu"));
     }
     public List<BloodRequest> getAllRequests() {
-        return reqRepo.findByIsDeletedFalse();
+        return reqRepo.findByDeletedFalse();
     }
 // Phan Kim code test BE
     public List<BloodRequestResponseDTO> getAllRequestDTOs() {
-        return reqRepo.findByIsDeletedFalse()
+        return reqRepo.findByDeletedFalse()
                 .stream().map(this::mapToResponseDTO)
                 .toList();
     }
@@ -146,6 +153,7 @@ public class BloodRequestService {
         dto.setIsEmergency(req.getIsEmergency());
         dto.setStatus(req.getStatus().name());
         dto.setReqCreateDate(req.getReqCreateDate());
+
         List<BloodRequestDetailDTO> detailDTOs = req.getDetails().stream().map(detail -> {
             BloodRequestDetailDTO d = new BloodRequestDetailDTO();
             d.setTypeBlood(detail.getTypeBlood());
@@ -153,6 +161,7 @@ public class BloodRequestService {
             d.setPackVolume(detail.getPackVolume());
             return d;
         }).toList();
+
         dto.setDetails(detailDTOs);
         return dto;
     }
