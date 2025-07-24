@@ -18,12 +18,13 @@ public class BloodRequest {
 
     private LocalDate ReqCreateDate;
 
-    private String isEmergency;
+    private Boolean isEmergency;
 
     @Enumerated(EnumType.STRING)
     public Status status;
+
     @Column(name = "is_deleted", nullable = false)
-    private boolean isDeleted = false;
+    private boolean deleted = false;
 
     //Mỗi MedicalStaff có thể tạo nhiều đơn BloodRequest
     @ManyToOne
