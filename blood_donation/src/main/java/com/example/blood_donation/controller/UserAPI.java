@@ -1,6 +1,8 @@
 package com.example.blood_donation.controller;
 
 import com.example.blood_donation.dto.UserDTO;
+import com.example.blood_donation.entity.User;
+import com.example.blood_donation.service.AuthenticationService;
 import com.example.blood_donation.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -19,6 +21,9 @@ public class UserAPI {
     @Autowired
     private UserService userService;
 
+    @Autowired
+    private AuthenticationService authenticationService;
+
     @PutMapping("/{id}")
     @Operation(
         summary = "Cập nhật thông tin người dùng",
@@ -36,5 +41,25 @@ public class UserAPI {
 
         UserDTO updated = userService.updateUser(id, userDTO);
         return ResponseEntity.ok(updated);
+    }
+
+    @DeleteMapping("/disable-my-account")
+    @Operation(
+        summary = "Vô hiệu hóa tài khoản của member đang đăng nhập",
+        description = "Vô hiệu hóa tài khoản của tài khoản đang đăng nhập trong hệ thống."
+    )
+    @ApiResponses({
+        @ApiResponse(responseCode = "200", description = "Vô hiệu hóa tài khoản thành công"),
+        @ApiResponse(responseCode = "401", description = "Không có quyền truy cập"),
+        @ApiResponse(responseCode = "404", description = "Không tìm thấy người dùng"),
+        @ApiResponse(responseCode = "400", description = "Tài khoản đã bị vô hiệu hóa trước đó")
+    })
+    public ResponseEntity<String> disableMyAccount() {
+        // Lấy user đang đăng nhập trong hê thống
+        User currentUser = authenticationService.getCurrentUser();
+
+        userService.disableMyAccount(currentUser.getId());
+
+        return ResponseEntity.ok("Tài khoản của bạn đã được vô hiệu hóa thành công");
     }
 }
