@@ -34,9 +34,14 @@ public class CityService {
     }
 
     public CityDTO createCity(CityDTO dto) {
+        if (!"Hồ Chí Minh".equalsIgnoreCase(dto.getName().trim())) {
+            throw new IllegalArgumentException("Chỉ được phép tạo chương trình tại thành phố Hồ Chí Minh.");
+        }
+
         City city = modelMapper.map(dto, City.class);
         return modelMapper.map(cityRepository.save(city), CityDTO.class);
     }
+
 
     public CityDTO updateCity(Long id, CityDTO dto) {
         City city = cityRepository.findById(id)
