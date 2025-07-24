@@ -90,4 +90,15 @@ public class UserService {
         User savedUser = userRepository.save(user);
         return modelMapper.map(savedUser, UserDTO.class);
     }
+
+    @Transactional
+    public void disableMyAccount(Long userId) {
+        // Tìm user theo ID mà deleted = false
+        User user = userRepository.findByIdAndDeletedFalse(userId)
+                .orElseThrow(() -> new BadRequestException("Không tìm thấy người dùng hoặc tài khoản đã bị vô hiệu hóa"));
+
+        // Set deleted flag thành true
+        user.setDeleted(true);
+        userRepository.save(user);
+    }
 }
