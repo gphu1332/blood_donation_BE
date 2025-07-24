@@ -74,11 +74,12 @@ public class AuthenticationService implements UserDetailsService {
 
         // ✅ Kiểm tra tài khoản đã bị xoá
         if (user.isDeleted()) {
-            throw new AuthenticationException("Tài khoản của bạn đã bị vô hiệu hoá!");
+            throw new AuthenticationException("Tài khoản này đã bị vô hiệu hoá!");
         }
 
         UserDTO userDTO = modelMapper.map(user, UserDTO.class);
-        String token = tokenService.generateToken(user);
+        // Generate token dựa trên tùy chọn rememberMe
+        String token = tokenService.generateToken(user, loginRequest.isRememberMe());
         userDTO.setToken(token);
         return userDTO;
     }
