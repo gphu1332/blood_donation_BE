@@ -8,7 +8,7 @@ import lombok.Data;
 import java.time.LocalDate;
 
 @Data
-public class CreateUpdateMemberRequest {
+public class MemberCreateRequest {
     private String username;
     private String password;
     private String fullName;
