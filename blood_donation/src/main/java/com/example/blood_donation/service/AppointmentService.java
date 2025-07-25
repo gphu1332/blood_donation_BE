@@ -239,6 +239,7 @@ public class AppointmentService {
         appointment.setAnswer7(request.getAnswer7());
         appointment.setAnswer8(request.getAnswer8());
         appointment.setAnswer9(request.getAnswer9());
+        appointment.setAnswer9(request.getAnswer10());
 
         return appointment;
     }

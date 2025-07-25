@@ -11,6 +11,9 @@ import java.time.LocalDate;
 import java.util.List;
 
 public interface AppointmentRepository extends JpaRepository<Appointment, Long> {
+    List<Appointment> findByProgram_Id(Long programId);
+
+
     @Query("SELECT a FROM Appointment a WHERE a.program.startDate = :date")
     List<Appointment> findAppointmentsForProgramDate(@Param("date") LocalDate date);
 
