@@ -7,6 +7,5 @@ import org.springframework.stereotype.Repository;
 import java.util.List;
 @Repository
 public interface BlogRepository extends JpaRepository<Blog, Long> {
-    List<Blog> findByContType(String contType);
     List<Blog> findByIsDeletedFalse();
 }
