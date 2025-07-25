@@ -15,6 +15,8 @@ import java.util.List;
 
 @Service
 public class DonationProgramService {
+    @Autowired
+    private AppointmentRepository appointmentRepository;
 
     @Autowired
     private DonationProgramRepository donationProgramRepository;
@@ -32,7 +34,7 @@ public class DonationProgramService {
     private AdressRepository adressRepository;
 
     @Autowired
-    private ModelMapper modelMapper;
+    private EmailService emailService;
 
     // Lấy danh sách tất cả chương trình hiến máu.
     public List<DonationProgramResponse> getAll() {
@@ -129,6 +131,7 @@ public class DonationProgramService {
                 .filter(p -> !p.isDeleted())
                 .orElseThrow(() -> new EntityNotFoundException("Donation program not found"));
 
+        // Kiểm tra trùng lịch
         if (dto.getAddressId() != null) {
             List<DonationProgram> conflicts = donationProgramRepository
                     .findConflictingProgramsExcludingSelf(dto.getAddressId(), dto.getStartDate(), dto.getEndDate(), id)
@@ -141,6 +144,16 @@ public class DonationProgramService {
             }
         }
 
+        // So sánh thông tin quan trọng
+        boolean isImportantChanged =
+                !existing.getProName().equals(dto.getProName()) ||
+                        !existing.getStartDate().equals(dto.getStartDate()) ||
+                        !existing.getEndDate().equals(dto.getEndDate()) ||
+                        !existing.getDescription().equals(dto.getDescription()) ||
+                        (existing.getAddress() != null && !existing.getAddress().getId().equals(dto.getAddressId())) ||
+                        (dto.getSlotIds() != null && !existing.getSlots().stream().map(Slot::getSlotID).toList().equals(dto.getSlotIds()));
+
+        // Cập nhật các trường
         existing.setProName(dto.getProName());
         existing.setStartDate(dto.getStartDate());
         existing.setEndDate(dto.getEndDate());
@@ -149,28 +162,55 @@ public class DonationProgramService {
         existing.setContact(dto.getContact());
         existing.setImageUrl(dto.getImageUrl());
 
-        if (dto.getCityId() != null) {
-            City city = cityRepository.findById(dto.getCityId())
-                    .filter(c -> !c.isDeleted())
-                    .orElseThrow(() -> new EntityNotFoundException("City not found or has been deleted"));
-            existing.setCity(city);
-        }
-
-
+        // Liên kết City
         if (dto.getCityId() != null) {
             City city = cityRepository.findById(dto.getCityId())
                     .orElseThrow(() -> new EntityNotFoundException("City not found"));
             existing.setCity(city);
         }
 
+        // Liên kết Address
+        if (dto.getAddressId() != null) {
+            Adress address = adressRepository.findById(dto.getAddressId())
+                    .orElseThrow(() -> new EntityNotFoundException("Address not found"));
+            existing.setAddress(address);
+        }
+
+        // Cập nhật Slot
         if (dto.getSlotIds() != null) {
             List<Slot> updatedSlots = slotRepository.findAllById(dto.getSlotIds());
             existing.setSlots(updatedSlots);
         }
 
+        // Lưu chương trình đã cập nhật
         DonationProgram updated = donationProgramRepository.save(existing);
+
+        // Gửi mail nếu có thay đổi quan trọng
+        if (isImportantChanged) {
+            List<Appointment> appointments = appointmentRepository.findByProgram_Id(id);
+            for (Appointment appointment : appointments) {
+                User user = appointment.getUser();
+
+                String location = updated.getAddress() != null
+                        ? updated.getAddress().getName()
+                        : "Không xác định";
+
+                emailService.sendProgramUpdateEmail(
+                        user.getEmail(),
+                        user.getFullName(),
+                        updated.getProName(),
+                        updated.getStartDate(),
+                        updated.getEndDate(),
+                        location,
+                        "Thông tin chương trình bạn đã đăng ký đã có thay đổi quan trọng. Vui lòng kiểm tra lại."
+                );
+            }
+        }
+
         return mapToResponseDTO(updated);
     }
+
+
 
     // Xoá mềm chương trình
     public void delete(Long id) {

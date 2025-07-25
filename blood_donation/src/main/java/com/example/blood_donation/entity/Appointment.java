@@ -38,6 +38,7 @@ public class Appointment {
     private String answer7;
     private String answer8;
     private String answer9;
+    private String answer10;
 }
 
 
