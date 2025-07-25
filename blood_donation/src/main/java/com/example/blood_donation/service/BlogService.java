@@ -30,8 +30,10 @@ public class BlogService {
         blog.setContTitle(updated.getContTitle());
         blog.setContType(updated.getContType());
         blog.setContBody(updated.getContBody());
+        blog.setImageUrl(updated.getImageUrl());
         return blogRepository.save(blog);
     }
+
     public void delete(Long id) {
         Blog blog = getById(id);
         blog.setIsDeleted(true);

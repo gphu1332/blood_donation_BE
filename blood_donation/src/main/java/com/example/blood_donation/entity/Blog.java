@@ -20,7 +20,7 @@ public class Blog {
     private String contBody;
 
     private LocalDate conPubDate;
-
+    private String imageUrl;
     // Mỗi nhân viên có the quản lý nhiều blogs
     @ManyToOne
     @JoinColumn(name = "StaID")
