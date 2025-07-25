@@ -93,6 +93,22 @@ public class AuthenticationService implements UserDetailsService {
         return user;
     }
 
+    /**
+     * Check if JWT token is expired
+     */
+    public boolean isTokenExpired(String authHeader) {
+        try {
+            if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+                return true; // Invalid format hoặc không có token tính là expired
+            }
+
+            String token = authHeader.substring(7); // Xóa "Bearer " prefix để dùng service check
+            return tokenService.isTokenExpired(token);
+        } catch (Exception e) {
+            return true; // Consider any error as expired
+        }
+    }
+
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         User user = authenticationRepository.findByUsername(username);

@@ -9,9 +9,11 @@ import io.swagger.v3.oas.annotations.parameters.RequestBody;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -53,5 +55,22 @@ public class AuthenticationAPI {
     public ResponseEntity<UserDTO> login(@org.springframework.web.bind.annotation.RequestBody LoginRequest loginRequest) {
         UserDTO user = authenticationService.login(loginRequest);
         return ResponseEntity.ok(user);
+    }
+
+    /**
+     * API Kiểm tra JWT Token có hết hạn không
+     */
+    @GetMapping("/api/token-expired")
+    @Operation(
+            summary = "Kiểm tra JWT Token hết hạn hay chưa",
+            description = "Kiểm tra token từ Authorization header và trả về true nếu hết hạn, false nếu còn hiệu lực"
+    )
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Trả về true/false")
+    })
+    public ResponseEntity<Boolean> isTokenExpired(HttpServletRequest request) {
+        String authHeader = request.getHeader("Authorization");
+        boolean expired = authenticationService.isTokenExpired(authHeader);
+        return ResponseEntity.ok(expired);
     }
 }
