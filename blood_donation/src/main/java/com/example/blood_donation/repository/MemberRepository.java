@@ -11,4 +11,10 @@ public interface MemberRepository extends JpaRepository<User, Long> {
     List<User> findByRole(Role role);
     List<User> findByRoleAndDeletedFalse(Role role);
     Optional<User> findByIdAndRoleAndDeletedFalse(Long id, Role role);
+
+    boolean existsByUsernameAndDeletedFalse(String username);
+
+    boolean existsByEmailAndDeletedFalse(String email);
+
+    boolean existsByCccdAndDeletedFalse(String cccd);
 }
