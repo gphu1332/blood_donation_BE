@@ -35,8 +35,9 @@ public class BloodRequestAPI {
     public ResponseEntity<BloodRequestResponseDTO> create(
             @Parameter(description = "Thông tin yêu cầu máu")
             @Valid @RequestBody BloodRequestDTO dto) {
+        BloodRequest request = service.createRequestFromDTO(dto);
         return ResponseEntity.status(HttpStatus.CREATED)
-                .body(convertToResponse(service.createRequestFromDTO(dto)));
+                .body(service.mapToResponseDTO(request));
     }
 
     @Operation(summary = "Cập nhật yêu cầu truyền máu", description = "Medical Staff cập nhật nội dung yêu cầu khi trạng thái là PENDING")
@@ -46,9 +47,11 @@ public class BloodRequestAPI {
     })
     @PutMapping("/hospital/{id}")
     public ResponseEntity<BloodRequestResponseDTO> update(
-            @Parameter(description = "ID của yêu cầu") @PathVariable Long id,
+            @Parameter(description = "ID của yêu cầu")
+            @PathVariable Long id,
             @RequestBody BloodRequestDTO dto) {
-        return ResponseEntity.ok(convertToResponse(service.updateRequestByMedical(id, dto)));
+        BloodRequest request = service.updateRequestByMedical(id, dto);
+        return ResponseEntity.ok(service.mapToResponseDTO(request));
     }
 
     @Operation(summary = "Hủy yêu cầu truyền máu", description = "Medical Staff hủy yêu cầu nếu không còn cần thiết")
@@ -84,7 +87,8 @@ public class BloodRequestAPI {
             @Parameter(description = "ID yêu cầu") @PathVariable Long id,
             @Parameter(description = "Hành động: accept hoặc reject") @RequestParam String action,
             @Parameter(description = "ID của Staff thực hiện") @RequestParam Long staffId) {
-        return ResponseEntity.ok(convertToResponse(service.respondToRequest(id, action, staffId)));
+        BloodRequest request = service.respondToRequest(id, action, staffId);
+        return ResponseEntity.ok(service.mapToResponseDTO(request));
     }
 
     @Operation(summary = "Cập nhật trạng thái xử lý yêu cầu", description = "Staff cập nhật trạng thái sang PROCESSING, DONE, CANCELLED...")
@@ -92,7 +96,8 @@ public class BloodRequestAPI {
     public ResponseEntity<BloodRequestResponseDTO> process(
             @Parameter(description = "ID yêu cầu") @PathVariable Long id,
             @Parameter(description = "Trạng thái mới") @RequestParam Status status) {
-        return ResponseEntity.ok(convertToResponse(service.updateProcessingStatus(id, status)));
+        BloodRequest request = service.updateProcessingStatus(id, status);
+        return ResponseEntity.ok(service.mapToResponseDTO(request));
     }
 
     @Operation(summary = "Lấy danh sách yêu cầu đã xử lý", description = "Trả về tất cả yêu cầu được Staff xử lý")
@@ -100,7 +105,9 @@ public class BloodRequestAPI {
     public ResponseEntity<List<BloodRequestResponseDTO>> getByStaff(
             @Parameter(description = "ID Staff xử lý") @PathVariable Long staId) {
         return ResponseEntity.ok(
-                service.getRequestsByStaff(staId).stream().map(this::convertToResponse).toList()
+                service.getRequestsByStaff(staId).stream()
+                        .map(service::mapToResponseDTO)
+                        .toList()
         );
     }
 
@@ -120,9 +127,6 @@ public class BloodRequestAPI {
 
     // Private helper method (không cần annotation Swagger)
     private BloodRequestResponseDTO convertToResponse(BloodRequest req) {
-        return service.getAllRequestDTOs().stream()
-                .filter(r -> r.getReqID().equals(req.getReqID()))
-                .findFirst()
-                .orElseThrow(() -> new RuntimeException("Không thể chuyển đổi sang DTO"));
+        return service.mapToResponseDTO(req);
     }
 }
