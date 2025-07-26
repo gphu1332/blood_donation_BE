@@ -215,10 +215,32 @@ public class DonationProgramService {
     // Xoá mềm chương trình
     public void delete(Long id) {
         DonationProgram program = donationProgramRepository.findById(id)
+                .filter(p -> !p.isDeleted())
                 .orElseThrow(() -> new EntityNotFoundException("Donation program not found"));
+
         program.setDeleted(true);
         donationProgramRepository.save(program);
+
+        // Gửi email thông báo hủy
+        List<Appointment> appointments = appointmentRepository.findByProgram_Id(id);
+        for (Appointment appointment : appointments) {
+            User user = appointment.getUser();
+
+            String location = program.getAddress() != null
+                    ? program.getAddress().getName()
+                    : "Không xác định";
+
+            emailService.sendProgramDeletedEmail(
+                    user.getEmail(),
+                    user.getFullName(),
+                    program.getProName(),
+                    program.getStartDate(),
+                    program.getEndDate(),
+                    location
+            );
+        }
     }
+
 
     // Tìm kiếm theo ngày
     public List<DonationProgramResponse> searchByDateRange(LocalDate startDate, LocalDate endDate) {
