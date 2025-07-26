@@ -1,5 +1,6 @@
 package com.example.blood_donation.controller;
 
+import com.example.blood_donation.dto.ChangePasswordRequest;
 import com.example.blood_donation.dto.UserDTO;
 import com.example.blood_donation.entity.User;
 import com.example.blood_donation.service.AuthenticationService;
@@ -12,6 +13,8 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.security.Principal;
 
 @RestController
 @RequestMapping("/api/users")
@@ -54,6 +57,14 @@ public class UserAPI {
         @ApiResponse(responseCode = "404", description = "Không tìm thấy người dùng"),
         @ApiResponse(responseCode = "400", description = "Tài khoản đã bị vô hiệu hóa trước đó")
     })
+
+    @PutMapping("/change-password")
+    public ResponseEntity<?> changePassword(@RequestBody ChangePasswordRequest request, Principal principal) {
+        String username = principal.getName(); // Lấy username từ token
+        userService.changePassword(username, request);
+        return ResponseEntity.ok("Đổi mật khẩu thành công");
+    }
+
     public ResponseEntity<String> disableMyAccount() {
         // Lấy user đang đăng nhập trong hê thống
         User currentUser = authenticationService.getCurrentUser();
