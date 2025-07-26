@@ -155,4 +155,31 @@ public class EmailService {
         }
     }
 
+    public void sendProgramDeletedEmail(String toEmail, String fullName,
+                                        String programName, LocalDate startDate,
+                                        LocalDate endDate, String location) {
+        try {
+            MimeMessage message = mailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
+
+            helper.setTo(toEmail);
+            helper.setSubject("Thông báo hủy chương trình hiến máu: " + programName);
+
+            Context context = new Context();
+            context.setVariable("fullName", fullName);
+            context.setVariable("programName", programName);
+            context.setVariable("startDate", startDate);
+            context.setVariable("endDate", endDate);
+            context.setVariable("location", location);
+
+            String html = templateEngine.process("program-deleted.html", context);
+            helper.setText(html, true);
+
+            mailSender.send(message);
+        } catch (MessagingException e) {
+            throw new RuntimeException("Không thể gửi email hủy chương trình", e);
+        }
+    }
+
+
 }
