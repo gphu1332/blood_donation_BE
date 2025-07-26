@@ -1,6 +1,7 @@
 package com.example.blood_donation.service;
 
 import com.example.blood_donation.dto.AdressDTO;
+import com.example.blood_donation.dto.ChangePasswordRequest;
 import com.example.blood_donation.dto.UserDTO;
 import com.example.blood_donation.entity.Adress;
 import com.example.blood_donation.entity.User;
@@ -10,6 +11,8 @@ import com.example.blood_donation.repository.UserRepository;
 import jakarta.transaction.Transactional;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
@@ -25,6 +28,9 @@ public class UserService {
 
     @Autowired
     private ModelMapper modelMapper;
+
+    @Autowired
+    private PasswordEncoder passwordEncoder;
 
     @Transactional
     public UserDTO updateUser(Long id, UserDTO userDTO) {
@@ -89,6 +95,22 @@ public class UserService {
         // ✅ Lưu và trả về DTO
         User savedUser = userRepository.save(user);
         return modelMapper.map(savedUser, UserDTO.class);
+    }
+
+    public void changePassword(String username, ChangePasswordRequest request) {
+        if (!request.getNewPassword().equals(request.getConfirmNewPassword())) {
+            throw new IllegalArgumentException("Mật khẩu mới không khớp");
+        }
+
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new UsernameNotFoundException("Không tìm thấy người dùng"));
+
+        if (!passwordEncoder.matches(request.getCurrentPassword(), user.getPassword())) {
+            throw new IllegalArgumentException("Mật khẩu hiện tại không đúng");
+        }
+
+        user.setPassword(passwordEncoder.encode(request.getNewPassword()));
+        userRepository.save(user);
     }
 
     @Transactional
