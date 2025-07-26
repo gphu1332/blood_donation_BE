@@ -3,6 +3,7 @@ package com.example.blood_donation.service;
 import com.example.blood_donation.dto.DonationProgramDTO;
 import com.example.blood_donation.dto.DonationProgramResponse;
 import com.example.blood_donation.entity.*;
+import com.example.blood_donation.enums.Status;
 import com.example.blood_donation.repository.*;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
@@ -11,6 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
@@ -35,6 +37,9 @@ public class DonationProgramService {
 
     @Autowired
     private EmailService emailService;
+
+    @Autowired
+    private NotificationService notificationService;
 
     // Lấy danh sách tất cả chương trình hiến máu.
     public List<DonationProgramResponse> getAll() {
@@ -65,7 +70,6 @@ public class DonationProgramService {
                 .map(this::mapToResponseDTO)
                 .toList();
     }
-
 
     // Tạo chương trình mới
     @Transactional
@@ -100,7 +104,6 @@ public class DonationProgramService {
                     .orElseThrow(() -> new EntityNotFoundException("City not found or has been deleted"));
             program.setCity(city);
         }
-
 
         // Liên kết Adress
         if (dto.getAddressId() != null) {
@@ -185,9 +188,12 @@ public class DonationProgramService {
         // Lưu chương trình đã cập nhật
         DonationProgram updated = donationProgramRepository.save(existing);
 
-        // Gửi mail nếu có thay đổi quan trọng
+        // Gửi mail + Notification nếu có thay đổi quan trọng
         if (isImportantChanged) {
-            List<Appointment> appointments = appointmentRepository.findByProgram_Id(id);
+            List<Appointment> appointments = appointmentRepository.findByProgram_Id(id).stream()
+                    .filter(a -> a.getStatus() == Status.APPROVED)
+                    .toList();
+
             for (Appointment appointment : appointments) {
                 User user = appointment.getUser();
 
@@ -204,13 +210,18 @@ public class DonationProgramService {
                         location,
                         "Thông tin chương trình bạn đã đăng ký đã có thay đổi quan trọng. Vui lòng kiểm tra lại."
                 );
+
+                notificationService.createNotificationForUser(
+                        user,
+                        "Chương trình đã được cập nhật",
+                        "Chương trình " + updated.getProName() + " mà bạn đã đăng ký đã có thay đổi. Vui lòng kiểm tra lại lịch mới."
+                );
             }
         }
 
+
         return mapToResponseDTO(updated);
     }
-
-
 
     // Xoá mềm chương trình
     public void delete(Long id) {
@@ -221,8 +232,11 @@ public class DonationProgramService {
         program.setDeleted(true);
         donationProgramRepository.save(program);
 
-        // Gửi email thông báo hủy
-        List<Appointment> appointments = appointmentRepository.findByProgram_Id(id);
+        // Gửi email + Notification thông báo hủy
+        List<Appointment> appointments = appointmentRepository.findByProgram_Id(id).stream()
+                .filter(a -> a.getStatus() == Status.APPROVED)
+                .toList();
+
         for (Appointment appointment : appointments) {
             User user = appointment.getUser();
 
@@ -238,9 +252,15 @@ public class DonationProgramService {
                     program.getEndDate(),
                     location
             );
-        }
-    }
 
+            notificationService.createNotificationForUser(
+                    user,
+                    "Chương trình đã bị hủy",
+                    "Chúng tôi rất tiếc phải thông báo rằng chương trình " + program.getProName() + " tại " + location + " đã bị hủy."
+            );
+        }
+
+    }
 
     // Tìm kiếm theo ngày
     public List<DonationProgramResponse> searchByDateRange(LocalDate startDate, LocalDate endDate) {
@@ -280,7 +300,6 @@ public class DonationProgramService {
         } else {
             dto.setCityId(null);
         }
-
 
         if (program.getAdmin() != null) {
             dto.setAdminId(program.getAdmin().getId());

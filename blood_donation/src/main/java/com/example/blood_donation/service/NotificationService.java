@@ -156,6 +156,16 @@ public class NotificationService {
         }
     }
 
+    public Notification createNotificationForUser(User user, String title, String message) {
+        Notification notification = new Notification();
+        notification.setTitle(title);
+        notification.setMessage(message);
+        notification.setUser(user);
+        notification.setCreatedAt(LocalDateTime.now());
+        notification.setRead(false);
+        return notificationRepository.save(notification);
+    }
+
     /**
      * Tự động gửi email nhắc lịch hiến máu hàng ngày vào lúc 08:00 sáng.
      * Được cấu hình với @Scheduled(cron = "0 0 8 * * *")

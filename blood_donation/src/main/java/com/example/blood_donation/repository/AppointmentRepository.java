@@ -1,6 +1,7 @@
 package com.example.blood_donation.repository;
 
 import com.example.blood_donation.entity.Appointment;
+import com.example.blood_donation.entity.DonationProgram;
 import com.example.blood_donation.enums.Status;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -74,4 +75,6 @@ public interface AppointmentRepository extends JpaRepository<Appointment, Long> 
     long count();
 
     long countByStatus(Status status);
+
+    List<Appointment> findByProgram(DonationProgram program);
 }
