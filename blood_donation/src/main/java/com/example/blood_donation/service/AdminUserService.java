@@ -77,6 +77,10 @@ public class AdminUserService {
         User user = mapToEntityFromDTO(dto);
 
         User saved = adminUserRepository.save(user);
+        // Nếu là MedicalStaff, lưu luôn vào hospitalRepo để đảm bảo cascade
+        if (saved instanceof MedicalStaff staff) {
+            return mapToDTO(staff);
+        }
         return mapToDTO(saved);
     }
 
@@ -159,7 +163,19 @@ public class AdminUserService {
         User user;
 
         if (dto.getRole() == Role.HOSPITAL_STAFF) {
-            MedicalStaff staff = modelMapper.map(dto, MedicalStaff.class);
+            // Tạo MedicalStaff thủ công
+            MedicalStaff staff = new MedicalStaff();
+            staff.setUsername(dto.getUsername());
+            staff.setPassword(passwordEncoder.encode(dto.getPassword()));
+            staff.setFullName(dto.getFullName());
+            staff.setEmail(dto.getEmail());
+            staff.setPhone(dto.getPhone());
+            staff.setCccd(dto.getCccd());
+            staff.setBirthdate(dto.getBirthdate());
+            staff.setGender(dto.getGender());
+            staff.setTypeBlood(dto.getTypeBlood());
+            staff.setRole(dto.getRole());
+            staff.setDeleted(false);
 
             if (dto.getHospitalId() != null) {
                 Hospital hospital = hospitalRepository.findById(dto.getHospitalId())
@@ -167,22 +183,30 @@ public class AdminUserService {
                 staff.setHospital(hospital);
             }
 
+            if (dto.getAddressName() != null) {
+                Adress address = new Adress();
+                address.setName(dto.getAddressName());
+                address.setLatitude(dto.getLatitude());
+                address.setLongitude(dto.getLongitude());
+                address = adressRepository.save(address);
+                staff.setAddress(address);
+            }
+
             user = staff;
         } else {
             user = modelMapper.map(dto, User.class);
-        }
+            user.setPassword(passwordEncoder.encode(dto.getPassword()));
+            user.setDeleted(false);
 
-        if (dto.getAddressName() != null) {
-            Adress address = new Adress();
-            address.setName(dto.getAddressName());
-            address.setLatitude(dto.getLatitude());
-            address.setLongitude(dto.getLongitude());
-            address = adressRepository.save(address);
-            user.setAddress(address);
+            if (dto.getAddressName() != null) {
+                Adress address = new Adress();
+                address.setName(dto.getAddressName());
+                address.setLatitude(dto.getLatitude());
+                address.setLongitude(dto.getLongitude());
+                address = adressRepository.save(address);
+                user.setAddress(address);
+            }
         }
-
-        user.setDeleted(false);
-        user.setPassword(passwordEncoder.encode(dto.getPassword()));
 
         return user;
     }
