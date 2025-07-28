@@ -155,4 +155,18 @@ public class AppointmentAPI {
         AppointmentDTO dto = appointmentService.cancelAppointment(id, userId);
         return ResponseEntity.ok(dto);
     }
+
+    @GetMapping("/{id}/days-left")
+    @PreAuthorize("hasAnyRole('ADMIN', 'STAFF', 'MEMBER')")
+    @Operation(summary = "Tính số ngày còn lại trước khi hiến máu")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Trả về số ngày còn lại"),
+            @ApiResponse(responseCode = "404", description = "Không tìm thấy lịch hẹn")
+    })
+    public ResponseEntity<Integer> getDaysLeft(
+            @Parameter(description = "ID lịch hẹn") @PathVariable Long id) {
+        int daysLeft = appointmentService.calculateDaysLeft(id);
+        return ResponseEntity.ok(daysLeft);
+    }
+
 }
