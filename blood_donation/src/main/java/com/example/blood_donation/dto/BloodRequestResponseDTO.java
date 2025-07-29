@@ -8,6 +8,7 @@ import java.util.List;
 @Data
 public class BloodRequestResponseDTO {
     private Long reqID;
+    private Long medId;
     private Boolean isEmergency;
     private String status;
     private LocalDate reqCreateDate;

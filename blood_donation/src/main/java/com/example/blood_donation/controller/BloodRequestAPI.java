@@ -125,6 +125,13 @@ public class BloodRequestAPI {
         return ResponseEntity.noContent().build();
     }
 
+    @Operation(summary = "Lấy yêu cầu máu theo id")
+    @GetMapping("/{id}")
+    public ResponseEntity<BloodRequestResponseDTO> getRequestById(@PathVariable Long id) {
+        BloodRequestResponseDTO dto = service.getRequestDTOById(id);
+        return ResponseEntity.ok(dto);
+    }
+
     // Private helper method (không cần annotation Swagger)
     private BloodRequestResponseDTO convertToResponse(BloodRequest req) {
         return service.mapToResponseDTO(req);

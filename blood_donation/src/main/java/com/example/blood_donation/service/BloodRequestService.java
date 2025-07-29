@@ -47,25 +47,23 @@ public class BloodRequestService {
         }
 
         req.setMedicalStaff(medicalUser);
-        final BloodRequest savedRequest = reqRepo.save(req); // 👈 biến này là final
 
+        // 👇 Build detail list before saving request
         List<BloodRequestDetail> details = dto.getDetails().stream().map(d -> {
-            BloodRequestDetailId id = new BloodRequestDetailId(savedRequest.getReqID(), d.getTypeBlood());
-            System.out.println("👉 typeBlood: " + d.getTypeBlood());
-            System.out.println("👉 reqId: " + id);
+            BloodRequestDetailId id = new BloodRequestDetailId(null, d.getTypeBlood()); // null for now
             BloodRequestDetail detail = new BloodRequestDetail();
-            detail.setId(id);
             detail.setPackCount(d.getPackCount());
             detail.setPackVolume(d.getPackVolume());
-            detail.setBloodRequest(savedRequest); // phải đúng tên biến
-
+            detail.setBloodRequest(req); // 👈 will be populated when req is saved
+            detail.setId(id); // req ID will be updated by Hibernate automatically
             return detail;
         }).toList();
 
-        detailRepo.saveAll(details);
-        savedRequest.setDetails(details);
-        return savedRequest;
+        req.setDetails(details); // ✅ attach details before save
+
+        return reqRepo.save(req); // ✅ single save handles everything
     }
+
 
 
     // ✅ 2. Cập nhật yêu cầu
@@ -180,6 +178,8 @@ public class BloodRequestService {
         dto.setStatus(req.getStatus().name());
         dto.setReqCreateDate(req.getReqCreateDate());
 
+        dto.setMedId(req.getMedicalStaff() != null ? req.getMedicalStaff().getId() : null);
+
         List<BloodRequestDetailDTO> detailDTOs = req.getDetails().stream().map(d -> {
             BloodRequestDetailDTO dtoDetail = new BloodRequestDetailDTO();
             dtoDetail.setTypeBlood(d.getId().getTypeBlood());
@@ -190,5 +190,12 @@ public class BloodRequestService {
 
         dto.setDetails(detailDTOs);
         return dto;
+    }
+
+    // Tìm thông tin blood request theo ID:
+    public BloodRequestResponseDTO getRequestDTOById(Long id) {
+        BloodRequest request = reqRepo.findById(id)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy yêu cầu"));
+        return mapToResponseDTO(request);
     }
 }
