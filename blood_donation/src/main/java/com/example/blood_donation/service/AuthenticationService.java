@@ -5,6 +5,7 @@ import com.example.blood_donation.dto.RegisterRequest;
 import com.example.blood_donation.dto.UserDTO;
 import com.example.blood_donation.entity.User;
 import com.example.blood_donation.enums.Role;
+import com.example.blood_donation.enums.TypeBlood;
 import com.example.blood_donation.exception.exceptons.AuthenticationException;
 import com.example.blood_donation.exception.exceptons.BadRequestException;
 import com.example.blood_donation.repository.AuthenticationRepository;
@@ -48,6 +49,7 @@ public class AuthenticationService implements UserDetailsService {
         user.setUsername(request.getUsername());
         user.setPassword(passwordEncoder.encode(request.getPassword()));
         user.setRole(Role.MEMBER);
+        user.setTypeBlood(TypeBlood.undefined);
         user.setDeleted(false); // đảm bảo default là false khi đăng ký
 
         User savedUser = authenticationRepository.save(user);
