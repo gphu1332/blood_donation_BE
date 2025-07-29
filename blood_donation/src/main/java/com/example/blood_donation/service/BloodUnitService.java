@@ -142,4 +142,8 @@ public class BloodUnitService {
         return repository.findAll();
     }
 
+    public List<BloodUnit> getUnitsByRequestId(Long requestId) {
+        return repository.findByRequest_ReqID(requestId);
+    }
+
 }

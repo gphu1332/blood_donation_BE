@@ -41,6 +41,7 @@ public class AdminUserAPI {
         return adminUserService.getAllUsers();
     }
 
+    @PreAuthorize("hasRole('ADMIN') or hasRole('STAFF')")
     @GetMapping("/{id}")
     @Operation(summary = "Lấy thông tin người dùng theo ID", description = "Admin có thể tra cứu thông tin chi tiết người dùng bằng ID")
     @ApiResponses({

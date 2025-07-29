@@ -66,6 +66,16 @@ public class BloodUnitController {
 
         return ResponseEntity.ok(response);
     }
+
+    @GetMapping("/by-blood-request/{requestId}")
+    public ResponseEntity<List<BloodUnitResponseDTO>> getUnitsByRequestId(@PathVariable Long requestId) {
+        List<BloodUnit> units = service.getUnitsByRequestId(requestId);
+        List<BloodUnitResponseDTO> dtos = units.stream()
+                .map(service::toResponseDTO)
+                .toList();
+        return ResponseEntity.ok(dtos);
+    }
+
 }
 
 
