@@ -54,7 +54,7 @@ public class NotificationAPI {
         return ResponseEntity.ok(notificationService.updateNotification(id, request));
     }
 
-
+    @PreAuthorize("hasRole('MEMBER')")
     @GetMapping("/me")
     @Operation(summary = "Lấy danh sách thông báo của chính người dùng đang đăng nhập")
     @ApiResponses(value = {
@@ -65,7 +65,7 @@ public class NotificationAPI {
         return ResponseEntity.ok(notificationService.getNotificationsByCurrentUSer());
     }
 
-
+    @PreAuthorize("hasRole('MEMBER')")
     @PutMapping("/{id}/read")
     @Operation(summary = "Đánh dấu đã đọc", description = "Đánh dấu một thông báo là đã đọc")
     @ApiResponses({
@@ -76,7 +76,7 @@ public class NotificationAPI {
         return ResponseEntity.ok(notificationService.markAsRead(id));
     }
 
-    @PreAuthorize("hasRole('MEMBER')")
+    @PreAuthorize("hasRole('STAFF')")
     @GetMapping
     @Operation(summary = "Lấy danh sách thông báo có lọc", description = "Lọc theo userId và khoảng thời gian tạo. Hỗ trợ phân trang và sắp xếp.")
     @ApiResponses({
