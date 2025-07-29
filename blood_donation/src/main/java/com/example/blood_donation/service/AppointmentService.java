@@ -179,8 +179,17 @@ public class AppointmentService {
                 .orElseThrow(() -> new BadRequestException("Appointment not found"));
 
         appointment.setStatus(newStatus);
+        // Gửi thông báo nếu trạng thái mới là FULFILLED
         appointmentRepository.save(appointment);
+        if (newStatus == Status.FULFILLED) {
+            User user = appointment.getUser();
+            String title = "Cảm ơn bạn đã hiến máu";
+            String message = "Cảm ơn bạn đã hoàn thành lịch hiến máu ngày " + appointment.getDate()
+                    + ". Sự đóng góp của bạn rất quý giá với cộng đồng.";
 
+            notificationService.createNotificationForUser(user, title, message);
+            emailService.sendSimpleEmail(user.getEmail(), title, message);
+        }
         // ✅ Gửi thông báo nếu trạng thái mới là APPROVED hoặc REJECTED
         if (newStatus == Status.APPROVED || newStatus == Status.REJECTED) {
             User user = appointment.getUser();
@@ -345,6 +354,14 @@ public class AppointmentService {
         }
 
         appointment.setStatus(Status.CANCELLED);
+        User user = appointment.getUser();
+        String title = "Lịch hẹn hiến máu đã được hủy";
+        String message = "Bạn đã hủy lịch hiến máu ngày " + appointment.getDate()
+                + ". Nếu bạn có thay đổi kế hoạch, đừng quên đặt lịch mới nhé.";
+
+        notificationService.createNotificationForUser(user, title, message);
+        emailService.sendSimpleEmail(user.getEmail(), title, message);
+
         appointmentRepository.save(appointment);
 
         return mapToDTO(appointment);
