@@ -63,16 +63,17 @@ public class AuthenticationService implements UserDetailsService {
     }
 
     public UserDTO login(LoginRequest loginRequest) {
+        User user = authenticationRepository.findByUsernameAndDeletedFalse(loginRequest.getUsername());
+
         try {
             authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(
                     loginRequest.getUsername(),
                     loginRequest.getPassword()
             ));
         } catch (Exception e) {
+            System.out.println("Authentication failed: " + e.getMessage());
             throw new AuthenticationException("Tên đăng nhập hoặc mật khẩu không đúng!");
         }
-
-        User user = authenticationRepository.findByUsername(loginRequest.getUsername());
 
         // ✅ Kiểm tra tài khoản đã bị xoá
         if (user.isDeleted()) {
@@ -113,8 +114,8 @@ public class AuthenticationService implements UserDetailsService {
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        User user = authenticationRepository.findByUsername(username);
-        if (user == null || user.isDeleted()) {
+        User user = authenticationRepository.findByUsernameAndDeletedFalse(username);
+        if (user == null) {
             throw new UsernameNotFoundException("Tài khoản không tồn tại hoặc đã bị xoá!");
         }
         return user;
