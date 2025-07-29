@@ -191,7 +191,9 @@ public class DonationProgramService {
         // Gửi mail + Notification nếu có thay đổi quan trọng
         if (isImportantChanged) {
             List<Appointment> appointments = appointmentRepository.findByProgram_Id(id).stream()
-                    .filter(a -> a.getStatus() == Status.APPROVED)
+                    .filter(a ->
+                            a.getStatus() == Status.PENDING ||
+                            a.getStatus() == Status.APPROVED)
                     .toList();
 
             for (Appointment appointment : appointments) {
@@ -214,7 +216,7 @@ public class DonationProgramService {
                 notificationService.createNotificationForUser(
                         user,
                         "Chương trình đã được cập nhật",
-                        "Chương trình " + updated.getProName() + " mà bạn đã đăng ký đã có thay đổi. Vui lòng kiểm tra lại lịch mới."
+                        "Chương trình " + updated.getProName() + " mà bạn đã đăng ký đã có thay đổi. Vui lòng kiểm tra lại thông tin chi tiết của chương trình."
                 );
             }
         }
