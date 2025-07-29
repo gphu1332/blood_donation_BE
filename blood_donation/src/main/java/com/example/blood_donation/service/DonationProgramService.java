@@ -3,6 +3,7 @@ package com.example.blood_donation.service;
 import com.example.blood_donation.dto.DonationProgramDTO;
 import com.example.blood_donation.dto.DonationProgramResponse;
 import com.example.blood_donation.entity.*;
+import com.example.blood_donation.enums.Status;
 import com.example.blood_donation.repository.*;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
@@ -11,10 +12,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
 public class DonationProgramService {
+    @Autowired
+    private AppointmentRepository appointmentRepository;
 
     @Autowired
     private DonationProgramRepository donationProgramRepository;
@@ -32,7 +36,10 @@ public class DonationProgramService {
     private AdressRepository adressRepository;
 
     @Autowired
-    private ModelMapper modelMapper;
+    private EmailService emailService;
+
+    @Autowired
+    private NotificationService notificationService;
 
     // Lấy danh sách tất cả chương trình hiến máu.
     public List<DonationProgramResponse> getAll() {
@@ -63,7 +70,6 @@ public class DonationProgramService {
                 .map(this::mapToResponseDTO)
                 .toList();
     }
-
 
     // Tạo chương trình mới
     @Transactional
@@ -99,7 +105,6 @@ public class DonationProgramService {
             program.setCity(city);
         }
 
-
         // Liên kết Adress
         if (dto.getAddressId() != null) {
             Adress address = adressRepository.findById(dto.getAddressId())
@@ -129,6 +134,7 @@ public class DonationProgramService {
                 .filter(p -> !p.isDeleted())
                 .orElseThrow(() -> new EntityNotFoundException("Donation program not found"));
 
+        // Kiểm tra trùng lịch
         if (dto.getAddressId() != null) {
             List<DonationProgram> conflicts = donationProgramRepository
                     .findConflictingProgramsExcludingSelf(dto.getAddressId(), dto.getStartDate(), dto.getEndDate(), id)
@@ -141,6 +147,16 @@ public class DonationProgramService {
             }
         }
 
+        // So sánh thông tin quan trọng
+        boolean isImportantChanged =
+                !existing.getProName().equals(dto.getProName()) ||
+                        !existing.getStartDate().equals(dto.getStartDate()) ||
+                        !existing.getEndDate().equals(dto.getEndDate()) ||
+                        !existing.getDescription().equals(dto.getDescription()) ||
+                        (existing.getAddress() != null && !existing.getAddress().getId().equals(dto.getAddressId())) ||
+                        (dto.getSlotIds() != null && !existing.getSlots().stream().map(Slot::getSlotID).toList().equals(dto.getSlotIds()));
+
+        // Cập nhật các trường
         existing.setProName(dto.getProName());
         existing.setStartDate(dto.getStartDate());
         existing.setEndDate(dto.getEndDate());
@@ -149,35 +165,105 @@ public class DonationProgramService {
         existing.setContact(dto.getContact());
         existing.setImageUrl(dto.getImageUrl());
 
-        if (dto.getCityId() != null) {
-            City city = cityRepository.findById(dto.getCityId())
-                    .filter(c -> !c.isDeleted())
-                    .orElseThrow(() -> new EntityNotFoundException("City not found or has been deleted"));
-            existing.setCity(city);
-        }
-
-
+        // Liên kết City
         if (dto.getCityId() != null) {
             City city = cityRepository.findById(dto.getCityId())
                     .orElseThrow(() -> new EntityNotFoundException("City not found"));
             existing.setCity(city);
         }
 
+        // Liên kết Address
+        if (dto.getAddressId() != null) {
+            Adress address = adressRepository.findById(dto.getAddressId())
+                    .orElseThrow(() -> new EntityNotFoundException("Address not found"));
+            existing.setAddress(address);
+        }
+
+        // Cập nhật Slot
         if (dto.getSlotIds() != null) {
             List<Slot> updatedSlots = slotRepository.findAllById(dto.getSlotIds());
             existing.setSlots(updatedSlots);
         }
 
+        // Lưu chương trình đã cập nhật
         DonationProgram updated = donationProgramRepository.save(existing);
+
+        // Gửi mail + Notification nếu có thay đổi quan trọng
+        if (isImportantChanged) {
+            List<Appointment> appointments = appointmentRepository.findByProgram_Id(id).stream()
+                    .filter(a ->
+                            a.getStatus() == Status.PENDING ||
+                            a.getStatus() == Status.APPROVED)
+                    .toList();
+
+            for (Appointment appointment : appointments) {
+                User user = appointment.getUser();
+
+                String location = updated.getAddress() != null
+                        ? updated.getAddress().getName()
+                        : "Không xác định";
+
+                emailService.sendProgramUpdateEmail(
+                        user.getEmail(),
+                        user.getFullName(),
+                        updated.getProName(),
+                        updated.getStartDate(),
+                        updated.getEndDate(),
+                        location,
+                        "Thông tin chương trình bạn đã đăng ký đã có thay đổi quan trọng. Vui lòng kiểm tra lại."
+                );
+
+                notificationService.createNotificationForUser(
+                        user,
+                        "Chương trình mà bạn đăng ký đã được cập nhật",
+                        "Chương trình " + updated.getProName() + " mà bạn đã đăng ký đã có thay đổi. Vui lòng kiểm tra lại thông tin chi tiết của chương trình."
+                );
+            }
+        }
+
+
         return mapToResponseDTO(updated);
     }
 
     // Xoá mềm chương trình
     public void delete(Long id) {
         DonationProgram program = donationProgramRepository.findById(id)
+                .filter(p -> !p.isDeleted())
                 .orElseThrow(() -> new EntityNotFoundException("Donation program not found"));
+
         program.setDeleted(true);
         donationProgramRepository.save(program);
+
+        // Gửi email + Notification thông báo hủy
+        List<Appointment> appointments = appointmentRepository.findByProgram_Id(id).stream()
+                .filter(a ->
+                        a.getStatus() == Status.PENDING ||
+                        a.getStatus() == Status.APPROVED)
+                .toList();
+
+        for (Appointment appointment : appointments) {
+            User user = appointment.getUser();
+
+            String location = program.getAddress() != null
+                    ? program.getAddress().getName()
+                    : "Không xác định";
+
+            emailService.sendProgramDeletedEmail(
+                    user.getEmail(),
+                    user.getFullName(),
+                    program.getProName(),
+                    program.getStartDate(),
+                    program.getEndDate(),
+                    location
+            );
+
+            notificationService.createNotificationForUser(
+                    user,
+                    "Chương trình mà bạn đăng ký đã bị hủy",
+                    "Chúng tôi rất tiếc phải thông báo rằng chương trình " + program.getProName() + " tại " + location + " đã bị hủy."
+            );
+        }
+
     }
 
     // Tìm kiếm theo ngày
@@ -218,7 +304,6 @@ public class DonationProgramService {
         } else {
             dto.setCityId(null);
         }
-
 
         if (program.getAdmin() != null) {
             dto.setAdminId(program.getAdmin().getId());

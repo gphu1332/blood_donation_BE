@@ -51,6 +51,7 @@ public class SecurityConfig {
                                 "/api/login",
                                 "/api/register",
                                 "/api/contact",
+                                "/api/token-expired",
                                 "/swagger-ui/**",
                                 "/api/generate-otp",
                                 "/api/verify-otp",

@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Thông báo cập nhật chương trình hiến máu</title>
+</head>
+<body style="font-family: Arial; padding: 20px;">
+<h2>Xin chào <span th:text="${fullName}">bạn</span>,</h2>
+
+<p>Chương trình <strong th:text="${programName}">[Tên chương trình]</strong> mà bạn đã đăng ký đã có cập nhật quan trọng.</p>
+
+<p style="color: #0077ff; font-weight: bold;">🆕 Đây là lịch mới đã cập nhật.</p>
+
+<p>
+    ⏰ Thời gian: <strong th:text="${startDate}">[start]</strong> → <strong th:text="${endDate}">[end]</strong><br/>
+    📍 Địa điểm: <strong th:text="${location}">[Địa điểm]</strong>
+</p>
+
+<p th:if="${note != null}">
+    <i th:text="${note}"></i>
+</p>
+
+<p style="margin-top: 20px;">Vui lòng kiểm tra lại thông tin trên hệ thống.</p>
+
+<p style="margin-top: 20px;">Trân trọng,<br>Trung tâm hiến máu</p>
+</body>
+</html>

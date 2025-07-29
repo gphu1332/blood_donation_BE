@@ -13,6 +13,7 @@ import java.util.List;
 @RequestMapping("/api/blogs")
 @SecurityRequirement(name = "api")
 public class BlogAPI {
+
     @Autowired
     private BlogService blogService;
 
@@ -30,10 +31,12 @@ public class BlogAPI {
     public Blog getById(@PathVariable Long id) {
         return blogService.getById(id);
     }
+
     @PutMapping("/{id}")
     public Blog update(@PathVariable Long id, @RequestBody Blog blog) {
         return blogService.update(id, blog);
     }
+
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> delete(@PathVariable Long id) {
         blogService.delete(id);

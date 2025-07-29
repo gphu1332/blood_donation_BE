@@ -1,25 +1,22 @@
 package com.example.blood_donation.entity;
 
-import com.example.blood_donation.enums.TypeBlood;
+
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Entity
 @Data
-@IdClass(BloodRequestDetailId.class)
 public class BloodRequestDetail {
+    @EmbeddedId
+    private BloodRequestDetailId id;
 
-    @Id
-    @Column(name = "ReqID")
-    private Long reqID;
-
-    @Enumerated(EnumType.STRING)
-    private TypeBlood typeBlood;
+    @MapsId("reqId")
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "reqid")
+    private BloodRequest bloodRequest;
 
     private int packVolume;
     private int packCount;
-
-    @ManyToOne
-    @JoinColumn(name = "ReqID", insertable = false, updatable = false)
-    private BloodRequest bloodRequest;
 }

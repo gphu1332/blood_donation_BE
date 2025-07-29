@@ -10,6 +10,5 @@ public interface BloodUnitRepository extends JpaRepository<BloodUnit, Long> {
     List<BloodUnit> findByTypeBlood(TypeBlood typeBlood);
     List<BloodUnit> findByBloodSerialCodeContainingIgnoreCase(String code);
     List<BloodUnit> findByTypeBloodAndBloodSerialCodeContainingIgnoreCase(TypeBlood type, String code);
-
-
+    List<BloodUnit> findByRequest_ReqID(Long reqID);
 }

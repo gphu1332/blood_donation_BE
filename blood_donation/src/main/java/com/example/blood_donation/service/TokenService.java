@@ -25,11 +25,26 @@ public class TokenService {
      * Sinh JWT Token cho user
      */
     public String generateToken(User user) {
+        return generateToken(user, false); // mặc định không có remember me
+    }
+
+    /**
+     * Sinh JWT Token cho user với tùy chọn remember me
+     */
+    public String generateToken(User user, boolean rememberMe) {
+        long expirationTime;
+        if (rememberMe) {
+            expirationTime = 30L * 24 * 60 * 60 * 1000; // 30 ngày cho login có remember me
+        } else {
+            expirationTime = 24 * 60 * 60 * 1000; // 24 giờ cho login thông thường
+        }
+
         return Jwts.builder()
                 .subject(user.getUsername())
                 .claim("authorities", user.getRole().name())
+                .claim("rememberMe", rememberMe) // Add remember me flag to token
                 .issuedAt(new Date(System.currentTimeMillis()))
-                .expiration(new Date(System.currentTimeMillis() + 24 * 60 * 60 * 1000)) // 24h
+                .expiration(new Date(System.currentTimeMillis() + expirationTime))
                 .signWith(getSigninKey())
                 .compact();
     }
@@ -72,5 +87,12 @@ public class TokenService {
      */
     public boolean isTokenExpired(String token) {
         return extractExpiration(token).before(new Date());
+    }
+
+    /**
+     * Trích xuất remember me flag từ token
+     */
+    public boolean extractRememberMe(String token) {
+        return extractClaim(token, claims -> claims.get("rememberMe", Boolean.class));
     }
 }

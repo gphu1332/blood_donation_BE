@@ -1,6 +1,7 @@
 package com.example.blood_donation.controller;
 
-import com.example.blood_donation.dto.CreateUpdateMemberRequest;
+import com.example.blood_donation.dto.MemberCreateRequest;
+import com.example.blood_donation.dto.MemberUpdateRequest;
 import com.example.blood_donation.dto.UserDTO;
 import com.example.blood_donation.entity.User;
 import com.example.blood_donation.service.MemberService;
@@ -18,7 +19,6 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/staff/members")
@@ -34,11 +34,20 @@ public class MemberAPI {
     @Operation(summary = "Lấy danh sách tất cả MEMBER", description = "Chỉ nhân viên STAFF mới có quyền thực hiện")
     @ApiResponse(responseCode = "200", description = "Lấy danh sách thành công")
     public ResponseEntity<List<UserDTO>> getAllMembers() {
-        List<UserDTO> dtos = memberService.getAllMemberUsers()
-                .stream()
-                .map(memberService::mapToUserDTO)
-                .collect(Collectors.toList());
+        List<UserDTO> dtos = memberService.getAllMemberUsers();
         return ResponseEntity.ok(dtos);
+    }
+
+    @GetMapping(path = "/public/usernames")
+    @Operation(summary = "Lấy danh sách tên đăng nhập của tất cả MEMBER", description = "API công khai, không yêu cầu xác thực")
+    @ApiResponse(responseCode = "200", description = "Lấy danh sách thành công")
+    @PreAuthorize("permitAll()")
+    public ResponseEntity<List<String>> getAllMemberUsernames() {
+        List<String> usernames = memberService.getAllMemberUsers()
+                .stream()
+                .map(UserDTO::getUsername) // cần đảm bảo UserDTO có getUsername()
+                .toList();
+        return ResponseEntity.ok(usernames);
     }
 
     @GetMapping("/{id}")
@@ -61,7 +70,8 @@ public class MemberAPI {
             @ApiResponse(responseCode = "400", description = "Dữ liệu không hợp lệ")
     })
     public ResponseEntity<UserDTO> createMember(
-            @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "Thông tin thành viên mới") @RequestBody CreateUpdateMemberRequest request) {
+            @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "Thông tin thành viên mới")
+            @RequestBody MemberCreateRequest request) {
         User created = memberService.createMember(request);
         return new ResponseEntity<>(memberService.mapToUserDTO(created), HttpStatus.CREATED);
     }
@@ -74,7 +84,7 @@ public class MemberAPI {
     })
     public ResponseEntity<UserDTO> updateMember(
             @Parameter(description = "ID thành viên cần cập nhật") @PathVariable Long id,
-            @RequestBody CreateUpdateMemberRequest request
+            @RequestBody MemberUpdateRequest request
     ) {
         User updated = memberService.updateMember(id, request);
         return ResponseEntity.ok(memberService.mapToUserDTO(updated));

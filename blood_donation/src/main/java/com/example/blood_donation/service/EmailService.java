@@ -3,8 +3,10 @@ package com.example.blood_donation.service;
 import jakarta.annotation.Resource;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
+import jakarta.validation.constraints.Email;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ClassPathResource;
+import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
@@ -15,6 +17,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.nio.charset.StandardCharsets;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Service
@@ -117,6 +120,66 @@ public class EmailService {
         }
     }
 
+
+    public void sendSimpleEmail(@Email String to, String subject, String content) {
+        SimpleMailMessage message = new SimpleMailMessage();
+        message.setTo(to);
+        message.setSubject(subject);
+        message.setText(content);
+        mailSender.send(message);
+    }
+
+    public void sendProgramUpdateEmail(String toEmail, String fullName, String programName,
+                                       LocalDate startDate, LocalDate endDate, String location, String note) {
+        try {
+            MimeMessage message = mailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
+
+            helper.setTo(toEmail);
+            helper.setSubject("📢 Cập nhật chương trình hiến máu: " + programName);
+
+            Context context = new Context();
+            context.setVariable("fullName", fullName);
+            context.setVariable("programName", programName);
+            context.setVariable("startDate", startDate);
+            context.setVariable("endDate", endDate);
+            context.setVariable("location", location);
+            context.setVariable("note", note);
+
+            String html = templateEngine.process("program-update.html", context);
+            helper.setText(html, true);
+
+            mailSender.send(message);
+        } catch (MessagingException e) {
+            throw new RuntimeException("Không thể gửi email cập nhật chương trình", e);
+        }
+    }
+
+    public void sendProgramDeletedEmail(String toEmail, String fullName,
+                                        String programName, LocalDate startDate,
+                                        LocalDate endDate, String location) {
+        try {
+            MimeMessage message = mailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
+
+            helper.setTo(toEmail);
+            helper.setSubject("Thông báo hủy chương trình hiến máu: " + programName);
+
+            Context context = new Context();
+            context.setVariable("fullName", fullName);
+            context.setVariable("programName", programName);
+            context.setVariable("startDate", startDate);
+            context.setVariable("endDate", endDate);
+            context.setVariable("location", location);
+
+            String html = templateEngine.process("program-deleted.html", context);
+            helper.setText(html, true);
+
+            mailSender.send(message);
+        } catch (MessagingException e) {
+            throw new RuntimeException("Không thể gửi email hủy chương trình", e);
+        }
+    }
 
 
 }

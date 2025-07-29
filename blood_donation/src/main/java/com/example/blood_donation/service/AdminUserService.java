@@ -74,36 +74,14 @@ public class AdminUserService {
             throw new BadRequestException("CCCD already exists");
         }
 
-        User user = modelMapper.map(dto, User.class);
+        User user = mapToEntityFromDTO(dto);
 
-        // Create and save address first
-        if (dto.getAddressName() != null) {
-            Adress address = new Adress();
-            address.setName(dto.getAddressName());
-            address.setLatitude(dto.getLatitude());
-            address.setLongitude(dto.getLongitude());
-            address = adressRepository.save(address); // Save the address first
-            user.setAddress(address);
-        }
-
-        // Nếu là HOSPITAL_STAFF thì gán hospital
-        if (dto.getRole() == Role.HOSPITAL_STAFF && dto.getHospitalId() != null) {
-            if (user instanceof MedicalStaff staff) {
-                Hospital hospital = hospitalRepository.findById(dto.getHospitalId())
-                        .orElseThrow(() -> new BadRequestException("Hospital not found"));
-                staff.setHospital(hospital);
-            }
-        }
-
-        // Mặc định chưa xóa
-        user.setDeleted(false);
-
-        // Mã hóa mật khẩu
-        user.setPassword(passwordEncoder.encode(dto.getPassword()));
-
-        // Lưu
         User saved = adminUserRepository.save(user);
-        return modelMapper.map(saved, AdminUserResponseDTO.class);
+        // Nếu là MedicalStaff, lưu luôn vào hospitalRepo để đảm bảo cascade
+        if (saved instanceof MedicalStaff staff) {
+            return mapToDTO(staff);
+        }
+        return mapToDTO(saved);
     }
 
     // ✅ Cập nhật thông tin user (admin chỉnh sửa)
@@ -113,6 +91,7 @@ public class AdminUserService {
         if (userOpt.isEmpty()) {
             throw new BadRequestException("User not found");
         }
+
         User user = userOpt.get();
         if (user.isDeleted()) {
             throw new BadRequestException("User is already deleted");
@@ -123,7 +102,7 @@ public class AdminUserService {
         user.setEmail(adminDTO.getEmail());
         user.setPhone(adminDTO.getPhone());
 
-        // Handle address fields individually
+        // Handle address
         if (adminDTO.getAddressName() != null) {
             Adress address = user.getAddress();
             if (address == null) {
@@ -177,5 +156,63 @@ public class AdminUserService {
 
         user.setDeleted(true);
         adminUserRepository.save(user);
+    }
+
+    // ✅ Hàm map DTO → Entity (tạo mới)
+    private User mapToEntityFromDTO(CreateAdminUserDTO dto) {
+        User user;
+
+        if (dto.getRole() == Role.HOSPITAL_STAFF) {
+            // Tạo MedicalStaff thủ công
+            MedicalStaff staff = new MedicalStaff();
+            staff.setUsername(dto.getUsername());
+            staff.setPassword(passwordEncoder.encode(dto.getPassword()));
+            staff.setFullName(dto.getFullName());
+            staff.setEmail(dto.getEmail());
+            staff.setPhone(dto.getPhone());
+            staff.setCccd(dto.getCccd());
+            staff.setBirthdate(dto.getBirthdate());
+            staff.setGender(dto.getGender());
+            staff.setTypeBlood(dto.getTypeBlood());
+            staff.setRole(dto.getRole());
+            staff.setDeleted(false);
+
+            if (dto.getHospitalId() != null) {
+                Hospital hospital = hospitalRepository.findById(dto.getHospitalId())
+                        .orElseThrow(() -> new BadRequestException("Hospital not found"));
+                staff.setHospital(hospital);
+            }
+
+            if (dto.getAddressName() != null) {
+                Adress address = new Adress();
+                address.setName(dto.getAddressName());
+                address.setLatitude(dto.getLatitude());
+                address.setLongitude(dto.getLongitude());
+                address = adressRepository.save(address);
+                staff.setAddress(address);
+            }
+
+            user = staff;
+        } else {
+            user = modelMapper.map(dto, User.class);
+            user.setPassword(passwordEncoder.encode(dto.getPassword()));
+            user.setDeleted(false);
+
+            if (dto.getAddressName() != null) {
+                Adress address = new Adress();
+                address.setName(dto.getAddressName());
+                address.setLatitude(dto.getLatitude());
+                address.setLongitude(dto.getLongitude());
+                address = adressRepository.save(address);
+                user.setAddress(address);
+            }
+        }
+
+        return user;
+    }
+
+    // ✅ Hàm map Entity → DTO (trả về phản hồi)
+    private AdminUserResponseDTO mapToDTO(User user) {
+        return modelMapper.map(user, AdminUserResponseDTO.class);
     }
 }

@@ -5,6 +5,7 @@ import com.example.blood_donation.dto.RegisterRequest;
 import com.example.blood_donation.dto.UserDTO;
 import com.example.blood_donation.entity.User;
 import com.example.blood_donation.enums.Role;
+import com.example.blood_donation.enums.TypeBlood;
 import com.example.blood_donation.exception.exceptons.AuthenticationException;
 import com.example.blood_donation.exception.exceptons.BadRequestException;
 import com.example.blood_donation.repository.AuthenticationRepository;
@@ -48,6 +49,7 @@ public class AuthenticationService implements UserDetailsService {
         user.setUsername(request.getUsername());
         user.setPassword(passwordEncoder.encode(request.getPassword()));
         user.setRole(Role.MEMBER);
+        user.setTypeBlood(TypeBlood.undefined);
         user.setDeleted(false); // đảm bảo default là false khi đăng ký
 
         User savedUser = authenticationRepository.save(user);
@@ -74,11 +76,12 @@ public class AuthenticationService implements UserDetailsService {
 
         // ✅ Kiểm tra tài khoản đã bị xoá
         if (user.isDeleted()) {
-            throw new AuthenticationException("Tài khoản của bạn đã bị vô hiệu hoá!");
+            throw new AuthenticationException("Tài khoản này đã bị vô hiệu hoá!");
         }
 
         UserDTO userDTO = modelMapper.map(user, UserDTO.class);
-        String token = tokenService.generateToken(user);
+        // Generate token dựa trên tùy chọn rememberMe
+        String token = tokenService.generateToken(user, loginRequest.isRememberMe());
         userDTO.setToken(token);
         return userDTO;
     }
@@ -90,6 +93,22 @@ public class AuthenticationService implements UserDetailsService {
             throw new AuthenticationException("Tài khoản hiện tại đã bị vô hiệu hoá!");
         }
         return user;
+    }
+
+    /**
+     * Check if JWT token is expired
+     */
+    public boolean isTokenExpired(String authHeader) {
+        try {
+            if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+                return true; // Invalid format hoặc không có token tính là expired
+            }
+
+            String token = authHeader.substring(7); // Xóa "Bearer " prefix để dùng service check
+            return tokenService.isTokenExpired(token);
+        } catch (Exception e) {
+            return true; // Consider any error as expired
+        }
     }
 
     @Override

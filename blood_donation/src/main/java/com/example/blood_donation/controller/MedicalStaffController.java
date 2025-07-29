@@ -5,14 +5,18 @@ import com.example.blood_donation.entity.Hospital;
 import com.example.blood_donation.entity.MedicalStaff;
 import com.example.blood_donation.repository.HospitalRepository;
 import com.example.blood_donation.repository.MedicalStaffRepository;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/medical-staffs")
+@SecurityRequirement(name = "api")
+@PreAuthorize("hasRole('HOSPITAL_STAFF')")
 public class MedicalStaffController {
 
     @Autowired

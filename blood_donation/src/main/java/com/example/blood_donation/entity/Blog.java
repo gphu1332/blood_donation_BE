@@ -21,7 +21,8 @@ public class Blog {
 
     private LocalDate conPubDate;
 
-    // Mỗi nhân viên có the quản lý nhiều blogs
+    private String imageUrl;
+
     @ManyToOne
     @JoinColumn(name = "StaID")
     private User staff;

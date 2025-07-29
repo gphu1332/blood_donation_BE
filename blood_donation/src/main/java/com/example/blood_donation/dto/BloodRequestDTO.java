@@ -6,8 +6,7 @@ import lombok.Data;
 import java.util.List;
 @Data
 public class BloodRequestDTO {
-    private String isEmergency;
-    @NotNull (message = "medId must not be null")
+    private Boolean isEmergency;
     private Long medId;
     private List<BloodRequestDetailDTO> details;
 }
