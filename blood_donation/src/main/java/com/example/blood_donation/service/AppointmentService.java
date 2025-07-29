@@ -33,6 +33,12 @@ public class AppointmentService {
     @Autowired
     private ModelMapper modelMapper;
 
+    @Autowired
+    private NotificationService notificationService;
+
+    @Autowired
+    private EmailService emailService;
+
     /**
      * Tạo appointment mới cho user (MEMBER), chỉ khi không có appointment chưa hoàn thành,
      * và phải cách ít nhất 10 ngày kể từ lần hiến máu trước (FULFILLED).
@@ -78,6 +84,15 @@ public class AppointmentService {
         Appointment appointment = buildAppointment(request, user, Status.PENDING);
         Appointment savedAppointment = appointmentRepository.save(appointment);
 
+        String title = "Tạo lịch hẹn hiến máu thành công";
+        String message = "Bạn đã đặt lịch hiến máu vào ngày " + appointment.getDate()
+                + " lúc " + appointment.getSlot().getStart() + " - " + appointment.getSlot().getEnd()
+                + " tại chương trình \"" + appointment.getProgram().getProName() + "\".";
+
+        notificationService.createNotificationForUser(user, title, message);
+        emailService.sendSimpleEmail(user.getEmail(), title, message);
+
+
         return mapToDTO(savedAppointment);
     }
 
@@ -86,7 +101,7 @@ public class AppointmentService {
     /**
      * Tạo appointment cho staff tạo giùm user qua số điện thoại,
      * chỉ khi user không có appointment đang hoạt động,
-     * và cách lần hiến máu gần nhất ít nhất 10 ngày.
+     * và cách lần hiến máu gần nhất ít nhất 84 ngày.
      */
     public AppointmentDTO createAppointmentByPhoneAndProgram(String phone, AppointmentRequest request) {
         User user = userRepository.findByPhone(phone)
@@ -122,6 +137,14 @@ public class AppointmentService {
         Appointment appointment = buildAppointment(request, user, Status.APPROVED);
         Appointment savedAppointment = appointmentRepository.save(appointment);
 
+        String title = "Tạo lịch hẹn hiến máu thành công";
+        String message = "Bạn đã đặt lịch hiến máu vào ngày " + appointment.getDate()
+                + " lúc " + appointment.getSlot().getStart() + " - " + appointment.getSlot().getEnd()
+                + " tại chương trình \"" + appointment.getProgram().getProName() + "\".";
+
+        notificationService.createNotificationForUser(user, title, message);
+        emailService.sendSimpleEmail(user.getEmail(), title, message);
+
         return mapToDTO(savedAppointment);
     }
 
@@ -150,6 +173,17 @@ public class AppointmentService {
 
         appointment.setStatus(newStatus);
         appointmentRepository.save(appointment);
+
+        // ✅ Gửi thông báo nếu trạng thái mới là APPROVED hoặc REJECTED
+        if (newStatus == Status.APPROVED || newStatus == Status.REJECTED) {
+            User user = appointment.getUser();
+            String statusStr = (newStatus == Status.APPROVED) ? "được CHẤP THUẬN" : "bị TỪ CHỐI";
+            String title = "Lịch hẹn hiến máu của bạn đã " + statusStr;
+            String message = "Lịch hẹn hiến máu ngày " + appointment.getDate() + " đã " + statusStr.toLowerCase() + " bởi nhân viên.";
+
+            notificationService.createNotificationForUser(user, title, message);
+            emailService.sendSimpleEmail(user.getEmail(), title, message);
+        }
 
         return mapToDTO(appointment);
     }

@@ -76,7 +76,7 @@ public class NotificationAPI {
         return ResponseEntity.ok(notificationService.markAsRead(id));
     }
 
-    @PreAuthorize("hasRole('STAFF')")
+    @PreAuthorize("hasRole('MEMBER')")
     @GetMapping
     @Operation(summary = "Lấy danh sách thông báo có lọc", description = "Lọc theo userId và khoảng thời gian tạo. Hỗ trợ phân trang và sắp xếp.")
     @ApiResponses({
