@@ -215,7 +215,7 @@ public class DonationProgramService {
 
                 notificationService.createNotificationForUser(
                         user,
-                        "Chương trình đã được cập nhật",
+                        "Chương trình mà bạn đăng ký đã được cập nhật",
                         "Chương trình " + updated.getProName() + " mà bạn đã đăng ký đã có thay đổi. Vui lòng kiểm tra lại thông tin chi tiết của chương trình."
                 );
             }
@@ -236,7 +236,9 @@ public class DonationProgramService {
 
         // Gửi email + Notification thông báo hủy
         List<Appointment> appointments = appointmentRepository.findByProgram_Id(id).stream()
-                .filter(a -> a.getStatus() == Status.APPROVED)
+                .filter(a ->
+                        a.getStatus() == Status.PENDING ||
+                        a.getStatus() == Status.APPROVED)
                 .toList();
 
         for (Appointment appointment : appointments) {
@@ -257,7 +259,7 @@ public class DonationProgramService {
 
             notificationService.createNotificationForUser(
                     user,
-                    "Chương trình đã bị hủy",
+                    "Chương trình mà bạn đăng ký đã bị hủy",
                     "Chúng tôi rất tiếc phải thông báo rằng chương trình " + program.getProName() + " tại " + location + " đã bị hủy."
             );
         }
