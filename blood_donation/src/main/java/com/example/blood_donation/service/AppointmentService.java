@@ -300,4 +300,21 @@ public class AppointmentService {
         return mapToDTO(appointment);
     }
 
+
+    /**
+     * Tính số ngày còn lại trước khi hiến máu
+     */
+    public int calculateDaysLeft(Long appointmentId) {
+        Appointment appointment = appointmentRepository.findById(appointmentId)
+                .orElseThrow(() -> new BadRequestException("Appointment not found"));
+
+        LocalDate today = LocalDate.now();
+        LocalDate donationDate = appointment.getDate();
+
+        if (donationDate.isBefore(today)) {
+            throw new BadRequestException("Lịch hẹn này đã qua ngày hiến máu.");
+        }
+        return (int) ChronoUnit.DAYS.between(today, donationDate);
+    }
+
 }
