@@ -6,11 +6,14 @@ import com.example.blood_donation.entity.*;
 import com.example.blood_donation.enums.Status;
 import com.example.blood_donation.exception.exceptons.BadRequestException;
 import com.example.blood_donation.repository.*;
+import jakarta.transaction.Transactional;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
+import java.time.LocalTime;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Optional;
@@ -50,6 +53,9 @@ public class AppointmentService {
 
         // Kiểm tra thông tin cá nhân
         validateUserProfile(user);
+
+        // Kiểm tra tuổi User
+        validateUserAge(user);
 
         // Kiểm tra user đã có appointment đang hoạt động chưa (PENDING hoặc APPROVED)
         boolean hasActiveAppointment = user.getAppointments().stream()
@@ -94,7 +100,8 @@ public class AppointmentService {
 
         // Kiểm tra thông tin cá nhân
         validateUserProfile(user);
-
+        // Kiểm tra tuổi User
+        validateUserAge(user);
         // Kiểm tra appointment đang hoạt động
         boolean hasActiveAppointment = user.getAppointments().stream()
                 .anyMatch(a -> a.getStatus() == Status.PENDING || a.getStatus() == Status.APPROVED);
@@ -218,6 +225,15 @@ public class AppointmentService {
     private Appointment buildAppointment(AppointmentRequest request, User user, Status status) {
         Slot slot = slotRepository.findById(request.getSlotId())
                 .orElseThrow(() -> new BadRequestException("Slot not found"));
+        // Nếu đặt lịch trong ngày hôm nay thì kiểm tra giờ hiện tại
+        if (request.getDate().isEqual(LocalDate.now())) {
+            LocalTime now = LocalTime.now();
+
+            if (now.isAfter(slot.getEnd())) {
+                throw new BadRequestException("Khung giờ hiến máu đã kết thúc. Vui lòng chọn thời gian khác.");
+            }
+        }
+
 
         DonationProgram program = donationProgramRepository.findById(request.getProgramId())
                 .orElseThrow(() -> new BadRequestException("Program not found"));
@@ -317,4 +333,37 @@ public class AppointmentService {
         return (int) ChronoUnit.DAYS.between(today, donationDate);
     }
 
+    /**
+     * Kiểm tra tuổi user
+     */
+    private void validateUserAge(User user) {
+        if (user.getBirthdate() == null) {
+            throw new BadRequestException("Thiếu ngày sinh. Vui lòng cập nhật ngày sinh trước khi đặt lịch.");
+        }
+
+        int age = (int) ChronoUnit.YEARS.between(user.getBirthdate(), LocalDate.now());
+
+        if (age < 18 || age >= 60) {
+            throw new BadRequestException("Chỉ những người từ 18 đến dưới 60 tuổi mới được phép đăng ký hiến máu.");
+        }
+    }
+
+    /**
+     * Tự động chuyển trạng thái các lịch hẹn quá hạn thành REJECTED (chạy mỗi ngày lúc 1h sáng)
+     */
+    @Scheduled(cron = "0 0 1 * * *") // Mỗi ngày lúc 01:00 sáng
+    @Transactional
+    public void autoRejectExpiredAppointments() {
+        LocalDate today = LocalDate.now();
+
+        List<Appointment> expiredAppointments = appointmentRepository.findExpiredAppointments(today);
+
+        for (Appointment appointment : expiredAppointments) {
+            appointment.setStatus(Status.REJECTED);
+        }
+
+        appointmentRepository.saveAll(expiredAppointments);
+
+        System.out.println("Đã cập nhật " + expiredAppointments.size() + " lịch hẹn quá hạn sang REJECTED.");
+    }
 }
