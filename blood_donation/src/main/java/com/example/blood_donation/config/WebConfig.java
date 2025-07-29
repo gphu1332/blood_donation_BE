@@ -14,7 +14,8 @@ public class WebConfig {
             public void addCorsMappings(CorsRegistry registry) {
                 registry.addMapping("/**")
                         .allowedOrigins("http://localhost:5173",
-                                "https://blood-donation-hub-tau.vercel.app/")
+                                "https://blood-donation-hub-tau.vercel.app/",
+                                "https://blood-donation-v2-0.vercel.app/")
                         .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
                         .allowedHeaders("*")
                         .allowCredentials(true);
