@@ -46,6 +46,7 @@ public class BloodUnitService {
         dto.setTypeBlood(unit.getTypeBlood());
         dto.setDonationDetailId(unit.getDonationDetail() != null ? unit.getDonationDetail().getDonID() : null);
         dto.setStaffId(unit.getStaff().getId());
+        dto.setStaffName(unit.getStaff() != null ? unit.getStaff().getFullName() : null);
         dto.setBloodRequestId(
                 unit.getRequest() != null ? unit.getRequest().getReqID() : null);
         return dto;
