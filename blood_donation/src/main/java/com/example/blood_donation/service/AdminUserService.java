@@ -85,8 +85,8 @@ public class AdminUserService {
         String message = "Xin chào " + saved.getFullName() + ",\n\n"
                 + "Tài khoản của bạn đã được tạo bởi quản trị viên hệ thống.\n"
                 + "Tên đăng nhập: " + saved.getUsername() + "\n"
-                + "Mật khẩu tạm thời: " + dto.getPassword() + "\n\n"
-                + "Vui lòng đăng nhập và thay đổi mật khẩu sau lần đăng nhập đầu tiên.";
+                + "Mật khẩu: " + dto.getPassword() + "\n\n"
+                + "Vui lòng đăng nhập và báo cáo với bộ phận quản lý để thay đổi mật khẩu.";
 
         emailService.sendSimpleEmail(saved.getEmail(), title, message);
         // Nếu là MedicalStaff, lưu luôn vào hospitalRepo để đảm bảo cascade
