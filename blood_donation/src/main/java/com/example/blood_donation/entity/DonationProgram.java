@@ -67,6 +67,10 @@ public class DonationProgram {
     @Transient
     private ProgramStatus status;
 
+    @Column(nullable = true)
+    private Integer maxParticipant;
+
+
     public ProgramStatus getStatus() {
         LocalDate today = LocalDate.now();
 

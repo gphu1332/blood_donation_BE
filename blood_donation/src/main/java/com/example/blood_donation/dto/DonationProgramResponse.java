@@ -14,8 +14,8 @@ public class DonationProgramResponse {
     private LocalDate startDate;
     private LocalDate endDate;
     private LocalDate dateCreated;
-
-
+    private Integer maxParticipant;
+    private Long registeredCount;
     private Long addressId;
 
     private Long cityId;

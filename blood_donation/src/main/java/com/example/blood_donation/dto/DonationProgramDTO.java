@@ -13,7 +13,7 @@ public class DonationProgramDTO {
     private LocalDate startDate;
     private LocalDate endDate;
     private LocalDate dateCreated;
-
+    private Integer maxParticipant;
     private Long addressId;
     private Long cityId;
     private String description;
