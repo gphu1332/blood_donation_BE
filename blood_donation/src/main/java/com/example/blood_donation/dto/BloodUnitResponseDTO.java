@@ -16,4 +16,6 @@ public class BloodUnitResponseDTO {
     private Long donationDetailId;
     private Long staffId;
     private Long bloodRequestId;
+
+    private String staffName;
 }
