@@ -14,6 +14,7 @@ import java.util.List;
 public class Slot {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "slotid")
     private Long slotID;
 
     private String label;
