@@ -288,7 +288,7 @@ public class AppointmentService {
         appointment.setStatus(status);
         appointment.setUser(user);
 
-        // Gán 9 câu trả lời
+        // Gán 10 câu trả lời
         appointment.setAnswer1(request.getAnswer1());
         appointment.setAnswer2(request.getAnswer2());
         appointment.setAnswer3(request.getAnswer3());
@@ -298,7 +298,7 @@ public class AppointmentService {
         appointment.setAnswer7(request.getAnswer7());
         appointment.setAnswer8(request.getAnswer8());
         appointment.setAnswer9(request.getAnswer9());
-        appointment.setAnswer9(request.getAnswer10());
+        appointment.setAnswer10(request.getAnswer10());
 
         return appointment;
     }
