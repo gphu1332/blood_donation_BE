@@ -159,6 +159,14 @@ public class AdminUserService {
 
         User updatedUser = adminUserRepository.save(user);
 
+        // Kiểm tra xem thông tin tài khoản có thay đổi không
+        String newEmail = updatedUser.getEmail();
+        String newUsername = updatedUser.getUsername();
+
+        boolean accountInfoChanged = !java.util.Objects.equals(originalEmail, newEmail) ||
+                                   !java.util.Objects.equals(originalUsername, newUsername) ||
+                                   passwordChanged;
+
         // Kiểm tra xem thông tin cá nhân có thay đổi không
         String newFullName = updatedUser.getFullName();
         String newPhone = updatedUser.getPhone();
@@ -178,23 +186,24 @@ public class AdminUserService {
                                     !java.util.Objects.equals(originalRole, newRole) ||
                                     !java.util.Objects.equals(originalBirthdate, newBirthdate);
 
-        // Gửi email thông báo cập nhật tài khoản (default)
-        String accountTitle = "Thông tin tài khoản của bạn đã được cập nhật";
-        StringBuilder accountMessageBuilder = new StringBuilder();
-        accountMessageBuilder.append("Xin chào ").append(updatedUser.getFullName()).append(",\n\n")
-                .append("Thông tin tài khoản của bạn đã được cập nhật bởi quản trị viên hệ thống.\n\n")
-                .append("Thông tin tài khoản hiện tại:\n")
-                .append("- Tên đăng nhập: ").append(updatedUser.getUsername()).append("\n")
-                .append("- Email: ").append(updatedUser.getEmail()).append("\n");
+        // Gửi email thông báo cập nhật tài khoản khi có thay đổi thông tin tài khoản
+        if (accountInfoChanged) {
+            String accountTitle = "Thông tin tài khoản của bạn đã được cập nhật";
+            StringBuilder accountMessageBuilder = new StringBuilder();
+            accountMessageBuilder.append("Xin chào ").append(updatedUser.getFullName()).append(",\n\n")
+                    .append("Thông tin tài khoản của bạn đã được cập nhật bởi quản trị viên hệ thống.\n\n")
+                    .append("Thông tin tài khoản hiện tại:\n")
+                    .append("- Tên đăng nhập: ").append(updatedUser.getUsername()).append("\n")
+                    .append("- Email: ").append(updatedUser.getEmail()).append("\n");
 
-        if (passwordChanged) {
-            accountMessageBuilder.append("- Mật khẩu mới: ").append(adminDTO.getPassword()).append("\n");
+            if (passwordChanged) {
+                accountMessageBuilder.append("- Mật khẩu mới: ").append(adminDTO.getPassword()).append("\n");
+            }
+
+            accountMessageBuilder.append("\nVui lòng đăng nhập lại và kiểm tra thông tin. ");
+
+            emailService.sendSimpleEmail(updatedUser.getEmail(), accountTitle, accountMessageBuilder.toString());
         }
-
-        accountMessageBuilder.append("\nVui lòng đăng nhập lại và kiểm tra thông tin. ")
-                .append("Nếu bạn có mật khẩu mới, hãy đổi mật khẩu ngay sau khi đăng nhập để đảm bảo an toàn tài khoản.");
-
-        emailService.sendSimpleEmail(updatedUser.getEmail(), accountTitle, accountMessageBuilder.toString());
 
         // Gửi email thông báo cập nhật thông tin cá nhân nếu có thay đổi
         if (personalInfoChanged) {
