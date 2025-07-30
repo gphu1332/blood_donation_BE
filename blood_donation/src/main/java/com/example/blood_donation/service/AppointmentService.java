@@ -280,6 +280,12 @@ public class AppointmentService {
 
         DonationProgram program = donationProgramRepository.findById(request.getProgramId())
                 .orElseThrow(() -> new BadRequestException("Program not found"));
+        // Kiểm tra số lượng người đăng ký không vượt quá maxParticipant
+        long activeCount = appointmentRepository.countActiveAppointmentsByProgram(program.getId());
+
+        if (program.getMaxParticipant() != null && activeCount >= program.getMaxParticipant()) {
+            throw new BadRequestException("Chương trình đã đủ số lượng người đăng ký.");
+        }
 
         Appointment appointment = new Appointment();
         appointment.setDate(request.getDate());

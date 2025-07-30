@@ -84,4 +84,12 @@ public interface AppointmentRepository extends JpaRepository<Appointment, Long> 
             """)
     List<Appointment> findExpiredAppointments(@Param("today") LocalDate today);
 
+    @Query("""
+    SELECT COUNT(a)
+    FROM Appointment a
+    WHERE a.program.id = :programId
+      AND a.status IN ('PENDING', 'APPROVED')
+""")
+    long countActiveAppointmentsByProgram(@Param("programId") Long programId);
+
 }

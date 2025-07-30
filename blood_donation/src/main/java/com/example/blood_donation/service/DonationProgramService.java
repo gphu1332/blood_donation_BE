@@ -95,6 +95,7 @@ public class DonationProgramService {
         program.setDescription(dto.getDescription());
         program.setContact(dto.getContact());
         program.setImageUrl(dto.getImageUrl());
+        program.setMaxParticipant(dto.getMaxParticipant());
         program.setDeleted(false);
 
         // Liên kết City
@@ -164,6 +165,7 @@ public class DonationProgramService {
         existing.setDescription(dto.getDescription());
         existing.setContact(dto.getContact());
         existing.setImageUrl(dto.getImageUrl());
+        existing.setMaxParticipant(dto.getMaxParticipant());
 
         // Liên kết City
         if (dto.getCityId() != null) {
@@ -289,7 +291,6 @@ public class DonationProgramService {
         dto.setEndDate(program.getEndDate());
         dto.setDateCreated(program.getDateCreated());
         dto.setStatus(program.getStatus());
-
         if (program.getAddress() != null) {
             dto.setAddressId(program.getAddress().getId());
         }
@@ -298,6 +299,7 @@ public class DonationProgramService {
         dto.setImageUrl(program.getImageUrl());
         dto.setContact(program.getContact());
         dto.setTypeBloods(program.getTypeBloods());
+        dto.setMaxParticipant(program.getMaxParticipant());
 
         if (program.getCity() != null && !program.getCity().isDeleted()) {
             dto.setCityId(program.getCity().getId());
@@ -315,7 +317,8 @@ public class DonationProgramService {
                     .map(Slot::getSlotID)
                     .toList());
         }
-
+        long registeredCount = appointmentRepository.countActiveAppointmentsByProgram(program.getId());
+        dto.setRegisteredCount(registeredCount);
         return dto;
     }
 }
