@@ -111,7 +111,6 @@ public class AdminUserService {
 
         // Lưu thông tin gốc để so sánh cho việc gửi email
         String originalEmail = user.getEmail();
-        String originalUsername = user.getUsername();
         String originalFullName = user.getFullName();
         String originalPhone = user.getPhone();
         String originalAddress = user.getAddress() != null ? user.getAddress().getName() : null;
@@ -161,10 +160,8 @@ public class AdminUserService {
 
         // Kiểm tra xem thông tin tài khoản có thay đổi không
         String newEmail = updatedUser.getEmail();
-        String newUsername = updatedUser.getUsername();
 
         boolean accountInfoChanged = !java.util.Objects.equals(originalEmail, newEmail) ||
-                                   !java.util.Objects.equals(originalUsername, newUsername) ||
                                    passwordChanged;
 
         // Kiểm tra xem thông tin cá nhân có thay đổi không
