@@ -41,18 +41,21 @@ public class AdminUserService {
     @Autowired
     private AdressRepository adressRepository;
 
-    // ✅ Lấy danh sách user chưa bị xóa
+    @Autowired
+    private EmailService emailService;
+
+    // Lấy danh sách user chưa bị xóa
     public List<User> getAllUsers() {
         List<Role> allowedRoles = List.of(Role.ADMIN, Role.STAFF, Role.HOSPITAL_STAFF);
         return adminUserRepository.findByRoleInAndDeletedFalse(allowedRoles);
     }
 
-    // ✅ Tìm user chưa bị xóa theo ID
+    // Tìm user chưa bị xóa theo ID
     public Optional<User> getUserById(Long id) {
         return adminUserRepository.findByIdAndDeletedFalse(id);
     }
 
-    // ✅ Tìm ID user theo số điện thoại (chỉ user chưa bị xóa)
+    // Tìm ID user theo số điện thoại (chỉ user chưa bị xóa)
     public Long findUserIdByPhone(String phone) {
         return userRepository.findByPhone(phone)
                 .filter(user -> !user.isDeleted())
@@ -60,7 +63,7 @@ public class AdminUserService {
                 .getId();
     }
 
-    // ✅ Tạo user mới (ADMIN / STAFF / HOSPITAL_STAFF)
+    // Tạo nhân viên mới (ADMIN / STAFF / HOSPITAL_STAFF)
     @Transactional
     public AdminUserResponseDTO createUserByAdmin(CreateAdminUserDTO dto) {
         // Check for duplicates among non-deleted users
@@ -77,6 +80,15 @@ public class AdminUserService {
         User user = mapToEntityFromDTO(dto);
 
         User saved = adminUserRepository.save(user);
+
+        String title = "Tài khoản của bạn đã được tạo";
+        String message = "Xin chào " + saved.getFullName() + ",\n\n"
+                + "Tài khoản của bạn đã được tạo bởi quản trị viên hệ thống.\n"
+                + "Tên đăng nhập: " + saved.getUsername() + "\n"
+                + "Mật khẩu tạm thời: " + dto.getPassword() + "\n\n"
+                + "Vui lòng đăng nhập và thay đổi mật khẩu sau lần đăng nhập đầu tiên.";
+
+        emailService.sendSimpleEmail(saved.getEmail(), title, message);
         // Nếu là MedicalStaff, lưu luôn vào hospitalRepo để đảm bảo cascade
         if (saved instanceof MedicalStaff staff) {
             return mapToDTO(staff);
@@ -84,7 +96,7 @@ public class AdminUserService {
         return mapToDTO(saved);
     }
 
-    // ✅ Cập nhật thông tin user (admin chỉnh sửa)
+    // Cập nhật thông tin nhân viên (admin chỉnh sửa)
     @Transactional
     public UserDTO updateUserByAdmin(Long id, AdminUserDTO adminDTO) {
         Optional<User> userOpt = adminUserRepository.findById(id);
@@ -136,7 +148,7 @@ public class AdminUserService {
         return modelMapper.map(updatedUser, UserDTO.class);
     }
 
-    // ✅ XÓA MỀM người dùng
+    // XÓA MỀM người dùng
     public void deleteUser(Long id) {
         Optional<User> userOpt = adminUserRepository.findById(id);
         if (userOpt.isEmpty()) {
@@ -158,7 +170,7 @@ public class AdminUserService {
         adminUserRepository.save(user);
     }
 
-    // ✅ Hàm map DTO → Entity (tạo mới)
+    // Hàm map DTO → Entity (tạo mới)
     private User mapToEntityFromDTO(CreateAdminUserDTO dto) {
         User user;
 
