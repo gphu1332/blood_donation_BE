@@ -13,7 +13,4 @@ public class BloodRequestResponseDTO {
     private String status;
     private LocalDate reqCreateDate;
     private List<BloodRequestDetailDTO> details;
-    private Long handledById;
-    private String handledByName;
-    private String handledByEmail;
 }
