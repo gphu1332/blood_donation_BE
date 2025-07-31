@@ -48,6 +48,8 @@ public class SecurityConfig {
                 .cors(Customizer.withDefaults())
                 .authorizeHttpRequests(req -> req
                         .requestMatchers(
+                                "/",                        
+                                "/swagger-ui.html",
                                 "/api/login",
                                 "/api/register",
                                 "/api/contact",
