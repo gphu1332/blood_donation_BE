@@ -48,8 +48,12 @@ public class JwtFilter extends OncePerRequestFilter {
             "POST:/api/contact",
             "GET:/api/token-expired",
             "GET:/v3/api-docs/**",
-            "GET:/swagger-ui/**"
+            "GET:/swagger-ui/**",
+            "GET:/swagger-ui.html",           // thêm nếu dùng SpringFox 2.x
+            "GET:/swagger-ui/index.html",     // thêm chính xác file bạn truy cập
+            "GET:/"                           // rất quan trọng để cho phép truy cập trang gốc `/`
     );
+
 
     public boolean isPermitted(String uri, String method) {
         System.out.println(uri);
