@@ -129,6 +129,10 @@ public class BloodRequestService {
             throw new RuntimeException("Chỉ STAFF mới được duyệt yêu cầu");
         }
 
+        if (req.getStatus() != Status.PENDING) {
+            throw new RuntimeException("Yêu cầu đã được xử lý bởi người khác.");
+        }
+
         if (action.equalsIgnoreCase("accept")) {
             req.setStatus(Status.APPROVED);
         } else if (action.equalsIgnoreCase("reject")) {
@@ -189,6 +193,13 @@ public class BloodRequestService {
         }).toList();
 
         dto.setDetails(detailDTOs);
+
+        if (req.getHandledBy() != null) {
+            dto.setHandledById(req.getHandledBy().getId());
+            dto.setHandledByName(req.getHandledBy().getFullName());
+            dto.setHandledByEmail(req.getHandledBy().getEmail());
+        }
+
         return dto;
     }
 
