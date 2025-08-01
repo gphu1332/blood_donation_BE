@@ -7,8 +7,9 @@ import lombok.Data;
 
 @Data
 public class BloodRequestDetailDTO {
-    @Enumerated(EnumType.STRING)
+
     private TypeBlood typeBlood;
+
     private int packVolume;
     private int packCount;
 }

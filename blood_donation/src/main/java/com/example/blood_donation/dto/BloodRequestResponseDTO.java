@@ -8,12 +8,13 @@ import java.util.List;
 @Data
 public class BloodRequestResponseDTO {
     private Long reqID;
-    private Long medId;
-    private Boolean isEmergency;
+    private String isEmergency;
     private String status;
     private LocalDate reqCreateDate;
     private List<BloodRequestDetailDTO> details;
-    private Long handledById;
-    private String handledByName;
-    private String handledByEmail;
+    private String medicalStaffName;
+    private String medicalStaffEmail;
+    private Long handleById;
+    private String handleByName;
+    private String handleByEmail;
 }

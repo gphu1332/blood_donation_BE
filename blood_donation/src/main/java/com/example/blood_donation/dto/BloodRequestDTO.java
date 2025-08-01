@@ -6,7 +6,10 @@ import lombok.Data;
 import java.util.List;
 @Data
 public class BloodRequestDTO {
-    private Boolean isEmergency;
+
+    private String isEmergency;
+
     private Long medId;
+
     private List<BloodRequestDetailDTO> details;
 }

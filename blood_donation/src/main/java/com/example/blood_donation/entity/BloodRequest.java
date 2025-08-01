@@ -21,7 +21,7 @@ public class BloodRequest {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long reqID;
 
-    private Boolean isEmergency;
+    private String isEmergency;
     private Boolean isDeleted = false;
     private LocalDate reqCreateDate;
 
@@ -38,6 +38,5 @@ public class BloodRequest {
 
     @OneToMany(mappedBy = "bloodRequest", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<BloodRequestDetail> details = new ArrayList<>(); // ✅ KHÔNG dùng List.of()
-
 }
 

@@ -6,7 +6,7 @@ import com.example.blood_donation.dto.BloodRequestResponseDTO;
 import com.example.blood_donation.entity.*;
 import com.example.blood_donation.enums.Role;
 import com.example.blood_donation.enums.Status;
-import com.example.blood_donation.repository.*;
+import com.example.blood_donation.repositoty.*;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -50,17 +50,15 @@ public class BloodRequestService {
 
         // 👇 Build detail list before saving request
         List<BloodRequestDetail> details = dto.getDetails().stream().map(d -> {
-            BloodRequestDetailId id = new BloodRequestDetailId(null, d.getTypeBlood()); // null for now
             BloodRequestDetail detail = new BloodRequestDetail();
             detail.setPackCount(d.getPackCount());
             detail.setPackVolume(d.getPackVolume());
+            detail.setTypeBlood(d.getTypeBlood());
             detail.setBloodRequest(req); // 👈 will be populated when req is saved
-            detail.setId(id); // req ID will be updated by Hibernate automatically
             return detail;
         }).toList();
 
         req.setDetails(details); // ✅ attach details before save
-
         return reqRepo.save(req); // ✅ single save handles everything
     }
 
@@ -86,7 +84,7 @@ public class BloodRequestService {
             // ✅ 2. Thêm phần tử mới vào collection đang được theo dõi
             for (BloodRequestDetailDTO d : dto.getDetails()) {
                 BloodRequestDetail detail = new BloodRequestDetail();
-                detail.setId(new BloodRequestDetailId(id, d.getTypeBlood()));
+                detail.setTypeBlood(d.getTypeBlood());
                 detail.setPackCount(d.getPackCount());
                 detail.setPackVolume(d.getPackVolume());
                 detail.setBloodRequest(req); // THAM CHIẾU ĐÚNG mappedBy
@@ -181,12 +179,14 @@ public class BloodRequestService {
         dto.setIsEmergency(req.getIsEmergency());
         dto.setStatus(req.getStatus().name());
         dto.setReqCreateDate(req.getReqCreateDate());
-
-        dto.setMedId(req.getMedicalStaff() != null ? req.getMedicalStaff().getId() : null);
+        if (req.getMedicalStaff() != null) {
+            dto.setMedicalStaffName(req.getMedicalStaff().getFullName());
+            dto.setMedicalStaffEmail(req.getMedicalStaff().getEmail());
+        }
 
         List<BloodRequestDetailDTO> detailDTOs = req.getDetails().stream().map(d -> {
             BloodRequestDetailDTO dtoDetail = new BloodRequestDetailDTO();
-            dtoDetail.setTypeBlood(d.getId().getTypeBlood());
+            dtoDetail.setTypeBlood(d.getTypeBlood());
             dtoDetail.setPackCount(d.getPackCount());
             dtoDetail.setPackVolume(d.getPackVolume());
             return dtoDetail;
@@ -195,9 +195,9 @@ public class BloodRequestService {
         dto.setDetails(detailDTOs);
 
         if (req.getHandledBy() != null) {
-            dto.setHandledById(req.getHandledBy().getId());
-            dto.setHandledByName(req.getHandledBy().getFullName());
-            dto.setHandledByEmail(req.getHandledBy().getEmail());
+            dto.setHandleById(req.getHandledBy().getId());
+            dto.setHandleByName(req.getHandledBy().getFullName());
+            dto.setHandleByEmail(req.getHandledBy().getEmail());
         }
         return dto;
     }
