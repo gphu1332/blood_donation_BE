@@ -132,6 +132,14 @@ public class BloodRequestAPI {
         return ResponseEntity.ok(dto);
     }
 
+    @Operation(summary = "Medical Staff xác nhận yêu cầu đã hoàn tất", description = "Cập nhật trạng thái yêu cầu thành FULFILLED")
+    @PutMapping("/hospital/{id}/fulfill")
+    public ResponseEntity<BloodRequestResponseDTO> fulfillRequest(@PathVariable Long id) {
+        BloodRequest updated = service.markAsFulfilledByMedical(id);
+        return ResponseEntity.ok(service.mapToResponseDTO(updated));
+    }
+
+
     // Private helper method (không cần annotation Swagger)
     private BloodRequestResponseDTO convertToResponse(BloodRequest req) {
         return service.mapToResponseDTO(req);
