@@ -169,4 +169,16 @@ public class AppointmentAPI {
         return ResponseEntity.ok(daysLeft);
     }
 
+    @GetMapping("/by-program")
+    @PreAuthorize("hasAnyRole('STAFF', 'ADMIN')")
+    @Operation(summary = "Lấy danh sách lịch hẹn theo chương trình")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Lấy danh sách thành công")
+    })
+    public ResponseEntity<List<AppointmentDTO>> getAppointmentsByProgram(
+            @Parameter(description = "ID chương trình") @RequestParam Long programId) {
+        List<AppointmentDTO> appointments = appointmentService.getAppointmentsByProgramId(programId);
+        return ResponseEntity.ok(appointments);
+    }
+
 }
