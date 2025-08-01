@@ -423,4 +423,13 @@ public class AppointmentService {
 
         System.out.println("Đã cập nhật " + expiredAppointments.size() + " lịch hẹn quá hạn sang REJECTED.");
     }
+
+    /** List of appointments according to program*/
+    public List<AppointmentDTO> getAppointmentsByProgramId(Long programId) {
+        List<Appointment> appointments = appointmentRepository.findByProgram_Id(programId);
+        return appointments.stream()
+                .map(this::mapToDTO)
+                .toList();
+    }
+
 }
