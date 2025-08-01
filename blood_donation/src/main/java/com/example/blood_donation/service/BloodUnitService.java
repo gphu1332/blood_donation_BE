@@ -4,10 +4,12 @@ import com.example.blood_donation.dto.BloodUnitResponseDTO;
 import com.example.blood_donation.dto.CreateBloodUnitDTO;
 import com.example.blood_donation.dto.UpdateBloodUnitDTO;
 import com.example.blood_donation.entity.BloodUnit;
+import com.example.blood_donation.entity.User;
+import com.example.blood_donation.enums.Role;
 import com.example.blood_donation.repository.BloodRequestRepository;
 import com.example.blood_donation.repository.BloodUnitRepository;
 import com.example.blood_donation.repository.DonationDetailRepository;
-import com.example.blood_donation.repository.StaffRepository;
+import com.example.blood_donation.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -23,7 +25,7 @@ public class BloodUnitService {
     private DonationDetailRepository donationDetailRepository;
 
     @Autowired
-    private StaffRepository staffRepository;
+    private UserRepository userRepository;
 
     @Autowired
     private BloodRequestRepository bloodRequestRepository;
@@ -58,8 +60,12 @@ public class BloodUnitService {
        unit.setTypeBlood(dto.getTypeBlood());
        unit.setDonationDetail(donationDetailRepository.findById(dto.getDonationDetailId())
                .orElseThrow(() -> new RuntimeException("Không tìm thấy DonnationDetail")));
-       unit.setStaff(staffRepository.findById(dto.getStaffId())
-               .orElseThrow(() -> new RuntimeException("Không tìm thấy Staff")));
+
+        User staff = userRepository.findById(dto.getStaffId())
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy Staff"));
+        if (staff.getRole() != Role.STAFF) {
+            throw new IllegalArgumentException("User with id " + dto.getStaffId() + " is not a STAFF");
+        }
        if (dto.getBloodRequestId() != null) {
            unit.setRequest(bloodRequestRepository.findById(dto.getBloodRequestId())
                    .orElseThrow(() -> new RuntimeException("Không tìm thấy BloodRequest")));
@@ -83,8 +89,11 @@ public class BloodUnitService {
         existing.setTypeBlood(dto.getTypeBlood());
         existing.setDonationDetail(donationDetailRepository.findById(dto.getDonationDetailId())
                         .orElseThrow(() -> new RuntimeException("Không tìm thấy DonationDetail")));
-        existing.setStaff(staffRepository.findById(dto.getStaffId())
-                        .orElseThrow(() -> new RuntimeException("Không tìm thấy Staff")));
+        User staff = userRepository.findById(dto.getStaffId())
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy Staff"));
+        if (staff.getRole() != Role.STAFF) {
+            throw new IllegalArgumentException("User with id " + dto.getStaffId() + " is not a STAFF");
+        }
         if (dto.getBloodRequestId() != null) {
             existing.setRequest(bloodRequestRepository.findById(dto.getBloodRequestId())
                     .orElseThrow(() -> new RuntimeException("Không tìm thấy BloodRrequest")));

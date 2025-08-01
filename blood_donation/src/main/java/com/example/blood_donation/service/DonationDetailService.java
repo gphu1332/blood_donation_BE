@@ -3,7 +3,8 @@ package com.example.blood_donation.service;
 import com.example.blood_donation.dto.CreateDonationDetailDTO;
 import com.example.blood_donation.dto.DonationDetailDTO;
 import com.example.blood_donation.entity.DonationDetail;
-import com.example.blood_donation.entity.Member;
+import com.example.blood_donation.entity.User;
+import com.example.blood_donation.enums.Role;
 import com.example.blood_donation.repository.*;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,9 +20,7 @@ public class DonationDetailService {
     @Autowired
     AppointmentRepository appointmentRepository;
     @Autowired
-    MemberRepository memberRepository;
-    @Autowired
-    StaffRepository staffRepository;
+    UserRepository userRepository;
 
     public DonationDetailDTO create(CreateDonationDetailDTO dto) {
         DonationDetail donation = new DonationDetail();
@@ -30,10 +29,20 @@ public class DonationDetailService {
         donation.setTypeBlood(dto.getBloodType());
         donation.setAppointment(appointmentRepository.findById(dto.getAppointmentId())
                 .orElseThrow(() -> new EntityNotFoundException("Appointment not found")));
-        donation.setMember((Member) memberRepository.findById(dto.getMemberId())
-                .orElseThrow(() -> new RuntimeException("Member not found")));
-        donation.setStaff(staffRepository.findById(dto.getStaffId())
-                .orElseThrow(() -> new EntityNotFoundException("Staff not found")));
+
+        User member = userRepository.findById(dto.getMemberId())
+                .orElseThrow(() -> new EntityNotFoundException("Member not found"));
+        if (member.getRole() != Role.MEMBER) {
+            throw new IllegalArgumentException("User with id " + dto.getMemberId() + " is not a MEMBER.");
+        }
+        donation.setMember(member);
+
+        User staff = userRepository.findById(dto.getStaffId())
+                .orElseThrow(() -> new EntityNotFoundException("Staff not found"));
+        if (staff.getRole() != Role.STAFF) {
+            throw new IllegalArgumentException("User with id " + dto.getStaffId() + " is not a STAFF.");
+        }
+        donation.setStaff(staff);
         return mapToDTO(donationDetailRepository.save(donation));
     }
     public DonationDetailDTO getById(Long id) {
@@ -54,10 +63,19 @@ public class DonationDetailService {
         donation.setTypeBlood(dto.getBloodType());
         donation.setAppointment(appointmentRepository.findById(dto.getAppointmentId())
                 .orElseThrow(() -> new EntityNotFoundException("Appointment not found")));
-        donation.setMember((Member) memberRepository.findById(dto.getMemberId())
-                .orElseThrow(() -> new EntityNotFoundException("Member not found")));
-        donation.setStaff(staffRepository.findById(dto.getStaffId())
-                .orElseThrow(() -> new EntityNotFoundException("Staff not found")));
+        User member = userRepository.findById(dto.getMemberId())
+                .orElseThrow(() -> new EntityNotFoundException("Member not found"));
+        if (member.getRole() != Role.MEMBER) {
+            throw new IllegalArgumentException("User with id " + dto.getMemberId() + " is not a MEMBER.");
+        }
+        donation.setMember(member);
+
+        User staff = userRepository.findById(dto.getStaffId())
+                .orElseThrow(() -> new EntityNotFoundException("Staff not found"));
+        if (staff.getRole() != Role.STAFF) {
+            throw new IllegalArgumentException("User with id " + dto.getStaffId() + " is not a STAFF.");
+        }
+        donation.setStaff(staff);
         return mapToDTO(donationDetailRepository.save(donation));
     }
     public void delete(Long id) {
