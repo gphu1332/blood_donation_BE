@@ -4,10 +4,10 @@ import com.example.blood_donation.dto.BloodUnitResponseDTO;
 import com.example.blood_donation.dto.CreateBloodUnitDTO;
 import com.example.blood_donation.dto.UpdateBloodUnitDTO;
 import com.example.blood_donation.entity.BloodUnit;
-import com.example.blood_donation.repositoty.BloodRequestRepository;
-import com.example.blood_donation.repositoty.BloodUnitRepository;
-import com.example.blood_donation.repositoty.DonationDetailRepository;
-import com.example.blood_donation.repositoty.StaffRepository;
+import com.example.blood_donation.repository.BloodRequestRepository;
+import com.example.blood_donation.repository.BloodUnitRepository;
+import com.example.blood_donation.repository.DonationDetailRepository;
+import com.example.blood_donation.repository.StaffRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 

@@ -4,7 +4,7 @@ import com.example.blood_donation.dto.CreateDonationDetailDTO;
 import com.example.blood_donation.dto.DonationDetailDTO;
 import com.example.blood_donation.entity.DonationDetail;
 import com.example.blood_donation.entity.Member;
-import com.example.blood_donation.repositoty.*;
+import com.example.blood_donation.repository.*;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;

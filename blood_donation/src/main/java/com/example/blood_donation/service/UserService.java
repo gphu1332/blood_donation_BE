@@ -5,13 +5,11 @@ import com.example.blood_donation.dto.UserDTO;
 import com.example.blood_donation.entity.Adress;
 import com.example.blood_donation.entity.User;
 import com.example.blood_donation.exception.exceptons.BadRequestException;
-import com.example.blood_donation.repositoty.UserRepository;
+import com.example.blood_donation.repository.UserRepository;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
 import java.util.Optional;
 
 @Service

@@ -3,7 +3,7 @@ package com.example.blood_donation.service;
 import com.example.blood_donation.dto.DonationProgramDTO;
 import com.example.blood_donation.dto.DonationProgramResponse;
 import com.example.blood_donation.entity.*;
-import com.example.blood_donation.repositoty.*;
+import com.example.blood_donation.repository.*;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import org.modelmapper.ModelMapper;

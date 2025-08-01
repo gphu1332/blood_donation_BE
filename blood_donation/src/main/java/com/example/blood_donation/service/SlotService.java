@@ -4,7 +4,7 @@ import com.example.blood_donation.dto.SlotRequest;
 import com.example.blood_donation.dto.SlotResponse;
 import com.example.blood_donation.entity.Slot;
 import com.example.blood_donation.exception.exceptons.BadRequestException;
-import com.example.blood_donation.repositoty.SlotRepository;
+import com.example.blood_donation.repository.SlotRepository;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;

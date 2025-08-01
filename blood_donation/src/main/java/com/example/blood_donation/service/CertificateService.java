@@ -1,10 +1,8 @@
 package com.example.blood_donation.service;
 
 import com.example.blood_donation.entity.Certificate;
-import com.example.blood_donation.repositoty.CertificateRepository;
+import com.example.blood_donation.repository.CertificateRepository;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.context.config.ConfigDataResourceNotFoundException;
-import org.springframework.data.crossstore.ChangeSetPersister;
 import org.springframework.stereotype.Service;
 
 import java.util.List;

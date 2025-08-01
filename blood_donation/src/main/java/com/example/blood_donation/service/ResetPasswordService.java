@@ -3,7 +3,7 @@ package com.example.blood_donation.service;
 import com.example.blood_donation.dto.ResetPasswordRequest;
 import com.example.blood_donation.entity.User;
 import com.example.blood_donation.exception.exceptons.BadRequestException;
-import com.example.blood_donation.repositoty.UserRepository;
+import com.example.blood_donation.repository.UserRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
