@@ -1,10 +1,12 @@
 package com.example.blood_donation.service;
 
+import com.example.blood_donation.dto.BloodGroupStats;
 import com.example.blood_donation.dto.DonationProgramDTO;
 import com.example.blood_donation.dto.DonationProgramResponse;
 import com.example.blood_donation.dto.ProgramStatisticsDTO;
 import com.example.blood_donation.entity.*;
 import com.example.blood_donation.enums.Status;
+import com.example.blood_donation.enums.TypeBlood;
 import com.example.blood_donation.repository.*;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
@@ -14,7 +16,9 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.EnumMap;
 import java.util.List;
+import java.util.Map;
 
 @Service
 public class DonationProgramService {
@@ -329,11 +333,12 @@ public class DonationProgramService {
         return dto;
     }
 
+    // Thong ke chi so cho chuong trinh
     public ProgramStatisticsDTO getStatisticsByProgramId(Long programId) {
         DonationProgram program = donationProgramRepository.findById(programId)
                 .filter(p -> !p.isDeleted())
                 .orElseThrow(() -> new EntityNotFoundException("Donation program not found"));
-        // Lấy danh sách tất cả cuộc hẹn của chương trình
+
         List<Appointment> appointments = appointmentRepository.findByProgram_Id(programId);
         long totalAppointments = appointments.size();
 
@@ -342,11 +347,8 @@ public class DonationProgramService {
         int approvedCount = 0;
         int pendingCount = 0;
         int fulfilledCount = 0;
-        double failRate = 0.0;
         double successRate = 0.0;
-
-
-        List<Long> appointmentIds = appointments.stream().map(Appointment::getId).toList();
+        double failRate = 0.0;
 
         for (Appointment appointment : appointments) {
             switch (appointment.getStatus()) {
@@ -358,17 +360,44 @@ public class DonationProgramService {
             }
         }
 
-    // Lấy donationDetail theo danh sách appointmentId
+        List<Long> appointmentIds = appointments.stream().map(Appointment::getId).toList();
         List<DonationDetail> donationDetails = donationDetailRepository.findByAppointment_IdIn(appointmentIds);
         List<Long> donationDetailIds = donationDetails.stream()
                 .map(DonationDetail::getDonID)
                 .toList();
 
-    // Đếm túi máu
         List<BloodUnit> bloodUnits = bloodUnitRepository.findByDonationDetail_DonIDIn(donationDetailIds);
-        int totalBloodBags = bloodUnits.size(); // Tổng số túi máu
 
-        // Tính tỷ lệ
+        int totalBags = 0;
+        int totalVolume = 0;
+
+        // Khởi tạo map thống kê nhóm máu
+        Map<TypeBlood, BloodGroupStats> bloodStatsMap = new EnumMap<>(TypeBlood.class);
+
+        for (BloodUnit unit : bloodUnits) {
+            TypeBlood bloodType = unit.getTypeBlood();
+            int volume = unit.getVolume(); // 200, 350, 500
+
+            if (bloodType == null || volume <= 0) continue;
+
+            bloodStatsMap.putIfAbsent(bloodType, new BloodGroupStats());
+
+            BloodGroupStats stats = bloodStatsMap.get(bloodType);
+
+            // Đếm số lượng theo thể tích
+            switch (volume) {
+                case 200 -> stats.setQuantity200ml(stats.getQuantity200ml() + 1);
+                case 350 -> stats.setQuantity350ml(stats.getQuantity350ml() + 1);
+                case 500 -> stats.setQuantity500ml(stats.getQuantity500ml() + 1);
+            }
+
+            stats.setTotalBags(stats.getTotalBags() + 1);
+            stats.setTotalVolume(stats.getTotalVolume() + volume);
+
+            totalBags++;
+            totalVolume += volume;
+        }
+
         successRate = totalAppointments == 0 ? 0.0 : (double) fulfilledCount / totalAppointments;
         failRate = totalAppointments == 0 ? 0.0 : (double) (cancelledCount + rejectedCount) / totalAppointments;
 
@@ -382,8 +411,11 @@ public class DonationProgramService {
                 fulfilledCount,
                 successRate,
                 failRate,
-                totalBloodBags
+                totalBags,
+                totalVolume,
+                bloodStatsMap
         );
     }
+
 
 }
