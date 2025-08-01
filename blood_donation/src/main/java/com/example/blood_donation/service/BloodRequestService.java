@@ -129,6 +129,10 @@ public class BloodRequestService {
             throw new RuntimeException("Chỉ STAFF mới được duyệt yêu cầu");
         }
 
+        if (req.getStatus() != Status.PENDING) {
+            throw new RuntimeException("Yêu cầu đã được xử lý bởi người khác.");
+        }
+
         if (action.equalsIgnoreCase("accept")) {
             req.setStatus(Status.APPROVED);
         } else if (action.equalsIgnoreCase("reject")) {
@@ -189,6 +193,12 @@ public class BloodRequestService {
         }).toList();
 
         dto.setDetails(detailDTOs);
+
+        if (req.getHandledBy() != null) {
+            dto.setHandledById(req.getHandledBy().getId());
+            dto.setHandledByName(req.getHandledBy().getFullName());
+            dto.setHandledByEmail(req.getHandledBy().getEmail());
+        }
         return dto;
     }
 
@@ -197,5 +207,18 @@ public class BloodRequestService {
         BloodRequest request = reqRepo.findById(id)
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy yêu cầu"));
         return mapToResponseDTO(request);
+    }
+
+    //Medical staff confirm đã nhận máu
+    public BloodRequest markAsFulfilledByMedical(Long requestId) {
+        BloodRequest request = reqRepo.findById(requestId)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy yêu cầu"));
+
+        if (request.getStatus() != Status.APPROVED) {
+            throw new IllegalStateException("Chỉ có thể xác nhận FULFILLED khi trạng thái là APPROVED.");
+        }
+
+        request.setStatus(Status.FULFILLED);
+        return reqRepo.save(request);
     }
 }
