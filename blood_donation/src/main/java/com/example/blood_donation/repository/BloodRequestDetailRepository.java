@@ -1,7 +1,6 @@
 package com.example.blood_donation.repository;
 
 import com.example.blood_donation.entity.BloodRequestDetail;
-import com.example.blood_donation.entity.BloodRequestDetailId;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -9,7 +8,7 @@ import org.springframework.data.repository.query.Param;
 
 import java.util.List;
 
-public interface BloodRequestDetailRepository extends JpaRepository<BloodRequestDetail, BloodRequestDetailId> {
+public interface BloodRequestDetailRepository extends JpaRepository<BloodRequestDetail, Long> {
     List<BloodRequestDetail> findByBloodRequest_ReqID(Long reqId);
 
     @Modifying
