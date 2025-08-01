@@ -1,41 +1,42 @@
 package com.example.blood_donation.entity;
 
+
 import com.example.blood_donation.enums.Status;
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 
 @Entity
 @Data
-@Table(name = "BloodRequest")
+@NoArgsConstructor
+@AllArgsConstructor
 public class BloodRequest {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long ReqID;
-
-    private LocalDate ReqCreateDate;
+    private Long reqID;
 
     private String isEmergency;
+    private Boolean isDeleted = false;
+    private LocalDate reqCreateDate;
 
     @Enumerated(EnumType.STRING)
-    public Status status;
-    @Column(name = "is_deleted", nullable = false)
-    private boolean isDeleted = false;
+    private Status status;
 
-    //Mỗi MedicalStaff có thể tạo nhiều đơn BloodRequest
     @ManyToOne
-    @JoinColumn(name = "MedID")
+    @JoinColumn(name = "medid")
     private MedicalStaff medicalStaff;
 
-    // Mỗi staff có thể xử lý nhiều đơn yêu cầu máu
     @ManyToOne
-    @JoinColumn(name = "StaID")
-    private Staff staff;
+    @JoinColumn(name = "handled_by_id")
+    private User handledBy;
 
-    // 1 đơn yêu cầu máu có thể yêu cầu nhiều túi máu với thể tích và số lượng khác nhau
     @OneToMany(mappedBy = "bloodRequest", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<BloodRequestDetail> details;
+    private List<BloodRequestDetail> details = new ArrayList<>(); // ✅ KHÔNG dùng List.of()
 }
+

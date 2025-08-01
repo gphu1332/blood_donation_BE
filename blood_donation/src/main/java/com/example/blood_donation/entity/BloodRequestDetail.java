@@ -1,17 +1,21 @@
 package com.example.blood_donation.entity;
 
+
 import com.example.blood_donation.enums.TypeBlood;
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Entity
 @Data
-@IdClass(BloodRequestDetailId.class)
+@NoArgsConstructor
+@AllArgsConstructor
 public class BloodRequestDetail {
 
     @Id
-    @Column(name = "ReqID")
-    private Long reqID;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
 
     @Enumerated(EnumType.STRING)
     private TypeBlood typeBlood;
@@ -20,6 +24,6 @@ public class BloodRequestDetail {
     private int packCount;
 
     @ManyToOne
-    @JoinColumn(name = "ReqID", insertable = false, updatable = false)
+    @JoinColumn(name = "req_id", nullable = false)
     private BloodRequest bloodRequest;
 }
