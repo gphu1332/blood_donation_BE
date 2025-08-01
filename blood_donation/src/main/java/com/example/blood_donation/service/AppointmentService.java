@@ -6,15 +6,11 @@ import com.example.blood_donation.entity.*;
 import com.example.blood_donation.enums.Status;
 import com.example.blood_donation.exception.exceptons.BadRequestException;
 import com.example.blood_donation.repository.*;
-import jakarta.persistence.EntityNotFoundException;
-import jakarta.transaction.Transactional;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
-import java.time.LocalTime;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Optional;
@@ -37,12 +33,6 @@ public class AppointmentService {
     @Autowired
     private ModelMapper modelMapper;
 
-    @Autowired
-    private NotificationService notificationService;
-
-    @Autowired
-    private EmailService emailService;
-
     /**
      * Tạo appointment mới cho user (MEMBER), chỉ khi không có appointment chưa hoàn thành,
      * và phải cách ít nhất 10 ngày kể từ lần hiến máu trước (FULFILLED).
@@ -60,9 +50,6 @@ public class AppointmentService {
 
         // Kiểm tra thông tin cá nhân
         validateUserProfile(user);
-
-        // Kiểm tra tuổi User
-        validateUserAge(user);
 
         // Kiểm tra user đã có appointment đang hoạt động chưa (PENDING hoặc APPROVED)
         boolean hasActiveAppointment = user.getAppointments().stream()
@@ -83,22 +70,17 @@ public class AppointmentService {
 
             long daysBetween = ChronoUnit.DAYS.between(lastDonationDate, desiredDate);
 
-            if (daysBetween < 84) {
-                throw new BadRequestException("Bạn chỉ được đặt lịch sau ít nhất 84 ngày kể từ lần hiến máu gần nhất.");
+            if (daysBetween < 10) {
+                throw new BadRequestException("Bạn chỉ được đặt lịch sau ít nhất 10 ngày kể từ lần hiến máu gần nhất.");
+            }
+
+            if (daysBetween < 14) {
+                System.out.println("Cảnh báo: Người dùng đặt lịch khi chưa đủ 14 ngày kể từ lần hiến máu trước.");
             }
         }
 
         Appointment appointment = buildAppointment(request, user, Status.PENDING);
         Appointment savedAppointment = appointmentRepository.save(appointment);
-
-        String title = "Tạo lịch hẹn hiến máu thành công";
-        String message = "Bạn đã đặt lịch hiến máu vào ngày " + appointment.getDate()
-                + " lúc " + appointment.getSlot().getStart() + " - " + appointment.getSlot().getEnd()
-                + " tại chương trình \"" + appointment.getProgram().getProName() + "\".";
-
-        notificationService.createNotificationForUser(user, title, message);
-        emailService.sendSimpleEmail(user.getEmail(), title, message);
-
 
         return mapToDTO(savedAppointment);
     }
@@ -108,7 +90,7 @@ public class AppointmentService {
     /**
      * Tạo appointment cho staff tạo giùm user qua số điện thoại,
      * chỉ khi user không có appointment đang hoạt động,
-     * và cách lần hiến máu gần nhất ít nhất 84 ngày.
+     * và cách lần hiến máu gần nhất ít nhất 10 ngày.
      */
     public AppointmentDTO createAppointmentByPhoneAndProgram(String phone, AppointmentRequest request) {
         User user = userRepository.findByPhone(phone)
@@ -116,8 +98,7 @@ public class AppointmentService {
 
         // Kiểm tra thông tin cá nhân
         validateUserProfile(user);
-        // Kiểm tra tuổi User
-        validateUserAge(user);
+
         // Kiểm tra appointment đang hoạt động
         boolean hasActiveAppointment = user.getAppointments().stream()
                 .anyMatch(a -> a.getStatus() == Status.PENDING || a.getStatus() == Status.APPROVED);
@@ -137,21 +118,13 @@ public class AppointmentService {
 
             long daysBetween = ChronoUnit.DAYS.between(lastDonationDate, desiredDate);
 
-            if (daysBetween < 84) {
-                throw new BadRequestException("Người dùng chỉ được đặt lịch sau ít nhất 84 ngày kể từ lần hiến máu gần nhất.");
+            if (daysBetween < 10) {  //đúng phải là 84 ngày nhưng để 10 ngày để test
+                throw new BadRequestException("Người dùng chỉ được đặt lịch sau ít nhất 10 (đúng 84) ngày kể từ lần hiến máu gần nhất.");
             }
         }
 
         Appointment appointment = buildAppointment(request, user, Status.APPROVED);
         Appointment savedAppointment = appointmentRepository.save(appointment);
-
-        String title = "Tạo lịch hẹn hiến máu thành công";
-        String message = "Bạn đã đặt lịch hiến máu vào ngày " + appointment.getDate()
-                + " lúc " + appointment.getSlot().getStart() + " - " + appointment.getSlot().getEnd()
-                + " tại chương trình \"" + appointment.getProgram().getProName() + "\".";
-
-        notificationService.createNotificationForUser(user, title, message);
-        emailService.sendSimpleEmail(user.getEmail(), title, message);
 
         return mapToDTO(savedAppointment);
     }
@@ -180,27 +153,7 @@ public class AppointmentService {
                 .orElseThrow(() -> new BadRequestException("Appointment not found"));
 
         appointment.setStatus(newStatus);
-        // Gửi thông báo nếu trạng thái mới là FULFILLED
         appointmentRepository.save(appointment);
-        if (newStatus == Status.FULFILLED) {
-            User user = appointment.getUser();
-            String title = "Cảm ơn bạn đã hiến máu";
-            String message = "Cảm ơn bạn đã hoàn thành lịch hiến máu ngày " + appointment.getDate()
-                    + ". Sự đóng góp của bạn rất quý giá với cộng đồng.";
-
-            notificationService.createNotificationForUser(user, title, message);
-            emailService.sendSimpleEmail(user.getEmail(), title, message);
-        }
-        // ✅ Gửi thông báo nếu trạng thái mới là APPROVED hoặc REJECTED
-        if (newStatus == Status.APPROVED || newStatus == Status.REJECTED) {
-            User user = appointment.getUser();
-            String statusStr = (newStatus == Status.APPROVED) ? "được CHẤP THUẬN" : "bị TỪ CHỐI";
-            String title = "Lịch hẹn hiến máu của bạn đã " + statusStr;
-            String message = "Lịch hẹn hiến máu ngày " + appointment.getDate() + " đã " + statusStr.toLowerCase() + " bởi nhân viên.";
-
-            notificationService.createNotificationForUser(user, title, message);
-            emailService.sendSimpleEmail(user.getEmail(), title, message);
-        }
 
         return mapToDTO(appointment);
     }
@@ -269,24 +222,9 @@ public class AppointmentService {
     private Appointment buildAppointment(AppointmentRequest request, User user, Status status) {
         Slot slot = slotRepository.findById(request.getSlotId())
                 .orElseThrow(() -> new BadRequestException("Slot not found"));
-        // Nếu đặt lịch trong ngày hôm nay thì kiểm tra giờ hiện tại
-        if (request.getDate().isEqual(LocalDate.now())) {
-            LocalTime now = LocalTime.now();
-
-            if (now.isAfter(slot.getEnd())) {
-                throw new BadRequestException("Khung giờ hiến máu đã kết thúc. Vui lòng chọn thời gian khác.");
-            }
-        }
-
 
         DonationProgram program = donationProgramRepository.findById(request.getProgramId())
                 .orElseThrow(() -> new BadRequestException("Program not found"));
-        // Kiểm tra số lượng người đăng ký không vượt quá maxParticipant
-        long activeCount = appointmentRepository.countActiveAppointmentsByProgram(program.getId());
-
-        if (program.getMaxParticipant() != null && activeCount >= program.getMaxParticipant()) {
-            throw new BadRequestException("Chương trình đã đủ số lượng người đăng ký.");
-        }
 
         Appointment appointment = new Appointment();
         appointment.setDate(request.getDate());
@@ -295,7 +233,7 @@ public class AppointmentService {
         appointment.setStatus(status);
         appointment.setUser(user);
 
-        // Gán 10 câu trả lời
+        // Gán 9 câu trả lời
         appointment.setAnswer1(request.getAnswer1());
         appointment.setAnswer2(request.getAnswer2());
         appointment.setAnswer3(request.getAnswer3());
@@ -305,7 +243,6 @@ public class AppointmentService {
         appointment.setAnswer7(request.getAnswer7());
         appointment.setAnswer8(request.getAnswer8());
         appointment.setAnswer9(request.getAnswer9());
-        appointment.setAnswer10(request.getAnswer10());
 
         return appointment;
     }
@@ -361,81 +298,9 @@ public class AppointmentService {
         }
 
         appointment.setStatus(Status.CANCELLED);
-        User user = appointment.getUser();
-        String title = "Lịch hẹn hiến máu đã được hủy";
-        String message = "Bạn đã hủy lịch hiến máu ngày " + appointment.getDate()
-                + ". Nếu bạn có thay đổi kế hoạch, đừng quên đặt lịch mới nhé.";
-
-        notificationService.createNotificationForUser(user, title, message);
-        emailService.sendSimpleEmail(user.getEmail(), title, message);
-
         appointmentRepository.save(appointment);
 
         return mapToDTO(appointment);
-    }
-
-
-    /**
-     * Tính số ngày còn lại trước khi hiến máu
-     */
-    public int calculateDaysLeft(Long appointmentId) {
-        Appointment appointment = appointmentRepository.findById(appointmentId)
-                .orElseThrow(() -> new BadRequestException("Appointment not found"));
-
-        LocalDate today = LocalDate.now();
-        LocalDate donationDate = appointment.getDate();
-
-        if (donationDate.isBefore(today)) {
-            throw new BadRequestException("Lịch hẹn này đã qua ngày hiến máu.");
-        }
-        return (int) ChronoUnit.DAYS.between(today, donationDate);
-    }
-
-    /**
-     * Kiểm tra tuổi user
-     */
-    private void validateUserAge(User user) {
-        if (user.getBirthdate() == null) {
-            throw new BadRequestException("Thiếu ngày sinh. Vui lòng cập nhật ngày sinh trước khi đặt lịch.");
-        }
-
-        int age = (int) ChronoUnit.YEARS.between(user.getBirthdate(), LocalDate.now());
-
-        if (age < 18 || age >= 60) {
-            throw new BadRequestException("Chỉ những người từ 18 đến dưới 60 tuổi mới được phép đăng ký hiến máu.");
-        }
-    }
-
-    /**
-     * Tự động chuyển trạng thái các lịch hẹn quá hạn thành REJECTED (chạy mỗi ngày lúc 1h sáng)
-     */
-    @Scheduled(cron = "0 0 1 * * *") // Mỗi ngày lúc 01:00 sáng
-    @Transactional
-    public void autoRejectExpiredAppointments() {
-        LocalDate today = LocalDate.now();
-
-        List<Appointment> expiredAppointments = appointmentRepository.findExpiredAppointments(today);
-
-        for (Appointment appointment : expiredAppointments) {
-            appointment.setStatus(Status.REJECTED);
-        }
-
-        appointmentRepository.saveAll(expiredAppointments);
-
-        System.out.println("Đã cập nhật " + expiredAppointments.size() + " lịch hẹn quá hạn sang REJECTED.");
-    }
-
-    /** List of appointments according to program*/
-    public List<AppointmentDTO> getAppointmentsByProgramId(Long programId) {
-
-        DonationProgram program = donationProgramRepository.findById(programId)
-                .filter(p -> !p.isDeleted())
-                .orElseThrow(() -> new EntityNotFoundException("Donation program not found"));
-
-        List<Appointment> appointments = appointmentRepository.findByProgram_Id(programId);
-        return appointments.stream()
-                .map(this::mapToDTO)
-                .toList();
     }
 
 }

@@ -3,9 +3,11 @@ package com.example.blood_donation.repository;
 import com.example.blood_donation.entity.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 
+import java.util.List;
 import java.util.Optional;
 
 public interface UserRepository extends JpaRepository<User, Long> {
+    // ✅ Đã sửa từ findByID → findById (phù hợp với field "id" trong entity User)
     Optional<User> findById(Long id);
 
     Optional<User> findByPhone(String phone);
@@ -14,24 +16,16 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
     Optional<User> findByEmail(String email);
 
-    boolean existsByUsernameAndIdNotAndDeletedFalse(String username, Long id);
+    // ✅ Sửa lại field thành "id" thay vì "userID"
+    boolean existsByUsernameAndIdNotAndIsDeletedFalse(String username, Long id);
 
-    boolean existsByEmailAndIdNotAndDeletedFalse(String email, Long id);
+    boolean existsByEmailAndIdNotAndIsDeletedFalse(String email, Long id);
 
-    boolean existsByCccdAndIdNotAndDeletedFalse(String cccd, Long id);
+    boolean existsByCccdAndIdNotAndIsDeletedFalse(String cccd, Long id);
 
+    // ✅ Lấy danh sách user chưa bị xóa
+    List<User> findAllByIsDeletedFalse();
 
-    Optional<User> findByIdAndDeletedFalse(Long id);
-
-    boolean existsByUsernameAndDeletedFalse(String username);
-
-    boolean existsByEmailAndDeletedFalse(String email);
-
-    boolean existsByCccdAndDeletedFalse(String cccd);
-
-    Optional<User> findByUsernameAndDeletedFalse(String username);
-
-    Optional<User> findByEmailAndDeletedFalse(String email);
-
-    Optional<User> findByCccdAndDeletedFalse(String cccd);
+    // ✅ Tìm user chưa bị xóa theo ID
+    Optional<User> findByIdAndIsDeletedFalse(Long id);
 }
