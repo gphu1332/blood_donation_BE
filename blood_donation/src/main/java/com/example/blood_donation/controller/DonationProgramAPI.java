@@ -2,6 +2,7 @@ package com.example.blood_donation.controller;
 
 import com.example.blood_donation.dto.DonationProgramDTO;
 import com.example.blood_donation.dto.DonationProgramResponse;
+import com.example.blood_donation.dto.ProgramStatisticsDTO;
 import com.example.blood_donation.service.DonationProgramService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -114,5 +115,19 @@ public class DonationProgramAPI {
     ) {
         List<DonationProgramResponse> results = service.searchByDateRange(startDate, endDate);
         return ResponseEntity.ok(results);
+    }
+
+    // Kim
+
+    @GetMapping("/{id}/statistics")
+    @Operation(summary = "Lấy thống kê chương trình hiến máu")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Lấy thống kê thành công"),
+            @ApiResponse(responseCode = "404", description = "Không tìm thấy chương trình")
+    })
+    public ResponseEntity<ProgramStatisticsDTO> getStatisticsByProgramId(
+            @Parameter(description = "ID chương trình") @PathVariable Long id) {
+        ProgramStatisticsDTO statistics = service.getStatisticsByProgramId(id);
+        return ResponseEntity.ok(statistics);
     }
 }

@@ -6,6 +6,7 @@ import com.example.blood_donation.entity.*;
 import com.example.blood_donation.enums.Status;
 import com.example.blood_donation.exception.exceptons.BadRequestException;
 import com.example.blood_donation.repository.*;
+import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -426,6 +427,11 @@ public class AppointmentService {
 
     /** List of appointments according to program*/
     public List<AppointmentDTO> getAppointmentsByProgramId(Long programId) {
+
+        DonationProgram program = donationProgramRepository.findById(programId)
+                .filter(p -> !p.isDeleted())
+                .orElseThrow(() -> new EntityNotFoundException("Donation program not found"));
+
         List<Appointment> appointments = appointmentRepository.findByProgram_Id(programId);
         return appointments.stream()
                 .map(this::mapToDTO)

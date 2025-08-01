@@ -2,6 +2,7 @@ package com.example.blood_donation.service;
 
 import com.example.blood_donation.dto.DonationProgramDTO;
 import com.example.blood_donation.dto.DonationProgramResponse;
+import com.example.blood_donation.dto.ProgramStatisticsDTO;
 import com.example.blood_donation.entity.*;
 import com.example.blood_donation.enums.Status;
 import com.example.blood_donation.repository.*;
@@ -22,6 +23,12 @@ public class DonationProgramService {
 
     @Autowired
     private DonationProgramRepository donationProgramRepository;
+
+    @Autowired
+    private DonationDetailRepository donationDetailRepository;
+
+    @Autowired
+    private BloodUnitRepository bloodUnitRepository;
 
     @Autowired
     private SlotRepository slotRepository;
@@ -321,4 +328,62 @@ public class DonationProgramService {
         dto.setRegisteredCount(registeredCount);
         return dto;
     }
+
+    public ProgramStatisticsDTO getStatisticsByProgramId(Long programId) {
+        DonationProgram program = donationProgramRepository.findById(programId)
+                .filter(p -> !p.isDeleted())
+                .orElseThrow(() -> new EntityNotFoundException("Donation program not found"));
+        // Lấy danh sách tất cả cuộc hẹn của chương trình
+        List<Appointment> appointments = appointmentRepository.findByProgram_Id(programId);
+        long totalAppointments = appointments.size();
+
+        int cancelledCount = 0;
+        int rejectedCount = 0;
+        int approvedCount = 0;
+        int pendingCount = 0;
+        int fulfilledCount = 0;
+        double failRate = 0.0;
+        double successRate = 0.0;
+
+
+        List<Long> appointmentIds = appointments.stream().map(Appointment::getId).toList();
+
+        for (Appointment appointment : appointments) {
+            switch (appointment.getStatus()) {
+                case CANCELLED -> cancelledCount++;
+                case REJECTED -> rejectedCount++;
+                case APPROVED -> approvedCount++;
+                case PENDING -> pendingCount++;
+                case FULFILLED -> fulfilledCount++;
+            }
+        }
+
+    // Lấy donationDetail theo danh sách appointmentId
+        List<DonationDetail> donationDetails = donationDetailRepository.findByAppointment_IdIn(appointmentIds);
+        List<Long> donationDetailIds = donationDetails.stream()
+                .map(DonationDetail::getDonID)
+                .toList();
+
+    // Đếm túi máu
+        List<BloodUnit> bloodUnits = bloodUnitRepository.findByDonationDetail_DonIDIn(donationDetailIds);
+        int totalBloodBags = bloodUnits.size(); // Tổng số túi máu
+
+        // Tính tỷ lệ
+        successRate = totalAppointments == 0 ? 0.0 : (double) fulfilledCount / totalAppointments;
+        failRate = totalAppointments == 0 ? 0.0 : (double) (cancelledCount + rejectedCount) / totalAppointments;
+
+        return new ProgramStatisticsDTO(
+                programId,
+                totalAppointments,
+                cancelledCount,
+                rejectedCount,
+                approvedCount,
+                pendingCount,
+                fulfilledCount,
+                successRate,
+                failRate,
+                totalBloodBags
+        );
+    }
+
 }
