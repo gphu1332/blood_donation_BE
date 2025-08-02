@@ -3,6 +3,14 @@ package com.example.blood_donation.repository;
 import com.example.blood_donation.entity.Adress;
 import org.springframework.data.jpa.repository.JpaRepository;
 
-public interface AdressRepository extends JpaRepository<Adress, Long> {
+import java.util.Optional;
 
+public interface AdressRepository extends JpaRepository<Adress, Long> {
+    Optional<Adress> findByName(String name);
+
+    Optional<Adress> findByLatitudeAndLongitude(Double latitude, Double longitude);
+
+    Adress findByLatitudeAndLongitudeAndName(Double latitude, Double longitude, String name);
+
+    Optional<Adress> findByNameAndLatitudeAndLongitude(String name, Double latitude, Double longitude);
 }
