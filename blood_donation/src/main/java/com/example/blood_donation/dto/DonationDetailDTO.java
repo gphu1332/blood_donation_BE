@@ -14,4 +14,5 @@ public class DonationDetailDTO {
     private Long appointmentId;
     private Long memberId;
     private Long staffId;
+    private String staffName;
 }

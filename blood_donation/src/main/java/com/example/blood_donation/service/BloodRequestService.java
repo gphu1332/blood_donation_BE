@@ -179,6 +179,7 @@ public class BloodRequestService {
         dto.setStatus(req.getStatus().name());
         dto.setReqCreateDate(req.getReqCreateDate());
         if (req.getMedicalStaff() != null) {
+            dto.setMedId(req.getMedicalStaff().getId());
             dto.setMedicalStaffName(req.getMedicalStaff().getFullName());
             dto.setMedicalStaffEmail(req.getMedicalStaff().getEmail());
         }
