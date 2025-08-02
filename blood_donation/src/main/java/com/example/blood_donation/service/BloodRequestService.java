@@ -6,13 +6,12 @@ import com.example.blood_donation.dto.BloodRequestResponseDTO;
 import com.example.blood_donation.entity.*;
 import com.example.blood_donation.enums.Role;
 import com.example.blood_donation.enums.Status;
-import com.example.blood_donation.repositoty.*;
+import com.example.blood_donation.repository.*;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
-import java.util.ArrayList;
 import java.util.List;
 
 @Service
