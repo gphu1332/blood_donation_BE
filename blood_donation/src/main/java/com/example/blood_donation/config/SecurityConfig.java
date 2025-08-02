@@ -71,7 +71,7 @@ public class SecurityConfig {
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
         config.setAllowedOrigins(Arrays.asList("http://localhost:5173",
-                "https://blood-donation-hub-tau.vercel.app/",
+                "https://blood-donation-umber.vercel.app/",
                 "https://blood-donation-v2-0.vercel.app/"
         ));
         config.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
