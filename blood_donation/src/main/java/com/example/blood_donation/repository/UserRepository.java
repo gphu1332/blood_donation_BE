@@ -28,10 +28,4 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
     // ✅ Tìm user chưa bị xóa theo ID
     Optional<User> findByIdAndIsDeletedFalse(Long id);
-
-    boolean existsByUsernameAndDeletedFalse(String username);
-
-    boolean existsByEmailAndDeletedFalse (String email);
-
-    boolean existsByCccdAndDeletedFalse (String cccd);
 }
