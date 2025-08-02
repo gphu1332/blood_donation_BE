@@ -1,9 +1,11 @@
 package com.example.blood_donation.service;
 
 import com.example.blood_donation.dto.BloodUnitResponseDTO;
+import com.example.blood_donation.dto.BloodUnitSearchDTO;
 import com.example.blood_donation.dto.CreateBloodUnitDTO;
 import com.example.blood_donation.dto.UpdateBloodUnitDTO;
 import com.example.blood_donation.entity.BloodUnit;
+import com.example.blood_donation.enums.TypeBlood;
 import com.example.blood_donation.repository.BloodRequestRepository;
 import com.example.blood_donation.repository.BloodUnitRepository;
 import com.example.blood_donation.repository.DonationDetailRepository;
@@ -37,18 +39,20 @@ public class BloodUnitService {
     public BloodUnitResponseDTO toResponseDTO(BloodUnit unit) {
         BloodUnitResponseDTO dto = new BloodUnitResponseDTO();
         dto.setId(unit.getBloodUnitID());
-        dto.setVolume(dto.getVolume());
-        dto.setDateImport(dto.getDateImport());
-        dto.setExpiryDate(dto.getExpiryDate());
-        dto.setBloodSerialCode(dto.getBloodSerialCode());
-        dto.setTypeBlood(dto.getTypeBlood());
-        dto.setDonationDetailId(unit.getDonationDetail().getDonID());
+        dto.setVolume(unit.getVolume());
+        dto.setDateImport(unit.getDateImport());
+        dto.setExpiryDate(unit.getExpiryDate());
+        dto.setBloodSerialCode(unit.getBloodSerialCode());
+        dto.setTypeBlood(unit.getTypeBlood());
+        dto.setDonationDetailId(unit.getDonationDetail() != null ? unit.getDonationDetail().getDonID() : null);
         dto.setStaffId(unit.getStaff().getId());
+        dto.setStaffName(unit.getStaff() != null ? unit.getStaff().getFullName() : null);
         dto.setBloodRequestId(
                 unit.getRequest() != null ? unit.getRequest().getReqID() : null);
         return dto;
 
     }
+
     public BloodUnit create(CreateBloodUnitDTO dto) {
        BloodUnit unit = new BloodUnit();
        unit.setVolume(dto.getVolume());
@@ -56,14 +60,26 @@ public class BloodUnitService {
        unit.setExpiryDate(dto.getExpiryDate());
        unit.setBloodSerialCode(dto.getBloodSerialCode());
        unit.setTypeBlood(dto.getTypeBlood());
-       unit.setDonationDetail(donationDetailRepository.findById(dto.getDonationDetailId())
-               .orElseThrow(() -> new RuntimeException("Không tìm thấy DonnationDetail")));
+
+        // ✅ Cho phép để trống donationDetailId
+        if (dto.getDonationDetailId() != null) {
+            unit.setDonationDetail(donationDetailRepository.findById(dto.getDonationDetailId())
+                    .orElseThrow(() -> new RuntimeException("Không tìm thấy DonationDetail")));
+        } else {
+            unit.setDonationDetail(null);
+        }
+
        unit.setStaff(staffRepository.findById(dto.getStaffId())
                .orElseThrow(() -> new RuntimeException("Không tìm thấy Staff")));
-       if (dto.getBloodRequestId() != null) {
-           unit.setRequest(bloodRequestRepository.findById(dto.getBloodRequestId())
-                   .orElseThrow(() -> new RuntimeException("Không tìm thấy BloodRequest")));
-       }
+
+        // ✅ Cho phép để trống bloodRequestId
+        if (dto.getBloodRequestId() != null) {
+            unit.setRequest(bloodRequestRepository.findById(dto.getBloodRequestId())
+                    .orElseThrow(() -> new RuntimeException("Không tìm thấy BloodRequest")));
+        } else {
+            unit.setRequest(null);
+        }
+
        return repository.save(unit);
     }
     public List<BloodUnit> getAll() {
@@ -73,6 +89,7 @@ public class BloodUnitService {
         return repository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy túi máu có ID: " + id));
     }
+
     public BloodUnit update(Long id, UpdateBloodUnitDTO dto) {
         BloodUnit existing = getById(id);
 
@@ -81,19 +98,53 @@ public class BloodUnitService {
         existing.setDateImport(dto.getDateImport());
         existing.setExpiryDate(dto.getExpiryDate());
         existing.setTypeBlood(dto.getTypeBlood());
-        existing.setDonationDetail(donationDetailRepository.findById(dto.getDonationDetailId())
-                        .orElseThrow(() -> new RuntimeException("Không tìm thấy DonationDetail")));
+
+        // ✅ Cho phép DonationDetailId null
+        if (dto.getDonationDetailId() != null) {
+            existing.setDonationDetail(donationDetailRepository.findById(dto.getDonationDetailId())
+                    .orElseThrow(() -> new RuntimeException("Không tìm thấy DonationDetail")));
+        } else {
+            existing.setDonationDetail(null);
+        }
+
+        // ✅ Staff vẫn bắt buộc
         existing.setStaff(staffRepository.findById(dto.getStaffId())
-                        .orElseThrow(() -> new RuntimeException("Không tìm thấy Staff")));
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy Staff")));
+
+        // ✅ Cho phép BloodRequestId null
         if (dto.getBloodRequestId() != null) {
             existing.setRequest(bloodRequestRepository.findById(dto.getBloodRequestId())
-                    .orElseThrow(() -> new RuntimeException("Không tìm thấy BloodRrequest")));
+                    .orElseThrow(() -> new RuntimeException("Không tìm thấy BloodRequest")));
         } else {
             existing.setRequest(null);
         }
+
         return repository.save(existing);
     }
+
     public void delete(Long id) {
         repository.deleteById(id);
     }
+
+    //Kim
+    public List<BloodUnit> searchBloodUnits(BloodUnitSearchDTO dto) {
+        String code = dto.getBloodSerialCode();
+        TypeBlood type = dto.getTypeBlood();
+
+        if (code != null && !code.isEmpty() && type != null) {
+            return repository.findByTypeBloodAndBloodSerialCodeContainingIgnoreCase(type, code);
+        }
+        if (code != null && !code.isEmpty()) {
+            return repository.findByBloodSerialCodeContainingIgnoreCase(code);
+        }
+        if (type != null) {
+            return repository.findByTypeBlood(type);
+        }
+        return repository.findAll();
+    }
+
+    public List<BloodUnit> getUnitsByRequestId(Long requestId) {
+        return repository.findByRequest_ReqID(requestId);
+    }
+
 }

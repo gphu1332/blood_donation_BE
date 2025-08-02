@@ -2,10 +2,13 @@ package com.example.blood_donation.service;
 
 import com.example.blood_donation.dto.CreateDonationDetailDTO;
 import com.example.blood_donation.dto.DonationDetailDTO;
-import com.example.blood_donation.entity.DonationDetail;
-import com.example.blood_donation.entity.Member;
-import com.example.blood_donation.repository.*;
-import jakarta.persistence.EntityNotFoundException;
+import com.example.blood_donation.entity.*;
+import com.example.blood_donation.exception.exceptons.BadRequestException;
+import com.example.blood_donation.repository.AppointmentRepository;
+import com.example.blood_donation.repository.DonationDetailRepository;
+import com.example.blood_donation.repository.UserRepository;
+import jakarta.transaction.Transactional;
+import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -14,66 +17,98 @@ import java.util.stream.Collectors;
 
 @Service
 public class DonationDetailService {
-    @Autowired
-    DonationDetailRepository donationDetailRepository;
-    @Autowired
-    AppointmentRepository appointmentRepository;
-    @Autowired
-    MemberRepository memberRepository;
-    @Autowired
-    StaffRepository staffRepository;
 
-    public DonationDetailDTO create(CreateDonationDetailDTO dto) {
-        DonationDetail donation = new DonationDetail();
-        donation.setDonAmount(dto.getDonAmount());
-        donation.setDonDate(dto.getDonDate());
-        donation.setTypeBlood(dto.getBloodType());
-        donation.setAppointment(appointmentRepository.findById(dto.getAppointmentId())
-                .orElseThrow(() -> new EntityNotFoundException("Appointment not found")));
-        donation.setMember((Member) memberRepository.findById(dto.getMemberId())
-                .orElseThrow(() -> new RuntimeException("Member not found")));
-        donation.setStaff(staffRepository.findById(dto.getStaffId())
-                .orElseThrow(() -> new EntityNotFoundException("Staff not found")));
-        return mapToDTO(donationDetailRepository.save(donation));
-    }
+    @Autowired
+    private DonationDetailRepository donationDetailRepository;
+
+    @Autowired
+    private AppointmentRepository appointmentRepository;
+
+    @Autowired
+    private UserRepository userRepository;
+
+    @Autowired
+    private ModelMapper modelMapper;
+
     public DonationDetailDTO getById(Long id) {
-        DonationDetail d = donationDetailRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("Donation not found"));
-        return mapToDTO(d);
+        DonationDetail detail = donationDetailRepository.findById(id)
+                .orElseThrow(() -> new BadRequestException("Không tìm thấy thông tin hiến máu"));
+        return convertToDTO(detail);
     }
+
     public List<DonationDetailDTO> getAll() {
         return donationDetailRepository.findAll().stream()
-                .map(this::mapToDTO)
+                .map(this::convertToDTO)
                 .collect(Collectors.toList());
     }
+
+    @Transactional
+    public DonationDetailDTO create(CreateDonationDetailDTO dto) {
+        DonationDetail detail = new DonationDetail();
+
+        detail.setDonAmount(dto.getDonAmount());
+        detail.setDonDate(dto.getDonDate());
+        detail.setTypeBlood(dto.getBloodType());
+
+        Appointment appointment = appointmentRepository.findById(dto.getAppointmentId())
+                .orElseThrow(() -> new BadRequestException("Không tìm thấy lịch hẹn"));
+        detail.setAppointment(appointment);
+
+        User staff = userRepository.findById(dto.getStaffId())
+                .orElseThrow(() -> new BadRequestException("Không tìm thấy nhân viên"));
+        detail.setStaff(staff);
+
+        User member = userRepository.findById(dto.getMemberId())
+                .orElseThrow(() -> new BadRequestException("Không tìm thấy người hiến máu"));
+        detail.setMember(member);
+
+        return convertToDTO(donationDetailRepository.save(detail));
+    }
+
+    @Transactional
     public DonationDetailDTO update(Long id, CreateDonationDetailDTO dto) {
-        DonationDetail donation = donationDetailRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("Donation not found"));
-        donation.setDonAmount(dto.getDonAmount());
-        donation.setDonDate(dto.getDonDate());
-        donation.setTypeBlood(dto.getBloodType());
-        donation.setAppointment(appointmentRepository.findById(dto.getAppointmentId())
-                .orElseThrow(() -> new EntityNotFoundException("Appointment not found")));
-        donation.setMember((Member) memberRepository.findById(dto.getMemberId())
-                .orElseThrow(() -> new EntityNotFoundException("Member not found")));
-        donation.setStaff(staffRepository.findById(dto.getStaffId())
-                .orElseThrow(() -> new EntityNotFoundException("Staff not found")));
-        return mapToDTO(donationDetailRepository.save(donation));
+        DonationDetail detail = donationDetailRepository.findById(id)
+                .orElseThrow(() -> new BadRequestException("Không tìm thấy thông tin hiến máu"));
+
+        detail.setDonAmount(dto.getDonAmount());
+        detail.setDonDate(dto.getDonDate());
+        detail.setTypeBlood(dto.getBloodType());
+
+        detail.setAppointment(appointmentRepository.findById(dto.getAppointmentId())
+                .orElseThrow(() -> new BadRequestException("Không tìm thấy lịch hẹn")));
+
+        detail.setStaff(userRepository.findById(dto.getStaffId())
+                .orElseThrow(() -> new BadRequestException("Không tìm thấy nhân viên")));
+
+        detail.setMember(userRepository.findById(dto.getMemberId())
+                .orElseThrow(() -> new BadRequestException("Không tìm thấy người hiến máu")));
+
+        return convertToDTO(donationDetailRepository.save(detail));
     }
+
+    @Transactional
     public void delete(Long id) {
-        DonationDetail d = donationDetailRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("Donation not found"));
-        donationDetailRepository.delete(d);
+        if (!donationDetailRepository.existsById(id)) {
+            throw new BadRequestException("Không tìm thấy thông tin hiến máu");
+        }
+        donationDetailRepository.deleteById(id);
     }
-    private DonationDetailDTO mapToDTO(DonationDetail detail) {
+
+    public DonationDetailDTO getByAppointmentId(Long appointmentId) {
+        DonationDetail detail = donationDetailRepository.findByAppointment_Id(appointmentId)
+                .orElseThrow(() -> new BadRequestException("Không tìm thấy thông tin theo lịch hẹn"));
+        return convertToDTO(detail);
+    }
+
+    private DonationDetailDTO convertToDTO(DonationDetail detail) {
         DonationDetailDTO dto = new DonationDetailDTO();
         dto.setDonID(detail.getDonID());
         dto.setDonAmount(detail.getDonAmount());
         dto.setDonDate(detail.getDonDate());
         dto.setBloodType(detail.getTypeBlood());
         dto.setAppointmentId(detail.getAppointment().getId());
-        dto.setMemberId(detail.getMember().getId());
         dto.setStaffId(detail.getStaff().getId());
+        dto.setMemberId(detail.getMember().getId());
         return dto;
     }
 }

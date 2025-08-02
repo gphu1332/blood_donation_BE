@@ -1,8 +1,12 @@
 package com.example.blood_donation.service;
 
+import com.example.blood_donation.dto.BloodGroupStats;
 import com.example.blood_donation.dto.DonationProgramDTO;
 import com.example.blood_donation.dto.DonationProgramResponse;
+import com.example.blood_donation.dto.ProgramStatisticsDTO;
 import com.example.blood_donation.entity.*;
+import com.example.blood_donation.enums.Status;
+import com.example.blood_donation.enums.TypeBlood;
 import com.example.blood_donation.repository.*;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
@@ -11,13 +15,24 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.EnumMap;
 import java.util.List;
+import java.util.Map;
 
 @Service
 public class DonationProgramService {
+    @Autowired
+    private AppointmentRepository appointmentRepository;
 
     @Autowired
     private DonationProgramRepository donationProgramRepository;
+
+    @Autowired
+    private DonationDetailRepository donationDetailRepository;
+
+    @Autowired
+    private BloodUnitRepository bloodUnitRepository;
 
     @Autowired
     private SlotRepository slotRepository;
@@ -32,47 +47,50 @@ public class DonationProgramService {
     private AdressRepository adressRepository;
 
     @Autowired
-    private ModelMapper modelMapper;
+    private EmailService emailService;
 
-    /**
-     * Lấy danh sách tất cả chương trình hiến máu.
-     */
+    @Autowired
+    private NotificationService notificationService;
+
+    // Lấy danh sách tất cả chương trình hiến máu.
     public List<DonationProgramResponse> getAll() {
         return donationProgramRepository.findAll().stream()
+                .filter(program -> !program.isDeleted())
                 .map(this::mapToResponseDTO)
                 .toList();
     }
 
-    /**
-     * Lấy thông tin chương trình theo ID.
-     */
+    // Lấy thông tin chương trình theo ID.
     public DonationProgramResponse getById(Long id) {
         DonationProgram program = donationProgramRepository.findById(id)
+                .filter(p -> !p.isDeleted())
                 .orElseThrow(() -> new EntityNotFoundException("Donation program not found"));
         return mapToResponseDTO(program);
     }
 
-    /**
-     * Tìm kiếm các chương trình có ngày diễn ra nằm trong khoảng startDate - endDate
-     * và thuộc City chỉ định.
-     */
+    // Tìm kiếm chương trình theo ngày và cityId.
     public List<DonationProgramResponse> searchByDateInRangeAndCityID(LocalDate date, Long cityId) {
-        List<DonationProgram> programs = donationProgramRepository
-                .findByStartDateLessThanEqualAndEndDateGreaterThanEqualAndCity_Id(date, date, cityId);
-        return programs.stream()
+        City city = cityRepository.findById(cityId)
+                .filter(c -> !c.isDeleted())
+                .orElseThrow(() -> new EntityNotFoundException("City not found or has been deleted"));
+
+        return donationProgramRepository
+                .findByStartDateLessThanEqualAndEndDateGreaterThanEqualAndCity_Id(date, date, city.getId())
+                .stream()
+                .filter(p -> !p.isDeleted())
                 .map(this::mapToResponseDTO)
                 .toList();
     }
 
-    /**
-     * Tạo mới một chương trình hiến máu và gán người tạo là Admin hiện tại.
-     */
+    // Tạo chương trình mới
     @Transactional
     public DonationProgramResponse create(DonationProgramDTO dto, String adminUsername) {
-        // 1. Validate trùng chương trình tại địa chỉ
         if (dto.getAddressId() != null) {
             List<DonationProgram> conflicts = donationProgramRepository
-                    .findConflictingPrograms(dto.getAddressId(), dto.getStartDate(), dto.getEndDate());
+                    .findConflictingPrograms(dto.getAddressId(), dto.getStartDate(), dto.getEndDate())
+                    .stream()
+                    .filter(p -> !p.isDeleted())
+                    .toList();
 
             if (!conflicts.isEmpty()) {
                 throw new IllegalStateException("Đã có chương trình tại địa chỉ này trong khoảng thời gian đã chọn.");
@@ -88,23 +106,30 @@ public class DonationProgramService {
         program.setDescription(dto.getDescription());
         program.setContact(dto.getContact());
         program.setImageUrl(dto.getImageUrl());
+        program.setMaxParticipant(dto.getMaxParticipant());
+        program.setDeleted(false);
 
+        // Liên kết City
         if (dto.getCityId() != null) {
             City city = cityRepository.findById(dto.getCityId())
-                    .orElseThrow(() -> new EntityNotFoundException("City not found"));
+                    .filter(c -> !c.isDeleted())
+                    .orElseThrow(() -> new EntityNotFoundException("City not found or has been deleted"));
             program.setCity(city);
         }
 
+        // Liên kết Adress
         if (dto.getAddressId() != null) {
             Adress address = adressRepository.findById(dto.getAddressId())
                     .orElseThrow(() -> new EntityNotFoundException("Address not found"));
             program.setAddress(address);
         }
 
+        // Liên kết Admin
         User admin = userRepository.findByUsername(adminUsername)
                 .orElseThrow(() -> new EntityNotFoundException("Admin user not found"));
         program.setAdmin(admin);
 
+        // Liên kết các Slot
         if (dto.getSlotIds() != null && !dto.getSlotIds().isEmpty()) {
             List<Slot> slots = slotRepository.findAllById(dto.getSlotIds());
             program.setSlots(slots);
@@ -114,24 +139,36 @@ public class DonationProgramService {
         return mapToResponseDTO(saved);
     }
 
-    /**
-     * Cập nhật thông tin chương trình đã có.
-     */
+    // Cập nhật chương trình
     @Transactional
     public DonationProgramResponse update(Long id, DonationProgramDTO dto) {
         DonationProgram existing = donationProgramRepository.findById(id)
+                .filter(p -> !p.isDeleted())
                 .orElseThrow(() -> new EntityNotFoundException("Donation program not found"));
 
-        // Validate trùng chương trình tại địa chỉ (loại trừ chính mình)
+        // Kiểm tra trùng lịch
         if (dto.getAddressId() != null) {
             List<DonationProgram> conflicts = donationProgramRepository
-                    .findConflictingProgramsExcludingSelf(dto.getAddressId(), dto.getStartDate(), dto.getEndDate(), id);
+                    .findConflictingProgramsExcludingSelf(dto.getAddressId(), dto.getStartDate(), dto.getEndDate(), id)
+                    .stream()
+                    .filter(p -> !p.isDeleted())
+                    .toList();
 
             if (!conflicts.isEmpty()) {
                 throw new IllegalStateException("Đã có chương trình tại địa chỉ này trong khoảng thời gian đã chọn.");
             }
         }
 
+        // So sánh thông tin quan trọng
+        boolean isImportantChanged =
+                !existing.getProName().equals(dto.getProName()) ||
+                        !existing.getStartDate().equals(dto.getStartDate()) ||
+                        !existing.getEndDate().equals(dto.getEndDate()) ||
+                        !existing.getDescription().equals(dto.getDescription()) ||
+                        (existing.getAddress() != null && !existing.getAddress().getId().equals(dto.getAddressId())) ||
+                        (dto.getSlotIds() != null && !existing.getSlots().stream().map(Slot::getSlotID).toList().equals(dto.getSlotIds()));
+
+        // Cập nhật các trường
         existing.setProName(dto.getProName());
         existing.setStartDate(dto.getStartDate());
         existing.setEndDate(dto.getEndDate());
@@ -139,53 +176,124 @@ public class DonationProgramService {
         existing.setDescription(dto.getDescription());
         existing.setContact(dto.getContact());
         existing.setImageUrl(dto.getImageUrl());
+        existing.setMaxParticipant(dto.getMaxParticipant());
 
-        if (dto.getAddressId() != null) {
-            Adress address = adressRepository.findById(dto.getAddressId())
-                    .orElseThrow(() -> new EntityNotFoundException("Address not found"));
-            existing.setAddress(address);
-        }
-
+        // Liên kết City
         if (dto.getCityId() != null) {
             City city = cityRepository.findById(dto.getCityId())
                     .orElseThrow(() -> new EntityNotFoundException("City not found"));
             existing.setCity(city);
         }
 
+        // Liên kết Address
+        if (dto.getAddressId() != null) {
+            Adress address = adressRepository.findById(dto.getAddressId())
+                    .orElseThrow(() -> new EntityNotFoundException("Address not found"));
+            existing.setAddress(address);
+        }
+
+        // Cập nhật Slot
         if (dto.getSlotIds() != null) {
             List<Slot> updatedSlots = slotRepository.findAllById(dto.getSlotIds());
             existing.setSlots(updatedSlots);
         }
 
+        // Lưu chương trình đã cập nhật
         DonationProgram updated = donationProgramRepository.save(existing);
+
+        // Gửi mail + Notification nếu có thay đổi quan trọng
+        if (isImportantChanged) {
+            List<Appointment> appointments = appointmentRepository.findByProgram_Id(id).stream()
+                    .filter(a ->
+                            a.getStatus() == Status.PENDING ||
+                            a.getStatus() == Status.APPROVED)
+                    .toList();
+
+            for (Appointment appointment : appointments) {
+                User user = appointment.getUser();
+
+                String location = updated.getAddress() != null
+                        ? updated.getAddress().getName()
+                        : "Không xác định";
+
+                emailService.sendProgramUpdateEmail(
+                        user.getEmail(),
+                        user.getFullName(),
+                        updated.getProName(),
+                        updated.getStartDate(),
+                        updated.getEndDate(),
+                        location,
+                        "Thông tin chương trình bạn đã đăng ký đã có thay đổi quan trọng. Vui lòng kiểm tra lại."
+                );
+
+                notificationService.createNotificationForUser(
+                        user,
+                        "Chương trình mà bạn đăng ký đã được cập nhật",
+                        "Chương trình " + updated.getProName() + " mà bạn đã đăng ký đã có thay đổi. Vui lòng kiểm tra lại thông tin chi tiết của chương trình."
+                );
+            }
+        }
+
+
         return mapToResponseDTO(updated);
     }
 
-
-    /**
-     * Xoá một chương trình theo ID.
-     */
+    // Xoá mềm chương trình
     public void delete(Long id) {
-        donationProgramRepository.deleteById(id);
+        DonationProgram program = donationProgramRepository.findById(id)
+                .filter(p -> !p.isDeleted())
+                .orElseThrow(() -> new EntityNotFoundException("Donation program not found"));
+
+        program.setDeleted(true);
+        donationProgramRepository.save(program);
+
+        // Gửi email + Notification thông báo hủy
+        List<Appointment> appointments = appointmentRepository.findByProgram_Id(id).stream()
+                .filter(a ->
+                        a.getStatus() == Status.PENDING ||
+                        a.getStatus() == Status.APPROVED)
+                .toList();
+
+        for (Appointment appointment : appointments) {
+            User user = appointment.getUser();
+
+            String location = program.getAddress() != null
+                    ? program.getAddress().getName()
+                    : "Không xác định";
+
+            emailService.sendProgramDeletedEmail(
+                    user.getEmail(),
+                    user.getFullName(),
+                    program.getProName(),
+                    program.getStartDate(),
+                    program.getEndDate(),
+                    location
+            );
+
+            notificationService.createNotificationForUser(
+                    user,
+                    "Chương trình mà bạn đăng ký đã bị hủy",
+                    "Chúng tôi rất tiếc phải thông báo rằng chương trình " + program.getProName() + " tại " + location + " đã bị hủy."
+            );
+        }
+
     }
 
-    /**
-     * Tìm kiếm chương trình có ngày trong khoảng chỉ định.
-     */
+    // Tìm kiếm theo ngày
     public List<DonationProgramResponse> searchByDateRange(LocalDate startDate, LocalDate endDate) {
         if (endDate == null) {
             endDate = startDate;
         }
-        List<DonationProgram> programs = donationProgramRepository
-                .findByStartDateLessThanEqualAndEndDateGreaterThanEqual(endDate, startDate);
-        return programs.stream()
+
+        return donationProgramRepository
+                .findByStartDateLessThanEqualAndEndDateGreaterThanEqual(endDate, startDate)
+                .stream()
+                .filter(p -> !p.isDeleted())
                 .map(this::mapToResponseDTO)
                 .toList();
     }
 
-    /**
-     * Chuyển từ entity DonationProgram sang DTO để hiển thị.
-     */
+    // Ánh xạ sang Response DTO
     private DonationProgramResponse mapToResponseDTO(DonationProgram program) {
         DonationProgramResponse dto = new DonationProgramResponse();
         dto.setId(program.getId());
@@ -194,7 +302,6 @@ public class DonationProgramService {
         dto.setEndDate(program.getEndDate());
         dto.setDateCreated(program.getDateCreated());
         dto.setStatus(program.getStatus());
-
         if (program.getAddress() != null) {
             dto.setAddressId(program.getAddress().getId());
         }
@@ -202,12 +309,13 @@ public class DonationProgramService {
         dto.setDescription(program.getDescription());
         dto.setImageUrl(program.getImageUrl());
         dto.setContact(program.getContact());
-
-        // ✅ Gán danh sách typeBloods
         dto.setTypeBloods(program.getTypeBloods());
+        dto.setMaxParticipant(program.getMaxParticipant());
 
-        if (program.getCity() != null) {
+        if (program.getCity() != null && !program.getCity().isDeleted()) {
             dto.setCityId(program.getCity().getId());
+        } else {
+            dto.setCityId(null);
         }
 
         if (program.getAdmin() != null) {
@@ -220,7 +328,94 @@ public class DonationProgramService {
                     .map(Slot::getSlotID)
                     .toList());
         }
-
+        long registeredCount = appointmentRepository.countActiveAppointmentsByProgram(program.getId());
+        dto.setRegisteredCount(registeredCount);
         return dto;
     }
+
+    // Thong ke chi so cho chuong trinh
+    public ProgramStatisticsDTO getStatisticsByProgramId(Long programId) {
+        DonationProgram program = donationProgramRepository.findById(programId)
+                .filter(p -> !p.isDeleted())
+                .orElseThrow(() -> new EntityNotFoundException("Donation program not found"));
+
+        List<Appointment> appointments = appointmentRepository.findByProgram_Id(programId);
+        long totalAppointments = appointments.size();
+
+        int cancelledCount = 0;
+        int rejectedCount = 0;
+        int approvedCount = 0;
+        int pendingCount = 0;
+        int fulfilledCount = 0;
+        double successRate = 0.0;
+        double failRate = 0.0;
+
+        for (Appointment appointment : appointments) {
+            switch (appointment.getStatus()) {
+                case CANCELLED -> cancelledCount++;
+                case REJECTED -> rejectedCount++;
+                case APPROVED -> approvedCount++;
+                case PENDING -> pendingCount++;
+                case FULFILLED -> fulfilledCount++;
+            }
+        }
+
+        List<Long> appointmentIds = appointments.stream().map(Appointment::getId).toList();
+        List<DonationDetail> donationDetails = donationDetailRepository.findByAppointment_IdIn(appointmentIds);
+        List<Long> donationDetailIds = donationDetails.stream()
+                .map(DonationDetail::getDonID)
+                .toList();
+
+        List<BloodUnit> bloodUnits = bloodUnitRepository.findByDonationDetail_DonIDIn(donationDetailIds);
+
+        int totalBags = 0;
+        int totalVolume = 0;
+
+        // Khởi tạo map thống kê nhóm máu
+        Map<TypeBlood, BloodGroupStats> bloodStatsMap = new EnumMap<>(TypeBlood.class);
+
+        for (BloodUnit unit : bloodUnits) {
+            TypeBlood bloodType = unit.getTypeBlood();
+            int volume = unit.getVolume(); // 200, 350, 500
+
+            if (bloodType == null || volume <= 0) continue;
+
+            bloodStatsMap.putIfAbsent(bloodType, new BloodGroupStats());
+
+            BloodGroupStats stats = bloodStatsMap.get(bloodType);
+
+            // Đếm số lượng theo thể tích
+            switch (volume) {
+                case 200 -> stats.setQuantity200ml(stats.getQuantity200ml() + 1);
+                case 350 -> stats.setQuantity350ml(stats.getQuantity350ml() + 1);
+                case 500 -> stats.setQuantity500ml(stats.getQuantity500ml() + 1);
+            }
+
+            stats.setTotalBags(stats.getTotalBags() + 1);
+            stats.setTotalVolume(stats.getTotalVolume() + volume);
+
+            totalBags++;
+            totalVolume += volume;
+        }
+
+        successRate = totalAppointments == 0 ? 0.0 : (double) fulfilledCount / totalAppointments;
+        failRate = totalAppointments == 0 ? 0.0 : (double) (cancelledCount + rejectedCount) / totalAppointments;
+
+        return new ProgramStatisticsDTO(
+                programId,
+                totalAppointments,
+                cancelledCount,
+                rejectedCount,
+                approvedCount,
+                pendingCount,
+                fulfilledCount,
+                successRate,
+                failRate,
+                totalBags,
+                totalVolume,
+                bloodStatsMap
+        );
+    }
+
+
 }
