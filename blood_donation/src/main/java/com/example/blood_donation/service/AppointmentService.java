@@ -342,6 +342,9 @@ public class AppointmentService {
         if (app.getProgram().getAddress() != null) {
             dto.setAddress(app.getProgram().getAddress().getName());
         }
+        if (app.getProgram().getProName() != null) {
+            dto.setProgramName(app.getProgram().getProName());
+        }
         dto.setTimeRange(app.getSlot().getStart() + " - " + app.getSlot().getEnd());
         return dto;
     }

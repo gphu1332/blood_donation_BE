@@ -12,6 +12,7 @@ public class BloodRequestResponseDTO {
     private String status;
     private LocalDate reqCreateDate;
     private List<BloodRequestDetailDTO> details;
+    private Long medId;
     private String medicalStaffName;
     private String medicalStaffEmail;
     private Long handleById;

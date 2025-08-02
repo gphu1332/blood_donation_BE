@@ -109,6 +109,9 @@ public class DonationDetailService {
         dto.setAppointmentId(detail.getAppointment().getId());
         dto.setStaffId(detail.getStaff().getId());
         dto.setMemberId(detail.getMember().getId());
+        if (detail.getStaff() != null) {
+            dto.setStaffName(detail.getStaff().getFullName());
+        }
         return dto;
     }
 }
