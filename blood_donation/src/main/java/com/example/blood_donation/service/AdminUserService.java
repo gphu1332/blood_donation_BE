@@ -103,8 +103,25 @@ public class AdminUserService {
         if (userOpt.isEmpty()) {
             throw new BadRequestException("User not found");
         }
-
         User user = userOpt.get();
+        // Chỉ check khi có thay đổi username/email/cccd
+        if (!user.getUsername().equals(adminDTO.getUsername())
+                && userRepository.existsByUsernameAndDeletedFalse(adminDTO.getUsername())) {
+            throw new BadRequestException("Username already exists");
+        }
+
+        if (adminDTO.getEmail() != null
+                && !adminDTO.getEmail().equals(user.getEmail())
+                && userRepository.existsByEmailAndDeletedFalse(adminDTO.getEmail())) {
+            throw new BadRequestException("Email already exists");
+        }
+
+        if (adminDTO.getCccd() != null
+                && !adminDTO.getCccd().equals(user.getCccd())
+                && userRepository.existsByCccdAndDeletedFalse(adminDTO.getCccd())) {
+            throw new BadRequestException("CCCD already exists");
+        }
+
         if (user.isDeleted()) {
             throw new BadRequestException("User is already deleted");
         }
