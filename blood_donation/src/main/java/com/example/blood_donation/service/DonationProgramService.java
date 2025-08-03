@@ -19,6 +19,7 @@ import java.time.LocalDateTime;
 import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 @Service
 public class DonationProgramService {
@@ -161,11 +162,11 @@ public class DonationProgramService {
 
         // So sánh thông tin quan trọng
         boolean isImportantChanged =
-                !existing.getProName().equals(dto.getProName()) ||
-                        !existing.getStartDate().equals(dto.getStartDate()) ||
-                        !existing.getEndDate().equals(dto.getEndDate()) ||
-                        !existing.getDescription().equals(dto.getDescription()) ||
-                        (existing.getAddress() != null && !existing.getAddress().getId().equals(dto.getAddressId())) ||
+                !Objects.equals(existing.getProName(), dto.getProName()) ||
+                        !Objects.equals(existing.getStartDate(), dto.getStartDate()) ||
+                        !Objects.equals(existing.getEndDate(), dto.getEndDate()) ||
+                        !Objects.equals(existing.getDescription(), dto.getDescription()) ||
+                        (existing.getAddress() != null && !Objects.equals(existing.getAddress().getId(), dto.getAddressId())) ||
                         (dto.getSlotIds() != null && !existing.getSlots().stream().map(Slot::getSlotID).toList().equals(dto.getSlotIds()));
 
         // Cập nhật các trường
