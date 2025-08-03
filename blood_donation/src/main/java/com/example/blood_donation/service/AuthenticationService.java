@@ -43,6 +43,16 @@ public class AuthenticationService implements UserDetailsService {
             throw new BadRequestException("Mật khẩu xác nhận không khớp");
         }
 
+        // Check username trùng
+        if (authenticationRepository.existsByUsername(request.getUsername())) {
+            throw new BadRequestException("Tên người dùng đã được sử dụng");
+        }
+
+        // Check email trùng
+        if (authenticationRepository.existsByEmail(request.getEmail())) {
+            throw new BadRequestException("Email đã được sử dụng");
+        }
+
         User user = new User();
         user.setFullName(request.getFullName());
         user.setEmail(request.getEmail());
