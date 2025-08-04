@@ -59,7 +59,7 @@ public class AdminUserService {
     public Long findUserIdByPhone(String phone) {
         return userRepository.findByPhone(phone)
                 .filter(user -> !user.isDeleted())
-                .orElseThrow(() -> new BadRequestException("User not found or has been deleted"))
+                .orElseThrow(() -> new BadRequestException("Người dùng không tìm thấy hoặc đã bị xóa"))
                 .getId();
     }
 
@@ -68,13 +68,13 @@ public class AdminUserService {
     public AdminUserResponseDTO createUserByAdmin(CreateAdminUserDTO dto) {
         // Check for duplicates among non-deleted users
         if (userRepository.existsByUsernameAndDeletedFalse(dto.getUsername())) {
-            throw new BadRequestException("Username already exists");
+            throw new BadRequestException("Username đã tồn tại");
         }
         if (dto.getEmail() != null && userRepository.existsByEmailAndDeletedFalse(dto.getEmail())) {
-            throw new BadRequestException("Email already exists");
+            throw new BadRequestException("Email đã tồn tại");
         }
         if (dto.getCccd() != null && userRepository.existsByCccdAndDeletedFalse(dto.getCccd())) {
-            throw new BadRequestException("CCCD already exists");
+            throw new BadRequestException("CCCD đã tồn tại");
         }
 
         User user = mapToEntityFromDTO(dto);
@@ -101,29 +101,29 @@ public class AdminUserService {
     public UserDTO updateUserByAdmin(Long id, AdminUserDTO adminDTO) {
         Optional<User> userOpt = adminUserRepository.findById(id);
         if (userOpt.isEmpty()) {
-            throw new BadRequestException("User not found");
+            throw new BadRequestException("Không tìm thấy người dùng");
         }
         User user = userOpt.get();
         // Chỉ check khi có thay đổi username/email/cccd
         if (!user.getUsername().equals(adminDTO.getUsername())
                 && userRepository.existsByUsernameAndDeletedFalse(adminDTO.getUsername())) {
-            throw new BadRequestException("Username already exists");
+            throw new BadRequestException("Username đã tồn tại");
         }
 
         if (adminDTO.getEmail() != null
                 && !adminDTO.getEmail().equals(user.getEmail())
                 && userRepository.existsByEmailAndDeletedFalse(adminDTO.getEmail())) {
-            throw new BadRequestException("Email already exists");
+            throw new BadRequestException("Email đã tồn tại");
         }
 
         if (adminDTO.getCccd() != null
                 && !adminDTO.getCccd().equals(user.getCccd())
                 && userRepository.existsByCccdAndDeletedFalse(adminDTO.getCccd())) {
-            throw new BadRequestException("CCCD already exists");
+            throw new BadRequestException("CCCD đã tồn tại");
         }
 
         if (user.isDeleted()) {
-            throw new BadRequestException("User is already deleted");
+            throw new BadRequestException("Người dùng đã bị xóa");
         }
 
         // Lưu thông tin gốc để so sánh cho việc gửi email
@@ -170,7 +170,7 @@ public class AdminUserService {
         // Nếu là HOSPITAL_STAFF thì update hospital
         if (user instanceof MedicalStaff staff && adminDTO.getHospitalId() != null) {
             Hospital hospital = hospitalRepository.findById(adminDTO.getHospitalId())
-                    .orElseThrow(() -> new BadRequestException("Hospital not found"));
+                    .orElseThrow(() -> new BadRequestException("Không tìm thấy bệnh viện"));
             staff.setHospital(hospital);
         }
 
@@ -251,11 +251,11 @@ public class AdminUserService {
     public void deleteUser(Long id) {
         Optional<User> userOpt = adminUserRepository.findById(id);
         if (userOpt.isEmpty()) {
-            throw new BadRequestException("User not found");
+            throw new BadRequestException("Không tìm thấy người dùng");
         }
         User user = userOpt.get();
         if (user.isDeleted()) {
-            throw new BadRequestException("User is already deleted");
+            throw new BadRequestException("Người dùng đã bị xóa");
         }
 
         if (user.getRole() == Role.ADMIN) {
@@ -300,7 +300,7 @@ public class AdminUserService {
 
             if (dto.getHospitalId() != null) {
                 Hospital hospital = hospitalRepository.findById(dto.getHospitalId())
-                        .orElseThrow(() -> new BadRequestException("Hospital not found"));
+                        .orElseThrow(() -> new BadRequestException("Không tìm thấy bệnh viện"));
                 staff.setHospital(hospital);
             }
 

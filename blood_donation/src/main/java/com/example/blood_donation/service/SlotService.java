@@ -76,13 +76,13 @@ public class SlotService {
      */
     private void validateSlotRequest(SlotRequest request) {
         if (request.getLabel() == null || request.getLabel().isBlank()) {
-            throw new BadRequestException("Label must not be empty");
+            throw new BadRequestException("Label không được để trống");
         }
         if (request.getStart() == null || request.getEnd() == null) {
-            throw new BadRequestException("Start and end times must not be null");
+            throw new BadRequestException("Start và end times không được để trống");
         }
         if (request.getStart().isAfter(request.getEnd())) {
-            throw new BadRequestException("Start time must be before end time");
+            throw new BadRequestException("Start time nên trước end time");
         }
     }
 }

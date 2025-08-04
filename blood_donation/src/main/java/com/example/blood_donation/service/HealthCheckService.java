@@ -26,7 +26,7 @@ public class HealthCheckService {
         hc.setNote(request.getNote());
 
          DonationProgram dp = donationProgramRepository.findById(request.getDonationProgramId())
-                .orElseThrow(() -> new RuntimeException("DonationProgram not found"));
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy chương trình hiến máu"));
 
         hc.setDonationProgram(dp);
         return healthCheckRepository.save(hc);
@@ -34,7 +34,7 @@ public class HealthCheckService {
 
     public HealthCheck updateHealthCheckFromRequest(Long id, HealthCheckRequest request) {
         HealthCheck hc = healthCheckRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("HealthCheck not found"));
+                .orElseThrow(() -> new RuntimeException("HealthCheck Không tìm thấy"));
 
         hc.setCheckDate(request.getCheckDate());
         hc.setWeight(request.getWeight());
@@ -47,7 +47,7 @@ public class HealthCheckService {
         // Cập nhật lại DonationProgram nếu cần
         if (!hc.getDonationProgram().getId().equals(request.getDonationProgramId())) {
             DonationProgram dp = donationProgramRepository.findById(request.getDonationProgramId())
-                    .orElseThrow(() -> new RuntimeException("DonationProgram not found"));
+                    .orElseThrow(() -> new RuntimeException("Không tìm thấy chương trình hiến máu"));
             hc.setDonationProgram(dp);
         }
 

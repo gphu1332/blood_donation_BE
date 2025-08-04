@@ -111,7 +111,7 @@ public class NotificationService {
     public void notifyUsersNearHospitals(Long addressId) {
         List<User> users = userRepository.findAll();
         Adress adress = adressRepository.findById(addressId)
-                .orElseThrow(() -> new BadRequestException("adress not found"));
+                .orElseThrow(() -> new BadRequestException("Không tìm thấy địa chỉ"));
 
         double centerLat = adress.getLatitude();
         double centerLng = adress.getLongitude();

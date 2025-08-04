@@ -44,10 +44,10 @@ public class MemberService {
     // Xóa mềm MEMBER
     public void deleteUser(Long id) {
         User user = getMemberUserById(id)
-                .orElseThrow(() -> new BadRequestException("User not found or not MEMBER"));
+                .orElseThrow(() -> new BadRequestException("Không tìm thấy người dùng hoặc không phải là MEMBER"));
 
         if (user.isDeleted()) {
-            throw new BadRequestException("User is already deleted");
+            throw new BadRequestException("Người dùng đã bị xóa");
         }
 
         user.setDeleted(true);
@@ -87,7 +87,7 @@ public class MemberService {
     // Cập nhật MEMBER
     public User updateMember(Long id, MemberUpdateRequest dto) {
         User user = getMemberUserById(id)
-                .orElseThrow(() -> new BadRequestException("User not found or not MEMBER"));
+                .orElseThrow(() -> new BadRequestException("Không tìm thấy người dùng hoặc không phải là MEMBER"));
 
         user.setFullName(dto.getFullName());
         user.setEmail(dto.getEmail());

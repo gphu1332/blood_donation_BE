@@ -69,7 +69,7 @@ public class AppointmentService {
                 .anyMatch(a -> a.getStatus() == Status.PENDING || a.getStatus() == Status.APPROVED);
 
         if (hasActiveAppointment) {
-            throw new BadRequestException("You already have an active appointment. Complete or cancel it before booking a new one.");
+            throw new BadRequestException("Bạn đã có cuộc hẹn đang hoạt động. Vui lòng hoàn tất hoặc hủy trước khi đặt lịch hẹn mới.");
         }
 
         // Kiểm tra số ngày từ lần hiến gần nhất
@@ -112,7 +112,7 @@ public class AppointmentService {
      */
     public AppointmentDTO createAppointmentByPhoneAndProgram(String phone, AppointmentRequest request) {
         User user = userRepository.findByPhone(phone)
-                .orElseThrow(() -> new BadRequestException("User not found with phone: " + phone));
+                .orElseThrow(() -> new BadRequestException("Không tìm thấy người dùng có điện thoại: " + phone));
 
         // Kiểm tra thông tin cá nhân
         validateUserProfile(user);
@@ -123,7 +123,7 @@ public class AppointmentService {
                 .anyMatch(a -> a.getStatus() == Status.PENDING || a.getStatus() == Status.APPROVED);
 
         if (hasActiveAppointment) {
-            throw new BadRequestException("User already has an active appointment.");
+            throw new BadRequestException("Người dùng đã có cuộc hẹn đang hoạt động.");
         }
 
         // Kiểm tra số ngày từ lần hiến máu gần nhất
@@ -177,7 +177,7 @@ public class AppointmentService {
      */
     public AppointmentDTO updateStatus(Long appointmentId, Status newStatus) {
         Appointment appointment = appointmentRepository.findById(appointmentId)
-                .orElseThrow(() -> new BadRequestException("Appointment not found"));
+                .orElseThrow(() -> new BadRequestException("Không tìm thấy cuộc hẹn"));
 
         appointment.setStatus(newStatus);
         // Gửi thông báo nếu trạng thái mới là FULFILLED
@@ -226,14 +226,14 @@ public class AppointmentService {
      */
     public void deleteAppointmentWithPermission(Long appointmentId, Long requesterUserID) {
         Appointment appointment = appointmentRepository.findById(appointmentId)
-                .orElseThrow(() -> new BadRequestException("Appointment not found"));
+                .orElseThrow(() -> new BadRequestException("Không tìm thấy cuộc hẹn"));
 
         if (appointment.getStatus() == Status.FULFILLED) {
-            throw new BadRequestException("Cannot delete a fulfilled appointment.");
+            throw new BadRequestException("Không thể xóa cuộc hẹn đã hoàn thành.");
         }
 
         User requester = userRepository.findById(requesterUserID)
-                .orElseThrow(() -> new BadRequestException("Requester not found"));
+                .orElseThrow(() -> new BadRequestException("Không tìm thấy người yêu cầu"));
 
         User owner = appointment.getUser();
         boolean isOwner = owner.getUsername().equals(requesterUserID);
@@ -242,7 +242,7 @@ public class AppointmentService {
         boolean hasPermission = isOwner || role.equals("MEMBER") || role.equals("STAFF") || role.equals("HOSPITAL_STAFF");
 
         if (!hasPermission) {
-            throw new BadRequestException("You don't have permission to delete this appointment.");
+            throw new BadRequestException("Bạn không có quyền xóa cuộc hẹn này.");
         }
 
         appointmentRepository.delete(appointment);
@@ -254,10 +254,10 @@ public class AppointmentService {
      */
     public void deleteAppointment(Long appointmentId) {
         Appointment appointment = appointmentRepository.findById(appointmentId)
-                .orElseThrow(() -> new BadRequestException("Appointment not found"));
+                .orElseThrow(() -> new BadRequestException("Không tìm thấy cuộc hẹn"));
 
         if (appointment.getStatus() == Status.FULFILLED) {
-            throw new BadRequestException("Cannot delete a fulfilled appointment.");
+            throw new BadRequestException("Không thể xóa cuộc hẹn đã hoàn thành.");
         }
 
         appointmentRepository.delete(appointment);
@@ -268,7 +268,7 @@ public class AppointmentService {
      */
     private Appointment buildAppointment(AppointmentRequest request, User user, Status status) {
         Slot slot = slotRepository.findById(request.getSlotId())
-                .orElseThrow(() -> new BadRequestException("Slot not found"));
+                .orElseThrow(() -> new BadRequestException("Không tìm thấy slot"));
         // Nếu đặt lịch trong ngày hôm nay thì kiểm tra giờ hiện tại
         if (request.getDate().isEqual(LocalDate.now())) {
             LocalTime now = LocalTime.now();
@@ -312,7 +312,7 @@ public class AppointmentService {
 
     public List<AppointmentDTO> getByUserId(Long userId) {
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new BadRequestException("User not found"));
+                .orElseThrow(() -> new BadRequestException("Không tìm thấy người dùng"));
 
         return user.getAppointments().stream()
                 .filter(app -> app.getStatus() != Status.CANCELLED && app.getStatus() != Status.REJECTED)
@@ -325,7 +325,7 @@ public class AppointmentService {
      */
     public List<AppointmentDTO> getFullHistoryByUser(Long userId) {
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new BadRequestException("User not found"));
+                .orElseThrow(() -> new BadRequestException("Không tìm thấy người dùng"));
 
         return user.getAppointments().stream()
                 .sorted((a1, a2) -> a2.getDate().compareTo(a1.getDate())) // Sắp xếp mới nhất lên đầu
@@ -353,7 +353,7 @@ public class AppointmentService {
      */
     public AppointmentDTO cancelAppointment(Long appointmentId, Long userId) {
         Appointment appointment = appointmentRepository.findById(appointmentId)
-                .orElseThrow(() -> new BadRequestException("Appointment not found"));
+                .orElseThrow(() -> new BadRequestException("Không tìm thấy cuộc hẹn"));
 
         if (appointment.getUser().getId() != userId) {
             throw new BadRequestException("Bạn không có quyền hủy lịch hẹn này.");
@@ -383,7 +383,7 @@ public class AppointmentService {
      */
     public int calculateDaysLeft(Long appointmentId) {
         Appointment appointment = appointmentRepository.findById(appointmentId)
-                .orElseThrow(() -> new BadRequestException("Appointment not found"));
+                .orElseThrow(() -> new BadRequestException("Không tìm thấy cuộc hẹn"));
 
         LocalDate today = LocalDate.now();
         LocalDate donationDate = appointment.getDate();
@@ -433,7 +433,7 @@ public class AppointmentService {
 
         DonationProgram program = donationProgramRepository.findById(programId)
                 .filter(p -> !p.isDeleted())
-                .orElseThrow(() -> new EntityNotFoundException("Donation program not found"));
+                .orElseThrow(() -> new EntityNotFoundException("Không tìm thấy chương trình hiến máu"));
 
         List<Appointment> appointments = appointmentRepository.findByProgram_Id(programId);
         return appointments.stream()

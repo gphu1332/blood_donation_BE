@@ -36,17 +36,17 @@ public class UserService {
     public UserDTO updateUser(Long id, UserDTO userDTO) {
         // ✅ Tìm user chưa bị xóa
         User user = userRepository.findByIdAndDeletedFalse(id)
-                .orElseThrow(() -> new BadRequestException("User not found or has been deleted"));
+                .orElseThrow(() -> new BadRequestException("Người dùng không tìm thấy hoặc đã bị xóa"));
 
         // ✅ Kiểm tra trùng thông tin
         if (userRepository.existsByUsernameAndIdNotAndDeletedFalse(userDTO.getUsername(), id)) {
-            throw new BadRequestException("Username already exists");
+            throw new BadRequestException("Username đã tồn tại");
         }
         if (userRepository.existsByEmailAndIdNotAndDeletedFalse(userDTO.getEmail(), id)) {
-            throw new BadRequestException("Email already exists");
+            throw new BadRequestException("Email đã tồn tại");
         }
         if (userRepository.existsByCccdAndIdNotAndDeletedFalse(userDTO.getCccd(), id)) {
-            throw new BadRequestException("CCCD already exists");
+            throw new BadRequestException("CCCD đã tồn tại");
         }
 
         // ✅ Cập nhật thông tin cơ bản
@@ -68,7 +68,7 @@ public class UserService {
                 // Trường hợp có ID → tìm theo ID
                 System.out.println("AddressDTO ID = " + addressDTO.getId());
                 address = adressRepository.findById(addressDTO.getId())
-                        .orElseThrow(() -> new BadRequestException("Address not found"));
+                        .orElseThrow(() -> new BadRequestException("Không tìm thấy địa chỉ"));
             } else {
                 // Trường hợp không có ID → tìm theo name + lat + lng
                 Optional<Adress> existingAddress = adressRepository.findByNameAndLatitudeAndLongitude(
