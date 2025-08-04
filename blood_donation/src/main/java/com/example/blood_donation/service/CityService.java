@@ -29,7 +29,7 @@ public class CityService {
 
     public CityDTO getCityById(Long id) {
         City city = cityRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("City not found"));
+                .orElseThrow(() -> new EntityNotFoundException("Không tìm thấy thành phố"));
         return modelMapper.map(city, CityDTO.class);
     }
 
@@ -45,7 +45,7 @@ public class CityService {
 
     public CityDTO updateCity(Long id, CityDTO dto) {
         City city = cityRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("City not found"));
+                .orElseThrow(() -> new EntityNotFoundException("Không tìm thấy thành phố"));
 
         city.setName(dto.getName());
         return modelMapper.map(cityRepository.save(city), CityDTO.class);
@@ -54,7 +54,7 @@ public class CityService {
     @Transactional
     public void delete(Long id) {
         City city = cityRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("City not found"));
+                .orElseThrow(() -> new EntityNotFoundException("Không tìm thấy thành phố"));
 
         city.setDeleted(true);
         cityRepository.save(city);

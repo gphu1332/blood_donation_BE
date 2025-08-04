@@ -24,7 +24,7 @@ public class HospitalService {
 
     public HospitalDTO getById(Long id) {
         Hospital hospital = hospitalRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Hospital not found"));
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy bệnh viện"));
         return toDTO(hospital);
     }
 
@@ -34,7 +34,7 @@ public class HospitalService {
 
         if (dto.getAdressId()!= null) {
             Adress adress = adressRepository.findById(dto.getAdressId())
-                    .orElseThrow(() -> new RuntimeException("Adress not found"));
+                    .orElseThrow(() -> new RuntimeException("Không tìm thấy địa chỉ"));
             hospital.setAdress(adress);
         }
         return toDTO(hospitalRepository.save(hospital));
@@ -42,11 +42,11 @@ public class HospitalService {
 
     public HospitalDTO update(Long id, HospitalDTO dto) {
         Hospital hospital = hospitalRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Hospital not found"));
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy bệnh viện"));
         hospital.setName(dto.getName());
         if (dto.getAdressId() != null) {
             Adress adress = adressRepository.findById(dto.getAdressId())
-                    .orElseThrow(() -> new RuntimeException("Adress not found"));
+                    .orElseThrow(() -> new RuntimeException("Không tìm thấy địa chỉ"));
             hospital.setAdress(adress);
         } else {
             hospital.setAdress(null);

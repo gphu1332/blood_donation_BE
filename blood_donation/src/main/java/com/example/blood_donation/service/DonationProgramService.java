@@ -65,7 +65,7 @@ public class DonationProgramService {
     public DonationProgramResponse getById(Long id) {
         DonationProgram program = donationProgramRepository.findById(id)
                 .filter(p -> !p.isDeleted())
-                .orElseThrow(() -> new EntityNotFoundException("Donation program not found"));
+                .orElseThrow(() -> new EntityNotFoundException("Không tìm thấy chương trình hiến máu"));
         return mapToResponseDTO(program);
     }
 
@@ -73,7 +73,7 @@ public class DonationProgramService {
     public List<DonationProgramResponse> searchByDateInRangeAndCityID(LocalDate date, Long cityId) {
         City city = cityRepository.findById(cityId)
                 .filter(c -> !c.isDeleted())
-                .orElseThrow(() -> new EntityNotFoundException("City not found or has been deleted"));
+                .orElseThrow(() -> new EntityNotFoundException("Thành phố không tìm thấy hoặc đã bị xóa"));
 
         return donationProgramRepository
                 .findByStartDateLessThanEqualAndEndDateGreaterThanEqualAndCity_Id(date, date, city.getId())
@@ -114,20 +114,20 @@ public class DonationProgramService {
         if (dto.getCityId() != null) {
             City city = cityRepository.findById(dto.getCityId())
                     .filter(c -> !c.isDeleted())
-                    .orElseThrow(() -> new EntityNotFoundException("City not found or has been deleted"));
+                    .orElseThrow(() -> new EntityNotFoundException("Thành phố không tìm thấy hoặc đã bị xóa"));
             program.setCity(city);
         }
 
         // Liên kết Adress
         if (dto.getAddressId() != null) {
             Adress address = adressRepository.findById(dto.getAddressId())
-                    .orElseThrow(() -> new EntityNotFoundException("Address not found"));
+                    .orElseThrow(() -> new EntityNotFoundException("Không tìm thấy địa chỉ"));
             program.setAddress(address);
         }
 
         // Liên kết Admin
         User admin = userRepository.findByUsername(adminUsername)
-                .orElseThrow(() -> new EntityNotFoundException("Admin user not found"));
+                .orElseThrow(() -> new EntityNotFoundException("Không tìm thấy người dùng quản trị"));
         program.setAdmin(admin);
 
         // Liên kết các Slot
@@ -145,7 +145,7 @@ public class DonationProgramService {
     public DonationProgramResponse update(Long id, DonationProgramDTO dto) {
         DonationProgram existing = donationProgramRepository.findById(id)
                 .filter(p -> !p.isDeleted())
-                .orElseThrow(() -> new EntityNotFoundException("Donation program not found"));
+                .orElseThrow(() -> new EntityNotFoundException("Không tìm thấy chương trình hiến máu"));
 
         // Kiểm tra trùng lịch
         if (dto.getAddressId() != null) {
@@ -182,14 +182,14 @@ public class DonationProgramService {
         // Liên kết City
         if (dto.getCityId() != null) {
             City city = cityRepository.findById(dto.getCityId())
-                    .orElseThrow(() -> new EntityNotFoundException("City not found"));
+                    .orElseThrow(() -> new EntityNotFoundException("Không tìm thấy thành phố"));
             existing.setCity(city);
         }
 
         // Liên kết Address
         if (dto.getAddressId() != null) {
             Adress address = adressRepository.findById(dto.getAddressId())
-                    .orElseThrow(() -> new EntityNotFoundException("Address not found"));
+                    .orElseThrow(() -> new EntityNotFoundException("Không tìm thấy địa chỉ"));
             existing.setAddress(address);
         }
 
@@ -243,7 +243,7 @@ public class DonationProgramService {
     public void delete(Long id) {
         DonationProgram program = donationProgramRepository.findById(id)
                 .filter(p -> !p.isDeleted())
-                .orElseThrow(() -> new EntityNotFoundException("Donation program not found"));
+                .orElseThrow(() -> new EntityNotFoundException("Không tìm thấy chương trình hiến máu"));
 
         program.setDeleted(true);
         donationProgramRepository.save(program);
@@ -338,7 +338,7 @@ public class DonationProgramService {
     public ProgramStatisticsDTO getStatisticsByProgramId(Long programId) {
         DonationProgram program = donationProgramRepository.findById(programId)
                 .filter(p -> !p.isDeleted())
-                .orElseThrow(() -> new EntityNotFoundException("Donation program not found"));
+                .orElseThrow(() -> new EntityNotFoundException("Không tìm thấy chương trình hiến máu"));
 
         List<Appointment> appointments = appointmentRepository.findByProgram_Id(programId);
         long totalAppointments = appointments.size();

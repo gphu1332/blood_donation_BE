@@ -27,7 +27,7 @@ public class AdressService {
 
     public AdressDTO getById(Long id) {
         Adress adress = adressRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("Address not found"));
+                .orElseThrow(() -> new EntityNotFoundException("Không tìm thấy địa chỉ"));
         return modelMapper.map(adress, AdressDTO.class);
     }
 
@@ -49,7 +49,7 @@ public class AdressService {
 
     public AdressDTO update(Long id, AdressDTO dto) {
         Adress existing = adressRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("Address not found"));
+                .orElseThrow(() -> new EntityNotFoundException("Không tìm thấy địa chỉ"));
 
         existing.setName(dto.getName());
         existing.setLatitude(dto.getLatitude());
