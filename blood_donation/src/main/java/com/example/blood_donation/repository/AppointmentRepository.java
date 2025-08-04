@@ -88,7 +88,7 @@ public interface AppointmentRepository extends JpaRepository<Appointment, Long> 
     SELECT COUNT(a)
     FROM Appointment a
     WHERE a.program.id = :programId
-      AND a.status IN ('PENDING', 'APPROVED')
+      AND a.status IN ('PENDING', 'APPROVED', 'FULFILLED')
 """)
     long countActiveAppointmentsByProgram(@Param("programId") Long programId);
 
