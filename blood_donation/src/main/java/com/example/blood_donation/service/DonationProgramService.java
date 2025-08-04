@@ -398,7 +398,7 @@ public class DonationProgramService {
             totalBags++;
             totalVolume += volume;
         }
-
+        //tỉ lệ thành công và thất bại
         successRate = totalAppointments == 0 ? 0.0 : (double) fulfilledCount / totalAppointments;
         failRate = totalAppointments == 0 ? 0.0 : (double) (cancelledCount + rejectedCount) / totalAppointments;
 
