@@ -29,6 +29,9 @@ public class BloodRequestService {
     @Autowired
     private UserRepository userRepository;
 
+    @Autowired
+    private EmailService emailService;
+
     // ✅ 1. Tạo yêu cầu
     @Transactional
     public BloodRequest createRequestFromDTO(BloodRequestDTO dto) {
@@ -115,7 +118,7 @@ public class BloodRequestService {
     }
 
     // ✅ 5. Duyệt / Từ chối
-    public BloodRequest respondToRequest(Long id, String action, Long staffId) {
+    public BloodRequest respondToRequest(Long id, String action, Long staffId, String rejectionReason) {
         BloodRequest req = reqRepo.findById(id)
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy yêu cầu"));
 
@@ -127,20 +130,28 @@ public class BloodRequestService {
         }
 
         if (req.getStatus() != Status.PENDING) {
-            throw new RuntimeException("Yêu cầu đã được xử lý bởi người khác.");
+            throw new RuntimeException("Yêu cầu đã được xử lý.");
         }
 
-        if (action.equalsIgnoreCase("accept")) {
+        if ("accept".equalsIgnoreCase(action)) {
             req.setStatus(Status.APPROVED);
-        } else if (action.equalsIgnoreCase("reject")) {
+        } else if ("reject".equalsIgnoreCase(action)) {
+            if (rejectionReason == null || rejectionReason.isBlank()) {
+                throw new IllegalArgumentException("Lý do từ chối không được để trống");
+            }
+
             req.setStatus(Status.REJECTED);
+
+            // Gửi email với lý do
+            sendRejectionEmail(req, rejectionReason);
         } else {
-            throw new IllegalArgumentException("Hành động không hợp lệ");
+            throw new IllegalArgumentException("Hành động không hợp lệ: " + action);
         }
 
         req.setHandledBy(staff);
         return reqRepo.save(req);
     }
+
 
     // ✅ 6. Cập nhật trạng thái xử lý
     public BloodRequest updateProcessingStatus(Long id, Status status) {
@@ -221,4 +232,17 @@ public class BloodRequestService {
         request.setStatus(Status.FULFILLED);
         return reqRepo.save(request);
     }
+
+    private void sendRejectionEmail(BloodRequest req, String reason) {
+        String to = req.getMedicalStaff().getEmail();
+        String subject = "Yêu cầu máu đã bị từ chối";
+        String content = "Xin chào " + req.getMedicalStaff().getFullName() + ",\n\n"
+                + "Yêu cầu máu của bạn (ID: " + req.getReqID() + ") đã bị từ chối bởi nhân viên xử lý.\n"
+                + "Lý do từ chối: " + reason + "\n\n"
+                + "Nếu có thắc mắc, vui lòng liên hệ bộ phận điều phối.\n\n"
+                + "Trân trọng.";
+
+        emailService.sendSimpleEmail(to, subject, content);
+    }
+
 }

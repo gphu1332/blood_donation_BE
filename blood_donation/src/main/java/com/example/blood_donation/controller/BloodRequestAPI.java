@@ -86,10 +86,12 @@ public class BloodRequestAPI {
     public ResponseEntity<BloodRequestResponseDTO> respond(
             @Parameter(description = "ID yêu cầu") @PathVariable Long id,
             @Parameter(description = "Hành động: accept hoặc reject") @RequestParam String action,
-            @Parameter(description = "ID của Staff thực hiện") @RequestParam Long staffId) {
-        BloodRequest request = service.respondToRequest(id, action, staffId);
+            @Parameter(description = "ID của Staff thực hiện") @RequestParam Long staffId,
+            @Parameter(description = "Lý do từ chối (bắt buộc nếu reject)") @RequestParam(required = false) String reason) {
+        BloodRequest request = service.respondToRequest(id, action, staffId, reason);
         return ResponseEntity.ok(service.mapToResponseDTO(request));
     }
+
 
     @Operation(summary = "Cập nhật trạng thái xử lý yêu cầu", description = "Staff cập nhật trạng thái sang PROCESSING, DONE, CANCELLED...")
     @PutMapping("/staff/{id}/process")
