@@ -15,6 +15,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.time.ZoneId;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Optional;
@@ -269,19 +270,22 @@ public class AppointmentService {
     private Appointment buildAppointment(AppointmentRequest request, User user, Status status) {
         Slot slot = slotRepository.findById(request.getSlotId())
                 .orElseThrow(() -> new BadRequestException("Không tìm thấy slot"));
+
+        // Lấy giờ theo múi giờ Việt Nam
+        ZoneId zoneId = ZoneId.of("Asia/Ho_Chi_Minh");
+
         // Nếu đặt lịch trong ngày hôm nay thì kiểm tra giờ hiện tại
-        if (request.getDate().isEqual(LocalDate.now())) {
-            LocalTime now = LocalTime.now();
+        if (request.getDate().isEqual(LocalDate.now(zoneId))) {
+            LocalTime now = LocalTime.now(zoneId);
 
             if (now.isAfter(slot.getEnd())) {
                 throw new BadRequestException("Khung giờ hiến máu đã kết thúc. Vui lòng chọn thời gian khác.");
             }
         }
 
-
         DonationProgram program = donationProgramRepository.findById(request.getProgramId())
                 .orElseThrow(() -> new BadRequestException("Program not found"));
-        // Kiểm tra số lượng người đăng ký không vượt quá maxParticipant
+
         long activeCount = appointmentRepository.countActiveAppointmentsByProgram(program.getId());
 
         if (program.getMaxParticipant() != null && activeCount >= program.getMaxParticipant()) {
@@ -309,6 +313,7 @@ public class AppointmentService {
 
         return appointment;
     }
+
 
     public List<AppointmentDTO> getByUserId(Long userId) {
         User user = userRepository.findById(userId)
